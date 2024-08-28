@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useState } from "react";
 import { useAgent } from "../web5/use-agent";
 import { DwnInterface, DwnProtocolDefinition } from "@web5/agent";
 
@@ -94,24 +94,3 @@ export const ProtocolsProvider: React.FC<{ children: React.ReactNode }> = ({
     </ProtocolsContext.Provider>
   );
 };
-
-
-export const useProtocols = () => {
-  const context = useContext(ProtocolsContext);
-  if (!context) {
-    throw new Error("useProtocol must be used within a ProtocolsProvider");
-  }
-
-  const {
-    addProtocol,
-    listProtocols,
-    loadProtocols
-  } = context;
-
-  return {
-    addProtocol,
-    listProtocols,
-    loadProtocols
-  };
-};
-
