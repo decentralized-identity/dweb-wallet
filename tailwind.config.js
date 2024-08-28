@@ -18,7 +18,7 @@ module.exports = {
         },
         primary: {
           500: '#E03A3E', // Chicago Red
-          600: '#C8353A', // Darker red
+          600: '#C8353A', // Darker red for avatar background
           700: '#B03035', // Even darker red
         },
         text: {
@@ -38,6 +38,9 @@ module.exports = {
       },
       minHeight: {
         screen: '100vh',
+      },
+      width: {
+        '3/10': '30%',
       },
     },
   },
