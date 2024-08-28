@@ -1,6 +1,6 @@
 export interface Identity {
-  id: number;
   name: string;
+  didUri: string;
   avatarUrl: string;
   bannerUrl: string;
   protocols: string[];

@@ -12,6 +12,7 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
   const [bannerUrl, setBannerUrl] = useState('https://placehold.co/1200x400/34A853/FFFFFF.png?text=New+User+Banner');
   const [protocols, setProtocols] = useState('Ethereum, Bitcoin');
   const [permissions, setPermissions] = useState('Read, Write');
+  const [didUri, setDidUri] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,7 +22,8 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
         avatarUrl: avatarUrl.trim(),
         bannerUrl: bannerUrl.trim(),
         protocols: protocols.split(',').map(p => p.trim()).filter(p => p !== ''),
-        permissions: permissions.split(',').map(p => p.trim()).filter(p => p !== '')
+        permissions: permissions.split(',').map(p => p.trim()).filter(p => p !== ''),
+        didUri: didUri.trim(),
       });
       onClose();
     }
@@ -81,6 +83,17 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
               value={permissions}
               onChange={(e) => setPermissions(e.target.value)}
               className="w-full p-2 border rounded-md bg-surface-light dark:bg-surface-dark"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="didUri" className="block text-sm font-medium mb-1">DID URI</label>
+            <input
+              type="text"
+              id="didUri"
+              value={didUri}
+              onChange={(e) => setDidUri(e.target.value)}
+              className="w-full p-2 border rounded-md bg-surface-light dark:bg-surface-dark"
+              required
             />
           </div>
           <div className="flex justify-end space-x-2">

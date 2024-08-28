@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { Identity } from '@/types';
 import AddIdentityModal from './AddIdentityModal';
+import { useIdentities } from '@/web5/use-identities';
+import { truncateDid } from '@/lib/utils';
 
 interface IdentityListProps {
-  identities: Identity[];
-  onSelectIdentity: (identity: Identity) => void;
-  selectedIdentity: Identity | null;
   onAddIdentity: (identity: Omit<Identity, 'id'>) => void;
 }
 
-const IdentityList: React.FC<IdentityListProps> = ({ identities, onSelectIdentity, selectedIdentity, onAddIdentity }) => {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+const IdentityList: React.FC<IdentityListProps> = ({ onAddIdentity }) => {
+  const { selectedIdentity, setSelectedIdentity } = useIdentities()
+  const [ isAddModalOpen, setIsAddModalOpen ] = useState(false);
+  const { identities } = useIdentities();
+
+  const select = (identity: Identity) => {
+    if (selectedIdentity?.didUri === identity.didUri) {
+      setSelectedIdentity(undefined);
+    } else {
+      setSelectedIdentity(identity);
+    }
+  }
 
   return (
     <div className="p-4">
@@ -26,15 +35,15 @@ const IdentityList: React.FC<IdentityListProps> = ({ identities, onSelectIdentit
       <ul className="space-y-2">
         {identities.map((identity) => (
           <li 
-            key={identity.id} 
+            key={identity.didUri} 
             className={`
               cursor-pointer p-3 rounded-lg transition-all duration-200
-              ${selectedIdentity?.id === identity.id 
+              ${selectedIdentity?.didUri === identity.didUri 
                 ? 'bg-primary-500 text-white shadow-md' 
                 : 'hover:bg-surface-light dark:hover:bg-surface-dark hover:shadow-md'
               }
             `}
-            onClick={() => onSelectIdentity(identity)}
+            onClick={() => select(identity)}
           >
             <div className="flex items-center">
               <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold mr-3">
@@ -43,7 +52,7 @@ const IdentityList: React.FC<IdentityListProps> = ({ identities, onSelectIdentit
               <div>
                 <p className="font-semibold">{identity.name}</p>
                 <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
-                  ID: {identity.id}
+                  ID: {truncateDid(identity.didUri)}
                 </p>
               </div>
             </div>

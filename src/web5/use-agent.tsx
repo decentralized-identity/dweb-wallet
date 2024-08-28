@@ -1,13 +1,13 @@
 import { useContext } from "react";
-import { Web5AgentContext } from "./AgentContext";
+import { AgentContext } from "@/contexts/AgentContext";
 
 export const useAgent = () => {
-  const context = useContext(Web5AgentContext);
+  const context = useContext(AgentContext);
   if (!context) {
     throw new Error("useAgent must be used within a Web5Provider");
   }
 
-  const { isConnecting, agent, unlock, initialized, initialize } = context;
+  const { isConnecting, agent, unlock, initialized, initialize, isInitializing } = context;
 
   const isConnected = agent !== undefined;
 
@@ -18,5 +18,6 @@ export const useAgent = () => {
     isConnecting,
     unlock,
     isConnected,
+    isInitializing
   };
 };

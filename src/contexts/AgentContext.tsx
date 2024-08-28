@@ -11,7 +11,7 @@ interface Web5ContextProps {
   isConnecting: boolean;
 }
 
-export const Web5AgentContext = createContext<Web5ContextProps>({
+export const AgentContext = createContext<Web5ContextProps>({
   initialized: false,
   isConnecting: false,
   isInitializing: false,
@@ -23,7 +23,7 @@ export const Web5AgentContext = createContext<Web5ContextProps>({
   },
 });
 
-export const Web5Provider: React.FC<{ children: React.ReactNode }> = ({
+export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
 
@@ -37,12 +37,23 @@ export const Web5Provider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const checkInitialized = async () => {
       const agent = await Web5UserAgent.create();
-      const initialized = await agent.firstLaunch();
-      setInitialized(!initialized);
+      const firstLaunch = await agent.firstLaunch();
+      if (!firstLaunch) {
+        // get password from local storage if it exists
+        const password = localStorage.getItem('password');
+        if (password) {
+          await unlock(password);
+        }
+      }
+
+      setInitialized(!firstLaunch);
     };
 
-    checkInitialized();
-  })
+    if (!web5Agent) {
+      checkInitialized();
+    }
+
+  }, [ web5Agent ])
 
 
   const initialize = async (password: string): Promise<string | undefined> => {
@@ -69,6 +80,30 @@ export const Web5Provider: React.FC<{ children: React.ReactNode }> = ({
     try {
         const agent = await Web5UserAgent.create();
         await agent.start({ password });
+        localStorage.setItem('password', password);
+
+        // After 2 minutes of inactivity, remove the password from local storage
+        let inactivityTimer = setTimeout(() => {
+          localStorage.removeItem('password');
+        }, 2 * 60 * 1000);
+
+        // Reset the timer on user activity
+        const resetTimer = () => {
+          clearTimeout(inactivityTimer);
+          const newTimer = setTimeout(() => {
+            localStorage.removeItem('password');
+          }, 2 * 60 * 1000);
+          return newTimer;
+        };
+
+        // Add event listeners for user activity
+        window.addEventListener('mousemove', () => {
+          inactivityTimer = resetTimer();
+        });
+        window.addEventListener('keypress', () => {
+          inactivityTimer = resetTimer();
+        });
+        
         setWeb5Agent(agent);
         return agent;
     } catch (error) {
@@ -80,7 +115,7 @@ export const Web5Provider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <Web5AgentContext.Provider
+    <AgentContext.Provider
       value={{
         initialized,
         initialize,
@@ -91,6 +126,6 @@ export const Web5Provider: React.FC<{ children: React.ReactNode }> = ({
       }}
     >
       {children}
-    </Web5AgentContext.Provider>
+    </AgentContext.Provider>
   );
 };

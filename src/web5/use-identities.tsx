@@ -1,15 +1,15 @@
 import { useContext } from "react";
-import { Web5IdentitiesContext } from "./IdentitiesContext";
+import { IdentitiesContext } from "@/contexts/IdentitiesContext";
 
 export const useIdentities = () => {
-  const context = useContext(Web5IdentitiesContext);
+  const context = useContext(IdentitiesContext);
   if (!context) {
     throw new Error("useAgent must be used within a Web5Provider");
   }
 
-  const { identities, reloadIdentities } = context;
+  const { identities, reloadIdentities, selectedIdentity, setSelectedIdentity } = context;
 
   return {
-    identities, reloadIdentities
+    identities, reloadIdentities, selectedIdentity, setSelectedIdentity
   };
 };
