@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useState } from "react";
-import { useAgent } from "../web5/use-agent";
+import { useAgent } from "./Agent";
 import { Identity } from "@/types";
 import { BearerIdentity } from "@web5/agent";
 

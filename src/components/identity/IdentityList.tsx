@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Identity } from '@/types';
 import AddIdentityModal from './AddIdentityModal';
-import { useIdentities } from '@/web5/use-identities';
 import { truncateDid } from '@/lib/utils';
+import { useIdentities } from '@/contexts/Identities';
 
 interface IdentityListProps {
   onAddIdentity: (identity: Omit<Identity, 'id'>) => void;

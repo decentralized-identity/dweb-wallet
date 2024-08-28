@@ -1,6 +1,6 @@
+import { useIdentities } from '@/contexts/Identities';
+import { useProtocols } from '@/contexts/Protocols';
 import React, { useEffect, useState } from 'react';
-import { useIdentities } from '@/web5/use-identities';
-import { useProtocols } from '@/web5/use-protocols';
 
 interface IdentityDetailsProps {
   onBack: () => void;

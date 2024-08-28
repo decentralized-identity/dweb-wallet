@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import { useAgent } from "../web5/use-agent";
+import { useAgent } from "./Agent";
 import { DwnInterface, DwnProtocolDefinition } from "@web5/agent";
 
 interface ProtocolContextProps {

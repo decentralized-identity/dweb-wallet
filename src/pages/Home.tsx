@@ -2,10 +2,10 @@ import BottomBar from "@/components/BottomBar";
 import IdentityDetails from "@/components/identity/IdentityDetails";
 import IdentityList from "@/components/identity/IdentityList";
 import TopBar from "@/components/TopBar";
+import { useAgent } from "@/contexts/Agent";
+import { useIdentities } from "@/contexts/Identities";
 import { ProtocolsProvider } from "@/contexts/ProtocolsContext";
 import { Identity } from "@/types";
-import { useAgent } from "@/web5/use-agent";
-import { useIdentities } from "@/web5/use-identities";
 import { useEffect, useState } from "react";
 
 const Home: React.FC = () => {
