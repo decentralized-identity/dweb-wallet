@@ -25,7 +25,7 @@ export const IdentitiesContext = createContext<IdentityContextProps>({
   identities: [],
   reloadIdentities: async () => {},
   selectedIdentity: undefined,
-  setSelectedIdentity: () => {}
+  setSelectedIdentity: () => {},
 });
 
 export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({

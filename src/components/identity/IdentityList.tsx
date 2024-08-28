@@ -9,11 +9,11 @@ interface IdentityListProps {
 }
 
 const IdentityList: React.FC<IdentityListProps> = ({ onAddIdentity }) => {
-  const { selectedIdentity, setSelectedIdentity } = useIdentities()
+  const { selectedIdentity, setSelectedIdentity } = useIdentities();
   const [ isAddModalOpen, setIsAddModalOpen ] = useState(false);
   const { identities } = useIdentities();
 
-  const select = (identity: Identity) => {
+  const select = async (identity: Identity) => {
     if (selectedIdentity?.didUri === identity.didUri) {
       setSelectedIdentity(undefined);
     } else {

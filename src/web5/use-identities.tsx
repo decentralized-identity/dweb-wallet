@@ -7,9 +7,17 @@ export const useIdentities = () => {
     throw new Error("useAgent must be used within a Web5Provider");
   }
 
-  const { identities, reloadIdentities, selectedIdentity, setSelectedIdentity } = context;
+  const {
+    identities,
+    reloadIdentities,
+    selectedIdentity,
+    setSelectedIdentity,
+  } = context;
 
   return {
-    identities, reloadIdentities, selectedIdentity, setSelectedIdentity
+    identities,
+    reloadIdentities,
+    selectedIdentity,
+    setSelectedIdentity,
   };
 };

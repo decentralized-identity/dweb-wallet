@@ -2,6 +2,7 @@ import BottomBar from "@/components/BottomBar";
 import IdentityDetails from "@/components/identity/IdentityDetails";
 import IdentityList from "@/components/identity/IdentityList";
 import TopBar from "@/components/TopBar";
+import { ProtocolsProvider } from "@/contexts/ProtocolsContext";
 import { Identity } from "@/types";
 import { useAgent } from "@/web5/use-agent";
 import { useIdentities } from "@/web5/use-identities";
@@ -103,9 +104,11 @@ const Home: React.FC = () => {
       </div>
       <div className={`flex-grow ${selectedIdentity ? 'block' : 'hidden md:block'} overflow-y-auto`}>
         {selectedIdentity ? (
-          <IdentityDetails 
-            onBack={() => setSelectedIdentity(undefined)}
-          />
+          <ProtocolsProvider>
+            <IdentityDetails 
+              onBack={() => setSelectedIdentity(undefined)}
+            />
+          </ProtocolsProvider>
         ) : (
           <div className="h-full flex items-center justify-center">
             <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">Select an identity to view details</p>
