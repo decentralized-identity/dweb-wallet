@@ -72,10 +72,10 @@ const WebConnect: React.FC = () => {
             <div className="spinner"></div>
             <p>Loading...</p>
           </div>
-        ) : requests.map(rquest => {
+        ) : requests.map(request => {
           return (<div>
-            <h2>{rquest.protocol}</h2>
-            <p>{getRequestLabels(rquest.scopes)}</p>
+            <h2>{request.protocol}</h2>
+            <p>{getRequestLabels(request.scopes)}</p>
           </div>)
         })}
       </div>
