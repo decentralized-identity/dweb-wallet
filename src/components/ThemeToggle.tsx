@@ -1,5 +1,5 @@
+import { useTheme } from '@/contexts/Theme';
 import React from 'react';
-import { useTheme } from '../contexts/ThemeContext';
 
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
