@@ -1,28 +1,36 @@
-import { Web5Provider } from './web5/AgentContext';
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
-import './App.css'
-import { HomePage } from './pages/home-page';
-import { Web5IdentitiesProvider } from './web5/IdentitiesContext';
-import WebConnect from './pages/web-connect';
+import { useState } from 'react';
+import IdentityList from '@/components/identity/IdentityList';
+import IdentityDetails from '@/components/identity/IdentityDetails';
+import { Identity } from './types';
 
 function App() {
+  const [selectedIdentity, setSelectedIdentity] = useState<Identity | null>(null);
+
   return (
-    <Router>
-      <Web5Provider>
-        <Web5IdentitiesProvider>
-          <div className="flex md:min-h-screen">
-            <div>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/web-connect" element={<WebConnect />} />
-              </Routes>
-            </div>
+    <div className="h-screen w-full bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary flex flex-col md:flex-row">
+      {/* Left pane (list) */}
+      <div className={`md:w-3/10 ${selectedIdentity ? 'hidden md:block' : 'block'} bg-surface-light dark:bg-surface-dark overflow-y-auto`}>
+        <IdentityList 
+          onSelectIdentity={setSelectedIdentity} 
+          selectedIdentity={selectedIdentity}
+        />
+      </div>
+
+      {/* Right pane (details) */}
+      <div className={`flex-grow ${selectedIdentity ? 'block' : 'hidden md:block'} overflow-y-auto`}>
+        {selectedIdentity ? (
+          <IdentityDetails 
+            identity={selectedIdentity} 
+            onBack={() => setSelectedIdentity(null)}
+          />
+        ) : (
+          <div className="h-full flex items-center justify-center">
+            <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">Select an identity to view details</p>
           </div>
-        </Web5IdentitiesProvider>
-      </Web5Provider>
-    </Router>
-  )
+        )}
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;

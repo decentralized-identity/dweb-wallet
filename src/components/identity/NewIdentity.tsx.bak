@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Input } from "../Input";
+import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { useAgent } from "@/web5/use-agent";
 import { useIdentities } from "@/web5/use-identities";
@@ -57,27 +57,26 @@ const NewIdentity: React.FC<{ done: () => void }> = ({ done }) => {
     done();
   }
 
-  return (<>
-  <div>
-    <span>Name</span>
-    <Input
-      type="text"
-      id="name"
-      value={name}
-      onChange={(e) => setName(e.target.value)}
-    />
-  </div>
-  <div>
-    <span>Node</span>
-    <Input
-      type="text"
-      id="node"
-      value={server}
-      onChange={(e) => setServer(e.target.value)}
-    />
-  </div>
-  <Button disabled={!agent} onClick={() => createIdentity()}>Create</Button>
-  </>);
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold">Create New Identity</h2>
+      <Input
+        type="text"
+        id="name"
+        placeholder="Identity Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <Input
+        type="text"
+        id="node"
+        placeholder="Node URL"
+        value={server}
+        onChange={(e) => setServer(e.target.value)}
+      />
+      <Button disabled={!agent} onClick={createIdentity} className="w-full">Create</Button>
+    </div>
+  );
 }
 
 export default NewIdentity;

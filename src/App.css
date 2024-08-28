@@ -1,7 +1,14 @@
+/* Remove default margin and padding, and ensure full height */
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Remove the max-width and padding from #root */
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  max-width: none;
+  padding: 0;
   text-align: center;
 }
 
@@ -39,4 +46,8 @@
 
 .read-the-docs {
   color: #888;
+}
+
+body {
+  margin: 0;
 }
