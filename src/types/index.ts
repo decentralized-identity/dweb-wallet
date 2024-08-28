@@ -1,5 +1,8 @@
 export interface Identity {
   id: number;
   name: string;
-  // Add other properties as needed
+  avatarUrl: string;
+  bannerUrl: string;
+  protocols: string[];
+  permissions: string[]; // Add this line
 }

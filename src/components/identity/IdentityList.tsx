@@ -1,23 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Identity } from '@/types';
+import AddIdentityModal from './AddIdentityModal';
 
 interface IdentityListProps {
+  identities: Identity[];
   onSelectIdentity: (identity: Identity) => void;
   selectedIdentity: Identity | null;
+  onAddIdentity: (identity: Omit<Identity, 'id'>) => void;
 }
 
-const IdentityList: React.FC<IdentityListProps> = ({ onSelectIdentity, selectedIdentity }) => {
-  const identities: Identity[] = [
-    { id: 1, name: 'John Doe' },
-    { id: 2, name: 'Jane Smith' },
-    { id: 3, name: 'Alice Johnson' },
-    { id: 4, name: 'Bob Williams' },
-    { id: 5, name: 'Charlie Brown' },
-  ];
+const IdentityList: React.FC<IdentityListProps> = ({ identities, onSelectIdentity, selectedIdentity, onAddIdentity }) => {
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
     <div className="p-4">
-      <h2 className="text-lg font-semibold mb-4 text-text-light-secondary dark:text-text-dark-secondary px-2">Identities</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold text-text-light-secondary dark:text-text-dark-secondary">Identities</h2>
+        <button
+          onClick={() => setIsAddModalOpen(true)}
+          className="px-3 py-1 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors duration-200 text-sm"
+        >
+          Add New
+        </button>
+      </div>
       <ul className="space-y-2">
         {identities.map((identity) => (
           <li 
@@ -45,6 +50,12 @@ const IdentityList: React.FC<IdentityListProps> = ({ onSelectIdentity, selectedI
           </li>
         ))}
       </ul>
+      {isAddModalOpen && (
+        <AddIdentityModal
+          onClose={() => setIsAddModalOpen(false)}
+          onAdd={onAddIdentity}
+        />
+      )}
     </div>
   );
 }
