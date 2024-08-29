@@ -61,8 +61,10 @@ const IdentityList: React.FC<IdentityListProps> = ({ onAddIdentity }) => {
       </ul>
       {isAddModalOpen && (
         <AddIdentityModal
-          onClose={() => setIsAddModalOpen(false)}
           onAdd={onAddIdentity}
+          onClose={() => {
+            setIsAddModalOpen(false)
+          }}
         />
       )}
     </div>

@@ -15,14 +15,14 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(@types/react@18.3.4)(react@18.3.1)
       '@web5/agent':
-        specifier: 0.5.1-alpha-20240827-9ed3f53
-        version: 0.5.1-alpha-20240827-9ed3f53(ws@8.18.0)
+        specifier: 0.6.0-alpha-20240829-91c63ca
+        version: 0.6.0-alpha-20240829-91c63ca(ws@8.18.0)
       '@web5/api':
-        specifier: 0.10.0-alpha-20240827-9ed3f53
-        version: 0.10.0-alpha-20240827-9ed3f53(ws@8.18.0)
+        specifier: 0.10.0-alpha-20240829-91c63ca
+        version: 0.10.0-alpha-20240829-91c63ca(ws@8.18.0)
       '@web5/user-agent':
-        specifier: 0.4.3-alpha-20240827-9ed3f53
-        version: 0.4.3-alpha-20240827-9ed3f53(ws@8.18.0)
+        specifier: 0.5.0-alpha-20240829-91c63ca
+        version: 0.5.0-alpha-20240829-91c63ca(ws@8.18.0)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -50,9 +50,6 @@ importers:
       tailwind-merge:
         specifier: ^2.5.2
         version: 2.5.2
-      vite-plugin-node-polyfills:
-        specifier: ^0.22.0
-        version: 0.22.0(rollup@4.21.1)(vite@5.4.2(@types/node@22.5.0))
     devDependencies:
       '@eslint/js':
         specifier: ^9.9.0
@@ -99,6 +96,12 @@ importers:
       vite:
         specifier: ^5.4.1
         version: 5.4.2(@types/node@22.5.0)
+      vite-plugin-node-stdlib-browser:
+        specifier: ^0.2.1
+        version: 0.2.1(node-stdlib-browser@1.2.0)(rollup@4.21.1)(vite@5.4.2(@types/node@22.5.0))
+      vite-plugin-polyfills:
+        specifier: ^0.0.0
+        version: 0.0.0
 
 packages:
 
@@ -788,12 +791,12 @@ packages:
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0
 
-  '@web5/agent@0.5.1-alpha-20240827-9ed3f53':
-    resolution: {integrity: sha512-6ygs0pBVhkpOjroV9mr92dw2/pErBkJUEkfAXHR8bjoymaHKtnVyWfJeTb3jaqiSRD3bgH1+2/dSb5B5/wktdA==}
+  '@web5/agent@0.6.0-alpha-20240829-91c63ca':
+    resolution: {integrity: sha512-x+Z+w2DH7wYiBC9pWmz6l3XwKTubvrVeuwpSycVgRP3eQ312RPzMG80sy6bKyQ6DF9I27SwbJ1+2UiKHvpmQwg==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/api@0.10.0-alpha-20240827-9ed3f53':
-    resolution: {integrity: sha512-mcR253zq+XvQPIxCd2SXbjyq5A9Pytm6sZZkpCWbGv4qex/HqYW4Z7pXhyXnrfxWFOMC0n9ziKFOib6mPJkrZQ==}
+  '@web5/api@0.10.0-alpha-20240829-91c63ca':
+    resolution: {integrity: sha512-SOzCz10UpHbj1Vc53HStDNVS+PdFVuzC/9O5EAOrYq8Y1of2l/XlTLAxgfmTEW6rB2g/S0q70VeLZHTgdm3hhQ==}
     engines: {node: '>=18.0.0'}
 
   '@web5/common@1.0.0':
@@ -804,28 +807,28 @@ packages:
     resolution: {integrity: sha512-dxczXqzWt6HCwuNyOVBeakg6GgOpP74tVEVxBeKkb+D3XcSP96mYaDtky5ZnjY4iBYb16SaCgwje+sgevOL51A==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/common@1.0.2-alpha-20240827-9ed3f53':
-    resolution: {integrity: sha512-jiaiqpClMEgEs54QBmdI98qtIGnvRtephM6YsppkssGb6CxpD5UQqzDghk/UrUUJ3hXcSY2krDdTG/oSif+J6w==}
+  '@web5/common@1.0.2-alpha-20240829-91c63ca':
+    resolution: {integrity: sha512-sA0rElYVmTHAYUAj2rT/aG3IqaLWKEaMaAn/2ZTSNP4owEgahaZ2lJqZC4LBnZbHLjxvwexNJzuvXDwL9Hhnag==}
     engines: {node: '>=18.0.0'}
 
   '@web5/crypto@1.0.3':
     resolution: {integrity: sha512-gZJKo0scX+L53E2K/5cgEiFYxejzHP2RSg64ncF6TitOnCNxUyWjofovgufb+u3ZpGC4iuliD7V0o1C+V73Law==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/crypto@1.0.3-alpha-20240827-9ed3f53':
-    resolution: {integrity: sha512-E77WLFbmC0DSLpObxV2o0qEgB6akbtvDQt0x9Nepvxy+LHuMQN+VdZ+vOT3io7o/1g8/9TObNMe2N0ErXt4Tgw==}
+  '@web5/crypto@1.0.4-alpha-20240829-91c63ca':
+    resolution: {integrity: sha512-ZNHfbJCGc+Py8jq+o8VtC04VEWuGI0Nz+aQuPjsYWKgKWh6O1Qp8heXMNX3M+v60ni5J3qdi5cKjvGXZFzSYcg==}
     engines: {node: '>=18.0.0'}
 
   '@web5/dids@1.1.3':
     resolution: {integrity: sha512-M9EfsEYcOtYuEvUQjow4vpxXbD0Sz5H8EuDXMtwuvP4UdYL0ATl+60F8+8HDmwPFeUy6M2wxuoixrLDwSRFwZA==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/dids@1.1.3-alpha-20240827-9ed3f53':
-    resolution: {integrity: sha512-c/Awx6amr0pskoRZxJk4oYI/8dGYOZnAJ0EtORoJmfaWr6nLPgJyGvqwaQwTdAqPbxcmEOwqrXTz4vGmT71VBg==}
+  '@web5/dids@1.1.4-alpha-20240829-91c63ca':
+    resolution: {integrity: sha512-q4QDUxH1IFsTDfSehakklrYkCVIG0iE2AWtyZtKJIU1inrXsAbs8wxZSyLsPyko8/+XiQLt2e8e2o8RwsPPPlw==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/user-agent@0.4.3-alpha-20240827-9ed3f53':
-    resolution: {integrity: sha512-6ykOZSxRtUytViRxoXZoapIy+pi0utbXoTgjbRj4SXh5xp1DVXCRU9E9yLMC0kA/Q52Zay4gPeg7jnZtSgvIPw==}
+  '@web5/user-agent@0.5.0-alpha-20240829-91c63ca':
+    resolution: {integrity: sha512-1jUWAQPY+7p4zvUdlnAfkrEbxRN/CDUQFo8rXa2x8VVDJaHMI7rwo+O7H+Z4FyiO0MDgnqmAVnrXQBtbbD0SNg==}
     engines: {node: '>=18.0.0'}
 
   abort-controller@3.0.0:
@@ -2279,10 +2282,14 @@ packages:
   varint@6.0.0:
     resolution: {integrity: sha512-cXEIW6cfr15lFv563k4GuVuW/fiwjknytD37jIOLSdSWuOI6WnO/oKwmP2FQTU2l01LP8/M5TSAJpzUaGe3uWg==}
 
-  vite-plugin-node-polyfills@0.22.0:
-    resolution: {integrity: sha512-F+G3LjiGbG8QpbH9bZ//GSBr9i1InSTkaulfUHFa9jkLqVGORFBoqc2A/Yu5Mmh1kNAbiAeKeK+6aaQUf3x0JA==}
+  vite-plugin-node-stdlib-browser@0.2.1:
+    resolution: {integrity: sha512-6u2i613Dkqj5KaTNIrnZvE6y3/awWAp0S5TjucTvGxdhetftB1Mgvblc+nwYzlw6sntPlac8UOC7ttXNh+LZKA==}
     peerDependencies:
-      vite: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
+      node-stdlib-browser: ^1.2.0
+      vite: ^2.0.0 || ^3.0.0 || ^4.0.0
+
+  vite-plugin-polyfills@0.0.0:
+    resolution: {integrity: sha512-HDhhVnbzrOpEP61bMYhLu5gjjoDxLDXxustXg1qYEh8+O9oeotd1Jf1OXgt5KYBnO2lCSZf66VBqlM9YTyp3Zw==}
 
   vite@5.4.2:
     resolution: {integrity: sha512-dDrQTRHp5C1fTFzcSaMxjk6vdpKvT+2/mIdE07Gw2ykehT49O0z/VHS3zZ8iV/Gh8BJJKHWOe5RjaNrW5xf/GA==}
@@ -3039,14 +3046,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@web5/agent@0.5.1-alpha-20240827-9ed3f53(ws@8.18.0)':
+  '@web5/agent@0.6.0-alpha-20240829-91c63ca(ws@8.18.0)':
     dependencies:
       '@noble/ciphers': 0.5.3
       '@scure/bip39': 1.2.2
       '@tbd54566975/dwn-sdk-js': 0.4.6
-      '@web5/common': 1.0.2-alpha-20240827-9ed3f53
-      '@web5/crypto': 1.0.3-alpha-20240827-9ed3f53
-      '@web5/dids': 1.1.3-alpha-20240827-9ed3f53
+      '@web5/common': 1.0.2-alpha-20240829-91c63ca
+      '@web5/crypto': 1.0.4-alpha-20240829-91c63ca
+      '@web5/dids': 1.1.4-alpha-20240829-91c63ca
       abstract-level: 1.0.4
       ed25519-keygen: 0.4.11
       isomorphic-ws: 5.0.0(ws@8.18.0)
@@ -3059,13 +3066,13 @@ snapshots:
       - supports-color
       - ws
 
-  '@web5/api@0.10.0-alpha-20240827-9ed3f53(ws@8.18.0)':
+  '@web5/api@0.10.0-alpha-20240829-91c63ca(ws@8.18.0)':
     dependencies:
-      '@web5/agent': 0.5.1-alpha-20240827-9ed3f53(ws@8.18.0)
-      '@web5/common': 1.0.2-alpha-20240827-9ed3f53
-      '@web5/crypto': 1.0.3-alpha-20240827-9ed3f53
-      '@web5/dids': 1.1.3-alpha-20240827-9ed3f53
-      '@web5/user-agent': 0.4.3-alpha-20240827-9ed3f53(ws@8.18.0)
+      '@web5/agent': 0.6.0-alpha-20240829-91c63ca(ws@8.18.0)
+      '@web5/common': 1.0.2-alpha-20240829-91c63ca
+      '@web5/crypto': 1.0.4-alpha-20240829-91c63ca
+      '@web5/dids': 1.1.4-alpha-20240829-91c63ca
+      '@web5/user-agent': 0.5.0-alpha-20240829-91c63ca(ws@8.18.0)
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -3085,7 +3092,7 @@ snapshots:
       multiformats: 13.1.0
       readable-stream: 4.4.2
 
-  '@web5/common@1.0.2-alpha-20240827-9ed3f53':
+  '@web5/common@1.0.2-alpha-20240829-91c63ca':
     dependencies:
       '@isaacs/ttlcache': 1.4.1
       level: 8.0.1
@@ -3099,12 +3106,12 @@ snapshots:
       '@noble/hashes': 1.4.0
       '@web5/common': 1.0.1
 
-  '@web5/crypto@1.0.3-alpha-20240827-9ed3f53':
+  '@web5/crypto@1.0.4-alpha-20240829-91c63ca':
     dependencies:
       '@noble/ciphers': 0.5.3
       '@noble/curves': 1.3.0
       '@noble/hashes': 1.4.0
-      '@web5/common': 1.0.2-alpha-20240827-9ed3f53
+      '@web5/common': 1.0.2-alpha-20240829-91c63ca
 
   '@web5/dids@1.1.3':
     dependencies:
@@ -3118,24 +3125,24 @@ snapshots:
       level: 8.0.1
       ms: 2.1.3
 
-  '@web5/dids@1.1.3-alpha-20240827-9ed3f53':
+  '@web5/dids@1.1.4-alpha-20240829-91c63ca':
     dependencies:
       '@decentralized-identity/ion-sdk': 1.0.4
       '@dnsquery/dns-packet': 6.1.1
-      '@web5/common': 1.0.2-alpha-20240827-9ed3f53
-      '@web5/crypto': 1.0.3-alpha-20240827-9ed3f53
+      '@web5/common': 1.0.2-alpha-20240829-91c63ca
+      '@web5/crypto': 1.0.4-alpha-20240829-91c63ca
       abstract-level: 1.0.4
       bencode: 4.0.0
       buffer: 6.0.3
       level: 8.0.1
       ms: 2.1.3
 
-  '@web5/user-agent@0.4.3-alpha-20240827-9ed3f53(ws@8.18.0)':
+  '@web5/user-agent@0.5.0-alpha-20240829-91c63ca(ws@8.18.0)':
     dependencies:
-      '@web5/agent': 0.5.1-alpha-20240827-9ed3f53(ws@8.18.0)
-      '@web5/common': 1.0.2-alpha-20240827-9ed3f53
-      '@web5/crypto': 1.0.3-alpha-20240827-9ed3f53
-      '@web5/dids': 1.1.3-alpha-20240827-9ed3f53
+      '@web5/agent': 0.6.0-alpha-20240829-91c63ca(ws@8.18.0)
+      '@web5/common': 1.0.2-alpha-20240829-91c63ca
+      '@web5/crypto': 1.0.4-alpha-20240829-91c63ca
+      '@web5/dids': 1.1.4-alpha-20240829-91c63ca
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -4767,13 +4774,15 @@ snapshots:
 
   varint@6.0.0: {}
 
-  vite-plugin-node-polyfills@0.22.0(rollup@4.21.1)(vite@5.4.2(@types/node@22.5.0)):
+  vite-plugin-node-stdlib-browser@0.2.1(node-stdlib-browser@1.2.0)(rollup@4.21.1)(vite@5.4.2(@types/node@22.5.0)):
     dependencies:
       '@rollup/plugin-inject': 5.0.5(rollup@4.21.1)
       node-stdlib-browser: 1.2.0
       vite: 5.4.2(@types/node@22.5.0)
     transitivePeerDependencies:
       - rollup
+
+  vite-plugin-polyfills@0.0.0: {}
 
   vite@5.4.2(@types/node@22.5.0):
     dependencies:

@@ -1,22 +1,22 @@
 import { useIdentities } from '@/contexts/Identities';
 import { useProtocols } from '@/contexts/Protocols';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 
 interface IdentityDetailsProps {
   onBack: () => void;
 }
 
 const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
-  const { selectedIdentity } = useIdentities();
+  const { selectedIdentity, deleteIdentity } = useIdentities();
   const { addProtocol, listProtocols, loadProtocols } = useProtocols();
   const [protocolUrl, setProtocolUrl] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showAddProtocol, setShowAddProtocol] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
   const handleAddProtocol = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Adding protocol', selectedIdentity?.didUri, protocolUrl, isPublished);
     if (selectedIdentity && protocolUrl) {
       setIsLoading(true);
       try {
@@ -32,11 +32,26 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
     }
   };
 
+  const handleDeleteIdentity = async () => {
+    if (selectedIdentity) {
+      try {
+        await deleteIdentity(selectedIdentity.didUri);
+        onBack();
+      } catch (error) {
+        console.error('Error deleting identity:', error);
+      }
+    }
+  };
+
   useEffect(() => {
     if (selectedIdentity) {
       loadProtocols(selectedIdentity.didUri);
     }
-  }, [ selectedIdentity, loadProtocols ])
+  }, [selectedIdentity, loadProtocols]);
+
+  const selectedPermissions = useMemo(() => {
+    return selectedIdentity?.permissions || [];
+  }, [selectedIdentity]);
 
   if (!selectedIdentity) {
     return (
@@ -45,7 +60,7 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
           <p className="text-text-light-secondary dark:text-text-dark-secondary">No identity selected</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -114,9 +129,9 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
 
         <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2 text-primary-500">Permissions</h3>
-          {selectedIdentity.permissions.length > 0 ? (
+          {selectedPermissions.length > 0 ? (
             <ul className="list-disc list-inside text-text-light-secondary dark:text-text-dark-secondary">
-              {selectedIdentity.permissions.map((permission, index) => (
+              {selectedPermissions.map((permission, index) => (
                 <li key={index}>{permission}</li>
               ))}
             </ul>
@@ -125,6 +140,17 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
           )}
         </div>
 
+        {/* Delete Identity Button */}
+        <div className="mt-6">
+          <button
+            onClick={() => setShowDeleteConfirmation(true)}
+            className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+          >
+            Delete Identity
+          </button>
+        </div>
+
+        {/* Add Protocol Modal */}
         {showAddProtocol && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
@@ -189,9 +215,35 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
             </div>
           </div>
         )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirmation && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
+              <h3 className="text-lg font-semibold mb-4 text-primary-500">Confirm Deletion</h3>
+              <p className="mb-4 text-text-light-secondary dark:text-text-dark-secondary">
+                Are you sure you want to delete this identity? This action cannot be undone.
+              </p>
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => setShowDeleteConfirmation(false)}
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteIdentity}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
+};
 
 export default IdentityDetails;

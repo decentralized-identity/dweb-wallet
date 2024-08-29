@@ -8,6 +8,11 @@ export const useIdentities = () => {
   }
 
   const {
+    getIdentity,
+    uploadAvatar,
+    uploadBanner,
+    createIdentity,
+    deleteIdentity,
     identities,
     reloadIdentities,
     selectedIdentity,
@@ -15,6 +20,11 @@ export const useIdentities = () => {
   } = context;
 
   return {
+    getIdentity,
+    uploadAvatar,
+    uploadBanner,
+    createIdentity,
+    deleteIdentity,
     identities,
     reloadIdentities,
     selectedIdentity,

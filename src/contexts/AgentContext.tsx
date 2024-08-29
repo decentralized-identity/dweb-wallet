@@ -80,6 +80,8 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
         const agent = await Web5UserAgent.create();
         await agent.start({ password });
+       agent.sync.startSync({ interval: '45s' });
+
         localStorage.setItem('password', password);
 
         // After 2 minutes of inactivity, remove the password from local storage
