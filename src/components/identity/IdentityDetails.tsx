@@ -1,5 +1,4 @@
-import { useIdentities } from '@/contexts/Identities';
-import { useProtocols } from '@/contexts/Protocols';
+import { useIdentities, useProtocols } from '@/contexts/Context';
 import React, { useEffect, useMemo, useState } from 'react';
 
 interface IdentityDetailsProps {
@@ -83,7 +82,7 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
           <img 
             src={selectedIdentity.avatarUrl} 
             alt={`${selectedIdentity.name}'s avatar`} 
-            className="w-32 h-32 rounded-full border-4 border-surface-light dark:border-surface-dark"
+            className="w-32 h-32 rounded-full border-4 border-surface-light dark:border-surface-dark shadow-lg"
           />
         </div>
       </div>
@@ -91,8 +90,19 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
       <div className="flex-grow p-6 pt-20 overflow-y-auto">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-primary-500">{selectedIdentity.name}</h2>
-          <p className="text-text-light-secondary dark:text-text-dark-secondary">ID: {selectedIdentity.didUri}</p>
+          <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">{selectedIdentity.displayName}</p>
+          {selectedIdentity.tagline && (
+            <p className="text-sm mt-2 italic text-text-light-secondary dark:text-text-dark-secondary">{selectedIdentity.tagline}</p>
+          )}
+          <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary mt-2">ID: {selectedIdentity.didUri}</p>
         </div>
+        
+        {selectedIdentity.bio && (
+          <div className="mt-6 text-center max-w-2xl mx-auto">
+            <h3 className="text-lg font-semibold text-primary-500 mb-2">Bio</h3>
+            <p className="text-text-light-secondary dark:text-text-dark-secondary">{selectedIdentity.bio}</p>
+          </div>
+        )}
         
         <div className="mt-6">
           <div className="flex items-center">

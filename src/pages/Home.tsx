@@ -2,11 +2,11 @@ import BottomBar from "@/components/BottomBar";
 import IdentityDetails from "@/components/identity/IdentityDetails";
 import IdentityList from "@/components/identity/IdentityList";
 import TopBar from "@/components/TopBar";
-import { useAgent } from "@/contexts/Agent";
-import { useIdentities } from "@/contexts/Identities";
+import { useAgent, useBackupSeed, useIdentities } from "@/contexts/Context";
 import { ProtocolsProvider } from "@/contexts/ProtocolsContext";
 import { Identity } from "@/types";
 import { useEffect, useState } from "react";
+import BackupSeedPhrase from "@/components/BackupSeedPhrase";
 
 const Home: React.FC = () => {
   const { initialized, initialize, unlock, isConnected, isConnecting, isInitializing } = useAgent();
@@ -14,6 +14,7 @@ const Home: React.FC = () => {
   const [seedPhrase, setSeedPhrase] = useState('');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const { selectedIdentity, setSelectedIdentity } = useIdentities();
+  const { showSeedScreen } = useBackupSeed();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -95,29 +96,32 @@ const Home: React.FC = () => {
 
   return (
     <div className="h-screen w-full bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary flex flex-col">
-    <TopBar toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />
-    <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-      <div className={`md:w-3/10 ${selectedIdentity ? 'hidden md:block' : 'block'} bg-surface-light dark:bg-surface-dark overflow-y-auto`}>
-        <IdentityList 
-          onAddIdentity={handleAddIdentity}
-        />
-      </div>
-      <div className={`flex-grow ${selectedIdentity ? 'block' : 'hidden md:block'} overflow-y-auto`}>
-        {selectedIdentity ? (
-          <ProtocolsProvider>
-            <IdentityDetails 
-              onBack={() => setSelectedIdentity(undefined)}
-            />
-          </ProtocolsProvider>
-        ) : (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">Select an identity to view details</p>
+      <TopBar toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />
+      {showSeedScreen && <BackupSeedPhrase />}
+      {!showSeedScreen && (
+        <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
+          <div className={`md:w-3/10 ${selectedIdentity ? 'hidden md:block' : 'block'} bg-surface-light dark:bg-surface-dark overflow-y-auto`}>
+          <IdentityList 
+            onAddIdentity={handleAddIdentity}
+          />
+        </div>
+        <div className={`flex-grow ${selectedIdentity ? 'block' : 'hidden md:block'} overflow-y-auto`}>
+          {selectedIdentity ? (
+            <ProtocolsProvider>
+              <IdentityDetails 
+                onBack={() => setSelectedIdentity(undefined)}
+              />
+            </ProtocolsProvider>
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">Select an identity to view details</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+      <BottomBar />
     </div>
-    <BottomBar />
-  </div>
   );
 }
 

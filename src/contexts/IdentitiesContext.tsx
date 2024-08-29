@@ -1,75 +1,15 @@
 import React, { createContext, useEffect, useState } from "react";
-import { useAgent } from "./Agent";
 import { Identity } from "@/types";
-import { DwnProtocolDefinition } from "@web5/agent";
 import { Web5 } from "@web5/api";
-
-export const walletDefinition: DwnProtocolDefinition = {
-  published: true,
-  protocol: "https://areweweb5yet.com/protocols/wallet",
-  types: {
-    webWallet: {
-      schema: "https://areweweb5yet.com/schemas/web-wallet",
-      dataFormats: ['application/json']
-    }
-  },
-  structure: {
-    webWallet: {
-    }
-  }
-}
-
-export const profileDefinition: DwnProtocolDefinition = {
-  published: true,
-  protocol: "https://areweweb5yet.com/protocols/profile",
-  types: {
-    name: {
-      dataFormats: ['application/json']
-    },
-    social: {
-      dataFormats: ['application/json']
-    },
-    messaging: {
-      dataFormats: ['application/json']
-    },
-    phone: {
-      dataFormats: ['application/json']
-    },
-    address: {
-      dataFormats: ['application/json']
-    },
-    career: {
-      dataFormats: ['application/json']
-    },
-    payment: {
-      dataFormats: ['application/json']
-    },
-    avatar: {
-      dataFormats: ['image/gif', 'image/png', 'image/jpeg']
-    },
-    hero: {
-      dataFormats: ['image/gif', 'image/png', 'image/jpeg']
-    }
-  },
-  structure: {
-    name: {},
-    social: {},
-    career: {},
-    avatar: {},
-    hero: {},
-    messaging: {},
-    address: {},
-    phone: {},
-    payment: {}
-  }
-}
+import { useAgent } from "./Context";
+import { profileDefinition, walletDefinition } from "./protocols";
 
 interface IdentityContextProps {
   identities: Identity[];
   reloadIdentities: () => Promise<void>;
   selectedIdentity: Identity | undefined;
   setSelectedIdentity: (identity: Identity | undefined) => void;
-  createIdentity: (name: string, dwnEndpoint: string, walletHost: string) => Promise<string | undefined>;
+  createIdentity: (params: CreateIdentityParams) => Promise<string | undefined>;
   deleteIdentity: (didUri: string) => Promise<void>;
   uploadAvatar: (didUri: string, avatar: File) => Promise<string | undefined>;
   uploadBanner: (didUri: string, banner: File) => Promise<string | undefined>;
@@ -87,6 +27,16 @@ export const IdentitiesContext = createContext<IdentityContextProps>({
   uploadBanner: async () => undefined,
   getIdentity: async () => undefined
 });
+
+export interface CreateIdentityParams {
+  persona: string;
+  name: string;
+  displayName: string;
+  tagline: string;
+  bio: string;
+  dwnEndpoint: string;
+  walletHost: string;
+}
 
 export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -106,7 +56,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoadingIdentities(false);
   }
 
-  const createIdentity = async (name: string, dwnEndpoint: string, walletHost: string) => {
+  const createIdentity = async ({ persona, name, displayName, tagline, bio, dwnEndpoint, walletHost }: CreateIdentityParams) => {
     if (agent) {
       const identity = await agent.identity.create({
         store     : true,
@@ -134,7 +84,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           ]
         },
-        metadata: { name }
+        metadata: { name: persona }
       });
 
       await agent.identity.manage({ portableIdentity: await identity.export() });
@@ -179,6 +129,26 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(`Failed to write profile: ${writeProfileStatus.detail}`);
       }
 
+      // write to the social object in the profile protocol
+      const { status: writeSocialStatus } = await web5.dwn.records.create({
+        data: {
+          displayName,
+          tagline,
+          bio,
+          apps: {}
+        },
+        message: {
+          published: true,
+          protocol: profileDefinition.protocol,
+          protocolPath: 'social',
+          dataFormat: 'application/json',
+        }
+      });
+
+      if (writeSocialStatus.code !== 202) {
+        throw new Error(`Failed to write social: ${writeSocialStatus.detail}`);
+      }
+
       // write the wallet Url
       const { status: writeWalletStatus } = await web5.dwn.records.create({
         data: { walletUrl: walletHost },
@@ -213,7 +183,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      if (status.code !== 202) {
+      if (status.code !== 202 || !record) {
         throw new Error(`Failed to upload avatar: ${status.detail}`);
       }
 
@@ -235,7 +205,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      if (status.code !== 202) {
+      if (status.code !== 202 || !record) {
         throw new Error(`Failed to upload banner: ${status.detail}`);
       }
 
@@ -256,18 +226,18 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      let name: string | undefined;
+      let name = '';
+
       try {
         if (nameRecords && nameRecords.length > 0) {
           ({ name } = await nameRecords![0].data.json());
-        } else {
-          throw new Error('No name record found');
-        }
-
+        } 
       } catch(error) {
-        const identity = await agent.identity.get({ didUri })
-        name = identity?.metadata.name;
+        console.info('could not parse name records', error);
       }
+
+      const identity = await agent.identity.get({ didUri })
+      const persona = identity?.metadata.name || 'Unknown Persona';
 
       const { records: avatarRecords } = await web5.dwn.records.query({
         message: {
@@ -291,9 +261,36 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const bannerUrl = bannerRecords && bannerRecords.length > 0 ? `http://dweb/${didUri}/records/${bannerRecords[0].id}` : undefined;
 
+      const { records: socialRecords } = await web5.dwn.records.query({
+        message: {
+          filter: {
+            protocol: profileDefinition.protocol,
+            protocolPath: 'social',
+            dataFormat: 'application/json',
+          }
+        }
+      });
+
+      let displayName = '';
+      let tagline = '';
+      let bio = '';
+
+      try {
+        if (socialRecords && socialRecords.length > 0) {
+          ({ displayName, tagline, bio } = await socialRecords![0].data.json());
+        }
+      } catch(error) {
+        console.error('could not parse social records', error);
+      }
+
+      
       return {
+        persona,
         didUri,
         name: name || '',
+        displayName,
+        tagline,
+        bio,
         avatarUrl,
         bannerUrl
       } 

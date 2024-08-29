@@ -80,6 +80,8 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
         const agent = await Web5UserAgent.create();
         await agent.start({ password });
+        await agent.sync.sync();
+
        agent.sync.startSync({ interval: '45s' });
 
         localStorage.setItem('password', password);

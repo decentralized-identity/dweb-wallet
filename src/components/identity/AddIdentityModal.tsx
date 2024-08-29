@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useIdentities } from '@/contexts/Identities';
+import React, { useMemo, useState } from 'react';
+import { useIdentities } from '@/contexts/Context';
 import { Identity } from '@/types';
 
 interface AddIdentityModalProps {
@@ -14,16 +14,32 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
   const [ loading, setLoading ] = useState(false);
 
   const [formData, setFormData] = useState({
+    persona: '',
     name: '',
-    dwnEndpoint: '',
+    displayName: '',
+    tagline: '',
+    bio: '',
+    dwnEndpoint: 'http://localhost:3000',
     avatar: null as File | null,
     banner: null as File | null,
   });
 
+  const submitDisabled = useMemo(() => {
+    return formData.persona === '' || formData.name === '' || formData.displayName === '' || formData.dwnEndpoint === '';
+  }, [formData ]);
+
   const handleStep1Submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const didUri = await createIdentity(formData.name, formData.dwnEndpoint, window.location.origin);
+    const didUri = await createIdentity({
+      persona: formData.persona,
+      name: formData.name,
+      displayName: formData.displayName,
+      tagline: formData.tagline,  
+      bio: formData.bio,
+      dwnEndpoint: formData.dwnEndpoint,
+      walletHost: window.location.origin,
+    });
     setDidUri(didUri);
     setStep(2);
     setLoading(false);
@@ -39,7 +55,11 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
     const bannerUrl = formData.banner ? await uploadBanner(didUri, formData.banner) : undefined;
 
     onAdd({
+      persona: formData.persona,
       name: formData.name,
+      displayName: formData.displayName,
+      tagline: formData.tagline,
+      bio: formData.bio,
       didUri,
       avatarUrl,
       bannerUrl
@@ -48,7 +68,7 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
     onClose();
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
@@ -71,6 +91,19 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
         ) : step === 1 ? (
           <form onSubmit={handleStep1Submit}>
             <div className="mb-4">
+              <label htmlFor="name" className="block text-sm font-medium mb-1">Persona</label>
+              <input
+                type="text"
+                id="persona"
+                name="persona"
+                value={formData.persona}
+                onChange={handleInputChange}
+                placeholder="Social, Professional, Gaming, etc."
+                className="w-full p-2 border rounded-md bg-surface-light dark:bg-surface-dark"
+                required
+              />
+            </div>
+            <div className="mb-4">
               <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
               <input
                 type="text"
@@ -78,8 +111,46 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
+                placeholder="John Doe"
                 className="w-full p-2 border rounded-md bg-surface-light dark:bg-surface-dark"
                 required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="displayName" className="block text-sm font-medium mb-1">Display Name</label>
+              <input
+                type="text"
+                id="displayName"
+                name="displayName"
+                value={formData.displayName}
+                onChange={handleInputChange}
+                placeholder="What people call you"
+                className="w-full p-2 border rounded-md bg-surface-light dark:bg-surface-dark"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="tagline" className="block text-sm font-medium mb-1">Tagline</label>
+              <input
+                type="text"
+                id="tagline"
+                name="tagline"
+                placeholder="What you do"
+                value={formData.tagline}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-md bg-surface-light dark:bg-surface-dark"
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="bio" className="block text-sm font-medium mb-1">Bio</label>
+              <textarea
+                id="bio"
+                name="bio"
+                placeholder="Tell us about yourself"
+                value={formData.bio}
+                onChange={handleInputChange}
+                className="w-full p-2 border rounded-md bg-surface-light dark:bg-surface-dark"
+                rows={4}
               />
             </div>
             <div className="mb-4">
@@ -104,8 +175,12 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 transition-colors duration-200"
-                disabled={loading}
+                className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                  loading || submitDisabled
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-primary-500 text-white hover:bg-primary-600'
+                }`}
+                disabled={loading || submitDisabled}
               >
                 Next
               </button>

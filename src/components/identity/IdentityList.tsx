@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Identity } from '@/types';
 import AddIdentityModal from './AddIdentityModal';
 import { truncateDid } from '@/lib/utils';
-import { useIdentities } from '@/contexts/Identities';
+import { useIdentities } from '@/contexts/Context';
 
 interface IdentityListProps {
   onAddIdentity: (identity: Omit<Identity, 'id'>) => void;
@@ -45,15 +45,22 @@ const IdentityList: React.FC<IdentityListProps> = ({ onAddIdentity }) => {
             `}
             onClick={() => select(identity)}
           >
-            <div className="flex items-center">
-              <div className="w-10 h-10 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold mr-3">
-                {identity.name.charAt(0)}
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold shadow-md">
+                {identity.name.charAt(0).toUpperCase()}
               </div>
-              <div>
-                <p className="font-semibold">{identity.name}</p>
-                <p className="text-xs text-text-light-secondary dark:text-text-dark-secondary">
-                  ID: {truncateDid(identity.didUri)}
-                </p>
+              <div className="flex-grow">
+                <div className="flex justify-between items-center">
+                  <p className="font-semibold text-lg text-primary-700 dark:text-primary-300">{identity.name}</p>
+                  <p className="text-xs bg-surface-light dark:bg-surface-dark px-2 py-1 rounded-full text-text-light-secondary dark:text-text-dark-secondary">
+                    ID: {truncateDid(identity.didUri)}
+                  </p>
+                </div>
+                {identity.displayName.length > 0 && (
+                  <h3 className="text-sm text-text-light-secondary dark:text-text-dark-secondary font-medium mt-1">
+                    {identity.displayName}
+                  </h3>
+                )}
               </div>
             </div>
           </li>

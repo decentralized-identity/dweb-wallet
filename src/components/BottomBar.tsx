@@ -1,8 +1,11 @@
+import { useBackupSeed } from '@/contexts/Context';
 import React from 'react';
 
 const BottomBar: React.FC = () => {
+  const { backupSeed, toggleSeedScreen } = useBackupSeed();
+
   return (
-    <div className="bg-surface-light dark:bg-surface-dark p-4 flex justify-center items-center border-t border-gray-200 dark:border-gray-700">
+    <div className="bg-surface-light dark:bg-surface-dark p-4 flex justify-between items-center border-t border-gray-200 dark:border-gray-700">
       <a 
         href="https://github.com/yourusername/nsecure-wallet" 
         target="_blank" 
@@ -14,6 +17,16 @@ const BottomBar: React.FC = () => {
         </svg>
         nSecure Wallet on GitHub
       </a>
+      {backupSeed !== undefined && (
+        <div  onClick={toggleSeedScreen} className="text-yellow-500 relative group">
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-800 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            Please back up your seed phrase for account recovery.
+          </div>
+        </div>
+      )}
     </div>
   );
 };
