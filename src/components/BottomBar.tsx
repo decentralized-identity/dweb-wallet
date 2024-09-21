@@ -1,8 +1,13 @@
-import { useBackupSeed } from '@/contexts/Context';
-import React from 'react';
+import { useAgent, useBackupSeed } from '@/contexts/Context';
+import React, { useMemo } from 'react';
 
 const BottomBar: React.FC = () => {
   const { backupSeed, toggleSeedScreen } = useBackupSeed();
+  const { agent } = useAgent();
+
+  const did = useMemo(() => {
+    return agent?.agentDid.uri;
+  }, [agent])
 
   return (
     <div className="bg-surface-light dark:bg-surface-dark p-4 flex justify-between items-center border-t border-gray-200 dark:border-gray-700">
@@ -17,6 +22,13 @@ const BottomBar: React.FC = () => {
         </svg>
         nSecure Wallet on GitHub
       </a>
+      <div>
+        {did && (
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {did}
+          </p>
+        )}
+      </div>
       {backupSeed !== undefined && (
         <div  onClick={toggleSeedScreen} className="text-yellow-500 relative group">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

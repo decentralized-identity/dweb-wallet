@@ -4,11 +4,9 @@ import AddIdentityModal from './AddIdentityModal';
 import { truncateDid } from '@/lib/utils';
 import { useIdentities } from '@/contexts/Context';
 
-interface IdentityListProps {
-  onAddIdentity: (identity: Omit<Identity, 'id'>) => void;
-}
 
-const IdentityList: React.FC<IdentityListProps> = ({ onAddIdentity }) => {
+
+const IdentityList: React.FC = () => {
   const { selectedIdentity, setSelectedIdentity } = useIdentities();
   const [ isAddModalOpen, setIsAddModalOpen ] = useState(false);
   const { identities } = useIdentities();
@@ -68,7 +66,6 @@ const IdentityList: React.FC<IdentityListProps> = ({ onAddIdentity }) => {
       </ul>
       {isAddModalOpen && (
         <AddIdentityModal
-          onAdd={onAddIdentity}
           onClose={() => {
             setIsAddModalOpen(false)
           }}

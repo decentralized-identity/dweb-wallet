@@ -1,13 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useIdentities } from '@/contexts/Context';
-import { Identity } from '@/types';
 
 interface AddIdentityModalProps {
   onClose: () => void;
-  onAdd: (identity: Identity) => void;
 }
 
-const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) => {
+const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose }) => {
   const { createIdentity, uploadAvatar, uploadBanner } = useIdentities();
   const [ step, setStep ] = useState(1);
   const [ didUri, setDidUri ] = useState<string | undefined>();
@@ -19,7 +17,7 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
     displayName: '',
     tagline: '',
     bio: '',
-    dwnEndpoint: 'http://localhost:3000',
+    dwnEndpoint: 'https://dwn.tbddev.org/latest',
     avatar: null as File | null,
     banner: null as File | null,
   });
@@ -51,19 +49,13 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose, onAdd }) =
       throw new Error('DidUri is undefined');
     }
 
-    const avatarUrl = formData.avatar ? await uploadAvatar(didUri, formData.avatar) : undefined;
-    const bannerUrl = formData.banner ? await uploadBanner(didUri, formData.banner) : undefined;
+    if (formData.avatar) {
+      await uploadAvatar(didUri, formData.avatar);
+    }
 
-    onAdd({
-      persona: formData.persona,
-      name: formData.name,
-      displayName: formData.displayName,
-      tagline: formData.tagline,
-      bio: formData.bio,
-      didUri,
-      avatarUrl,
-      bannerUrl
-    }); 
+    if (formData.banner) {
+      await uploadBanner(didUri, formData.banner);
+    }
 
     onClose();
   };

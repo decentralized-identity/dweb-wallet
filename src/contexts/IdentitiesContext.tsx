@@ -3,6 +3,7 @@ import { Identity } from "@/types";
 import { Web5 } from "@web5/api";
 import { useAgent } from "./Context";
 import { profileDefinition, walletDefinition } from "./protocols";
+import { DwnInterface } from "@web5/agent";
 
 interface IdentityContextProps {
   identities: Identity[];
@@ -45,11 +46,47 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [ loadingIdentities, setLoadingIdentities ] = useState<boolean>(false);
   const [ identities, setIdentities ] = useState<Identity[]>([]);
   const [ selectedIdentity, setSelectedIdentity ] = useState<Identity | undefined>();
+  const [ gotMessages, setGotMessages ] = useState<boolean>(false);
 
   const loadIdentities = async () => {
     if (loadingIdentities) return;
 
     setLoadingIdentities(true);
+
+    if (agent && !gotMessages) {
+      const agentDid = agent.agentDid.uri;
+      const { reply: { status, entries } } = await agent.dwn.processRequest({
+        target: agentDid,
+        author: agentDid,
+        messageType: DwnInterface.MessagesQuery,
+        messageParams: {
+          filters: []
+        }
+      });
+      setGotMessages(true);
+      if (status.code !== 200) {
+        throw new Error(`Failed to get messages: ${status.detail}`);
+      }
+
+      console.log('got messages', entries?.length);
+      for (const entry of entries!) {
+        const { reply: { status: readStatus, entry: readEntry } } = await agent.dwn.processRequest({
+          target: agentDid,
+          author: agentDid,
+          messageType: DwnInterface.MessagesRead,
+          messageParams: {
+            messageCid: entry,
+          }
+        });
+        if (readStatus.code !== 200) {
+          console.log('error reading message', readStatus.detail);
+          continue;
+        }
+        console.log('read entry', readEntry?.message.descriptor);
+      }
+    }
+
+
     const identities = await agent?.identity.list() || [];
     const parsedIdentities = await Promise.all(identities.map(identity => getIdentity(identity.did.uri)));
     setIdentities(parsedIdentities.filter(identity => identity !== undefined) as Identity[]);
@@ -88,7 +125,10 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       await agent.identity.manage({ portableIdentity: await identity.export() });
-      await agent.sync.registerIdentity({ did: identity.did.uri });
+      await agent.sync.registerIdentity({ did: identity.did.uri, options: { protocols: [
+        profileDefinition.protocol,
+        walletDefinition.protocol,
+      ]} });
 
       const web5 = new Web5({ agent, connectedDid: identity.did.uri });
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useBackupSeed } from '../contexts/Context';
 
 const BackupSeedPhrase: React.FC = () => {
-  const { backupSeed } = useBackupSeed();
+  const { backupSeed, removeBackupSeed } = useBackupSeed();
   const [isBlurred, setIsBlurred] = useState(true);
   const [showDeleteWarning, setShowDeleteWarning] = useState(false);
 
@@ -16,8 +16,8 @@ const BackupSeedPhrase: React.FC = () => {
   };
 
   const deleteSeedPhrase = () => {
+    removeBackupSeed();
     setShowDeleteWarning(false);
-    window.dispatchEvent(new Event('storage'));
   };
 
   if (!backupSeed) {

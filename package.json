@@ -12,9 +12,10 @@
   "dependencies": {
     "@radix-ui/react-checkbox": "^1.1.1",
     "@radix-ui/react-slot": "^1.1.0",
-    "@web5/agent": "0.6.0-alpha-20240829-91c63ca",
-    "@web5/api": "0.10.0-alpha-20240829-91c63ca",
-    "@web5/user-agent": "0.5.0-alpha-20240829-91c63ca",
+    "@web5/agent": "0.0.0-next-e578e20-20240906213953",
+    "@web5/api": "0.0.0-next-e578e20-20240906213953",
+    "@web5/dids": "^1.1.4",
+    "@web5/user-agent": "0.0.0-next-e578e20-20240906213953",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.435.0",

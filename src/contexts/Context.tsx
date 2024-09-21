@@ -11,11 +11,12 @@ export const useAgent = () => {
     throw new Error("useAgent must be used within a Web5Provider");
   }
 
-  const { isConnecting, agent, unlock, initialized, initialize, isInitializing } = context;
+  const { isConnecting, agent, unlock, initialized, initialize, isInitializing, recover } = context;
 
   const isConnected = agent !== undefined;
 
   return {
+    recover,
     initialize,
     initialized,
     agent,

@@ -1,21 +1,22 @@
 import { AgentProvider } from '@/contexts/AgentContext';
 import { IdentitiesProvider } from '@/contexts/IdentitiesContext';
+import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
+
 import Home from '@/pages/Home';
-import { activatePolyfills } from '@web5/api';
-import { BackupSeedProvider } from './contexts/BackupSeedContext';
+import { activatePolyfills } from './web-features';
 
 activatePolyfills();
 
 function App() {
 
   return (
-    <AgentProvider>
-      <BackupSeedProvider>
+    <BackupSeedProvider>
+      <AgentProvider>
         <IdentitiesProvider>
           <Home />
-      </IdentitiesProvider>
-      </BackupSeedProvider>
-    </AgentProvider>
+        </IdentitiesProvider>
+      </AgentProvider>
+    </BackupSeedProvider>
   );
 }
 

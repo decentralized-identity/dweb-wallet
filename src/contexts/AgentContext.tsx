@@ -6,7 +6,8 @@ interface Web5ContextProps {
   initialized: boolean;
   agent?: Web5PlatformAgent;
   unlock: (password: string) => Promise<Web5PlatformAgent>;
-  initialize: (password: string) => Promise<string | undefined>;
+  initialize: (password: string, dwnEndpoint: string) => Promise<string | undefined>;
+  recover: (recoveryPhrase:string, password: string, dwnEndpoint: string) => Promise<void>;
   isInitializing: boolean;
   isConnecting: boolean;
 }
@@ -15,6 +16,7 @@ export const AgentContext = createContext<Web5ContextProps>({
   initialized: false,
   isConnecting: false,
   isInitializing: false,
+  recover: async () => {},
   initialize: async () => {
     throw new Error("Web5Context not initialized");
   },
@@ -53,17 +55,29 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
       checkInitialized();
     }
 
-  }, [ web5Agent ])
+  }, [ web5Agent ]);
+
+  const recover = async (recoveryPhrase: string, password: string, dwnEndpoint: string) => {
+    const agent = await Web5UserAgent.create();
+    await agent.initialize({ recoveryPhrase, password, dwnEndpoints: [ dwnEndpoint ] });
+    await agent.start({ password });
+
+    await agent.sync.registerIdentity({ did: agent.agentDid.uri })
+    await agent.sync.sync('pull');
+  }
 
 
-  const initialize = async (password: string): Promise<string | undefined> => {
-    console.log('initializing....')
+  const initialize = async (password: string, dwnEndpoint: string): Promise<string | undefined> => {
     setIsInitializing(true);
     try {
       const agent = await Web5UserAgent.create();
       if (await agent.firstLaunch()) {
         setInitialized(true);
-        const recoveryPhrase = await agent.initialize({ password });
+        const recoveryPhrase = await agent.initialize({ password, dwnEndpoints: [ dwnEndpoint ] });
+        await agent.start({ password });
+
+        await agent.sync.registerIdentity({ did: agent.agentDid.uri })
+        await agent.sync.sync('pull');
         return recoveryPhrase;
       }
     } catch (error) {
@@ -80,9 +94,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
         const agent = await Web5UserAgent.create();
         await agent.start({ password });
-        await agent.sync.sync();
-
-       agent.sync.startSync({ interval: '45s' });
+        await agent.sync.sync('pull');
 
         localStorage.setItem('password', password);
 
@@ -121,6 +133,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <AgentContext.Provider
       value={{
+        recover,
         initialized,
         initialize,
         unlock,

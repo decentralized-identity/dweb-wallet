@@ -4,17 +4,19 @@ import IdentityList from "@/components/identity/IdentityList";
 import TopBar from "@/components/TopBar";
 import { useAgent, useBackupSeed, useIdentities } from "@/contexts/Context";
 import { ProtocolsProvider } from "@/contexts/ProtocolsContext";
-import { Identity } from "@/types";
 import { useEffect, useState } from "react";
 import BackupSeedPhrase from "@/components/BackupSeedPhrase";
+import SeedPhraseInput from "@/components/SeedPhraseInput";
+import { Input } from "@/components/ui/input";
 
 const Home: React.FC = () => {
-  const { initialized, initialize, unlock, isConnected, isConnecting, isInitializing } = useAgent();
-  const [password, setPassword] = useState('');
-  const [seedPhrase, setSeedPhrase] = useState('');
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { initialized, initialize, unlock, isConnected, isConnecting, isInitializing, recover } = useAgent();
+  const [ password, setPassword ] = useState('');
+  const [ dwnEndpoint, setDwnEndpoint ] = useState('https://dwn.tbddev.org/latest')
+  const [ recoveryPhrase, setRecoveryPhrase ] = useState('');
+  const [ isDarkMode, setIsDarkMode ] = useState(false);
   const { selectedIdentity, setSelectedIdentity } = useIdentities();
-  const { showSeedScreen } = useBackupSeed();
+  const { showSeedScreen, setBackupSeed } = useBackupSeed();
 
   useEffect(() => {
     if (isDarkMode) {
@@ -28,28 +30,31 @@ const Home: React.FC = () => {
     setIsDarkMode(!isDarkMode);
   };
 
-  const handleAddIdentity = (newIdentity: Omit<Identity, 'id'>) => {
-    console.log('newIdentity', newIdentity);
-    // const id = Math.max(0, ...identities.map(i => i.id)) + 1;
-    // setIdentities([...identities, { ...newIdentity, id }]);
-  };
+  const handleRecoveryPhraseChange = (phrase: string) => {
+    setRecoveryPhrase(phrase);
+  }
 
   const handleAgentSetup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!initialized) {
-      const phrase = await initialize(password);
-      if (phrase) setSeedPhrase(phrase);
-    } else {
+    if (!initialized && recoveryPhrase && password) {
+      await recover(recoveryPhrase.trim(), password, dwnEndpoint);
+      setBackupSeed(recoveryPhrase.trim());
+    } else if (!initialized && password) {
+      const recoveryPhrase = await initialize(password, dwnEndpoint);
+      if (recoveryPhrase) {
+        setBackupSeed(recoveryPhrase);
+      }
+    } else if (initialized && password) {
       await unlock(password);
     }
   };
 
   if (isInitializing || isConnecting) {
     return (
-      <div className="h-screen w-full bg-background-light dark:bg-background-dark flex items-center justify-center">
+      <div className="h-screen w-full bg-red-50 dark:bg-red-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-text-light-primary dark:text-text-dark-primary">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-red-800 dark:text-red-200">
             {isInitializing ? "Initializing..." : "Connecting..."}
           </p>
         </div>
@@ -59,37 +64,41 @@ const Home: React.FC = () => {
 
   if (!initialized || !isConnected) {
     return (
-      <div className="h-screen w-full bg-background-light dark:bg-background-dark flex items-center justify-center">
-        <form onSubmit={handleAgentSetup} className="p-8 bg-surface-light dark:bg-surface-dark rounded-lg shadow-md">
-          <h2 className="text-2xl mb-4 text-text-light-primary dark:text-text-dark-primary">
+      <div className="h-screen w-full bg-red-50 dark:bg-red-900 flex items-center justify-center">
+        <div className="p-8 bg-white dark:bg-red-800 rounded-lg shadow-md">
+          <h2 className="text-2xl mb-4 text-red-800 dark:text-red-100">
             {initialized ? "Unlock Agent" : "Initialize Agent"}
           </h2>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder={initialized ? "Enter password to unlock" : "Set new password"}
-            className="w-full p-2 mb-4 border rounded"
-          />
-          <button 
-            type="submit" 
-            className="w-full p-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-md shadow-md transition duration-300 ease-in-out"
-            onClick={handleAgentSetup}
-          >
-            {initialized ? "Unlock" : "Initialize"}
-          </button>
-          {seedPhrase && (
-            <div className="mt-4">
-              <p className="mb-2 text-text-light-secondary dark:text-text-dark-secondary">Please copy your seed phrase:</p>
-              <textarea 
-                readOnly 
-                value={seedPhrase} 
-                className="w-full p-2 border rounded bg-surface-light dark:bg-surface-dark text-text-light-primary dark:text-text-dark-primary"
-                rows={3}
+          {!initialized && (
+            <div className="mb-4">
+              <SeedPhraseInput
+                value={recoveryPhrase}
+                onChange={handleRecoveryPhraseChange}
+              />
+              <Input
+                placeholder="DWN Endpoint"
+                value={dwnEndpoint}
+                onChange={(e) => setDwnEndpoint(e.target.value)}
               />
             </div>
           )}
-        </form>
+          <form onSubmit={handleAgentSetup}>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={initialized ? "Enter password to unlock" : "Set new password"}
+              className="w-full p-2 mb-4 border border-red-300 rounded text-red-800 dark:text-red-100 bg-red-50 dark:bg-red-700 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+            <button 
+              type="submit" 
+              className="w-full p-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-md shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!initialized && !password}
+            >
+              {initialized ? "Unlock" : recoveryPhrase ? "Recover" : "Generate"}
+            </button>
+          </form>
+        </div>
       </div>
     );
   }
@@ -101,9 +110,7 @@ const Home: React.FC = () => {
       {!showSeedScreen && (
         <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
           <div className={`md:w-3/10 ${selectedIdentity ? 'hidden md:block' : 'block'} bg-surface-light dark:bg-surface-dark overflow-y-auto`}>
-          <IdentityList 
-            onAddIdentity={handleAddIdentity}
-          />
+          <IdentityList />
         </div>
         <div className={`flex-grow ${selectedIdentity ? 'block' : 'hidden md:block'} overflow-y-auto`}>
           {selectedIdentity ? (
