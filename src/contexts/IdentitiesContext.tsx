@@ -2,7 +2,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { Identity } from "@/types";
 import { Web5 } from "@web5/api";
 import { useAgent } from "./Context";
-import { profileDefinition, walletDefinition } from "./protocols";
+import { profileDefinition } from "./protocols";
 import { DwnInterface } from "@web5/agent";
 
 interface IdentityContextProps {
@@ -127,13 +127,12 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
       await agent.identity.manage({ portableIdentity: await identity.export() });
       await agent.sync.registerIdentity({ did: identity.did.uri, options: { protocols: [
         profileDefinition.protocol,
-        walletDefinition.protocol,
       ]} });
 
       const web5 = new Web5({ agent, connectedDid: identity.did.uri });
 
       // configure the profile protocol
-      const { status: configureProfileStatus } = await web5.dwn.protocols.configure({
+      const { status: configureProfileStatus, protocol } = await web5.dwn.protocols.configure({
         message: {
           definition: profileDefinition
         }
@@ -143,19 +142,13 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(`Failed to configure profile protocol: ${configureProfileStatus.detail}`);
       }
 
-      // configure the wallet protocol
-      const { status: configureWalletStatus } = await web5.dwn.protocols.configure({
-        message: {
-          definition: walletDefinition
-        }
-      });
-
-      if (configureWalletStatus.code !== 202) {
-        throw new Error(`Failed to configure wallet protocol: ${configureWalletStatus.detail}`);
+      const { status: protocolSendStatus } = await protocol!.send(identity.did.uri);
+      if (protocolSendStatus.code !== 202) {
+        console.info('failed to send profile protocol to remote', protocolSendStatus.detail);
       }
 
       // write the name into the profile protocol
-      const { status: writeProfileStatus } = await web5.dwn.records.create({
+      const { status: profileStatus, record: profileRecord } = await web5.dwn.records.create({
         data: { name },
         message: {
           published: true,
@@ -165,12 +158,17 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      if (writeProfileStatus.code !== 202) {
-        throw new Error(`Failed to write profile: ${writeProfileStatus.detail}`);
+      if (profileStatus.code !== 202) {
+        throw new Error(`Failed to write name to profile: ${profileStatus.detail}`);
+      }
+
+      const { status: profileSendStatus } = await profileRecord!.send();
+      if (profileSendStatus.code !== 202) {
+        console.info('failed to send profile record to remote', profileSendStatus.detail);
       }
 
       // write to the social object in the profile protocol
-      const { status: writeSocialStatus } = await web5.dwn.records.create({
+      const { status: socialStatus, record: socialRecord } = await web5.dwn.records.create({
         data: {
           displayName,
           tagline,
@@ -185,24 +183,33 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      if (writeSocialStatus.code !== 202) {
-        throw new Error(`Failed to write social: ${writeSocialStatus.detail}`);
+      if (socialStatus.code !== 202) {
+        throw new Error(`Failed to write social to profile: ${socialStatus.detail}`);
+      }
+
+      const { status: socialSendStatus } = await socialRecord!.send();
+      if (socialSendStatus.code !== 202) {
+        console.info('failed to send social record to remote', socialSendStatus.detail);
       }
 
       // write the wallet Url
-      const { status: writeWalletStatus } = await web5.dwn.records.create({
-        data: { walletUrl: walletHost },
+      const { status: walletStatus, record: walletRecord } = await web5.dwn.records.create({
+        data: { webWallets: [ walletHost ] },
         message: {
           published: true,
-          protocol: walletDefinition.protocol,
-          protocolPath: 'webWallet',
-          schema: walletDefinition.types.webWallet.schema,
+          protocol: profileDefinition.protocol,
+          protocolPath: 'connect',
           dataFormat: 'application/json',
         }
       });
 
-      if (writeWalletStatus.code !== 202) {
-        throw new Error(`Failed to write wallet: ${writeWalletStatus.detail}`);
+      if (walletStatus.code !== 202) {
+        throw new Error(`Failed to write wallet to profile: ${walletStatus.detail}`);
+      }
+
+      const { status: walletSendStatus } = await walletRecord!.send();
+      if (walletSendStatus.code !== 202) {
+        console.info('failed to send wallet record to remote', walletSendStatus.detail);
       }
 
       return identity.did.uri;
@@ -227,7 +234,12 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(`Failed to upload avatar: ${status.detail}`);
       }
 
-      return `http://dweb/${didUri}/records/${record.id}`;
+      const { status: sendStatus } = await record.send();
+      if (sendStatus.code !== 202) {
+        console.info('failed to send avatar record to remote', sendStatus.detail);
+      }
+
+      return `https://dweb/${didUri}/records/${record.id}`;
     }
   }
 
@@ -249,7 +261,12 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(`Failed to upload banner: ${status.detail}`);
       }
 
-      return `http://dweb/${didUri}/records/${record.id}`;
+      const { status: sendStatus } = await record.send();
+      if (sendStatus.code !== 202) {
+        console.info('failed to send banner record to remote', sendStatus.detail);
+      }
+
+      return `https://dweb/${didUri}/records/${record.id}`;
     }
   }
 
@@ -288,7 +305,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      const avatarUrl = avatarRecords && avatarRecords.length > 0 ? `http://dweb/${didUri}/records/${avatarRecords[0].id}` : undefined;
+      const avatarUrl = avatarRecords && avatarRecords.length > 0 ? `https://dweb/${didUri}/records/${avatarRecords[0].id}` : undefined;
 
       const { records: bannerRecords } = await web5.dwn.records.query({
         message: {
@@ -299,7 +316,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
-      const bannerUrl = bannerRecords && bannerRecords.length > 0 ? `http://dweb/${didUri}/records/${bannerRecords[0].id}` : undefined;
+      const bannerUrl = bannerRecords && bannerRecords.length > 0 ? `https://dweb/${didUri}/records/${bannerRecords[0].id}` : undefined;
 
       const { records: socialRecords } = await web5.dwn.records.query({
         message: {

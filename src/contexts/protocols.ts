@@ -1,20 +1,5 @@
 import { DwnProtocolDefinition } from "@web5/agent";
 
-export const walletDefinition: DwnProtocolDefinition = {
-  published: true,
-  protocol: "https://areweweb5yet.com/protocols/wallet",
-  types: {
-    webWallet: {
-      schema: "https://areweweb5yet.com/schemas/web-wallet",
-      dataFormats: ['application/json']
-    }
-  },
-  structure: {
-    webWallet: {
-    }
-  }
-}
-
 export const profileDefinition: DwnProtocolDefinition = {
   published: true,
   protocol: "https://areweweb5yet.com/protocols/profile",
@@ -40,6 +25,9 @@ export const profileDefinition: DwnProtocolDefinition = {
     payment: {
       dataFormats: ['application/json']
     },
+    connect: {
+      dataFormats: ['application/json']
+    },
     avatar: {
       dataFormats: ['image/gif', 'image/png', 'image/jpeg']
     },
@@ -56,6 +44,7 @@ export const profileDefinition: DwnProtocolDefinition = {
     messaging: {},
     address: {},
     phone: {},
-    payment: {}
+    payment: {},
+    connect: {}
   }
 }

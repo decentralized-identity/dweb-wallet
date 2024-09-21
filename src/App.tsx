@@ -3,7 +3,7 @@ import { IdentitiesProvider } from '@/contexts/IdentitiesContext';
 import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
 
 import Home from '@/pages/Home';
-import { activatePolyfills } from './web-features';
+import { activatePolyfills } from '@web5/browser';
 
 activatePolyfills();
 
