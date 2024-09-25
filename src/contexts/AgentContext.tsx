@@ -1,6 +1,9 @@
+import SeedPhraseInput from "@/components/SeedPhraseInput";
+import { Input } from "@/components/ui/input";
 import { Web5PlatformAgent } from "@web5/agent";
 import { Web5UserAgent } from "@web5/user-agent";
 import React, { createContext, useEffect, useState } from "react";
+import { useBackupSeed } from "./Context";
 
 interface Web5ContextProps {
   initialized: boolean;
@@ -30,11 +33,15 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
 
   const [initialized, setInitialized] = useState(false);
+  const [dwnEndpoint, setDwnEndpoint] = useState('http://localhost:3001/latest');
+  const [recoveryPhrase, setRecoveryPhrase] = useState('');
+  const [password, setPassword] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
   const [web5Agent, setWeb5Agent] = useState<
     Web5PlatformAgent| undefined
   >(undefined);
+  const { setBackupSeed } = useBackupSeed();
 
   useEffect(() => {
     const checkInitialized = async () => {
@@ -66,7 +73,6 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     await agent.sync.sync('pull');
   }
 
-
   const initialize = async (password: string, dwnEndpoint: string): Promise<string | undefined> => {
     setIsInitializing(true);
     try {
@@ -87,7 +93,6 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsInitializing(false);
     }
   }
-
 
   const unlock = async (password: string) => {
     setIsConnecting(true);
@@ -129,6 +134,79 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsConnecting(false);
     }
   };
+
+  const handleRecoveryPhraseChange = (phrase: string) => {
+    setRecoveryPhrase(phrase);
+  }
+
+  const handleAgentSetup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!initialized && recoveryPhrase && password) {
+      await recover(recoveryPhrase.trim(), password, dwnEndpoint);
+      setBackupSeed(recoveryPhrase.trim());
+    } else if (!initialized && password) {
+      const recoveryPhrase = await initialize(password, dwnEndpoint);
+      if (recoveryPhrase) {
+        setBackupSeed(recoveryPhrase);
+      }
+    } else if (initialized && password) {
+      await unlock(password);
+    }
+  };
+
+  if (isInitializing || isConnecting) {
+    return (
+      <div className="h-screen w-full bg-red-50 dark:bg-red-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
+          <p className="text-red-800 dark:text-red-200">
+            {isInitializing ? "Initializing..." : "Connecting..."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!initialized || !web5Agent) {
+    return (
+      <div className="h-screen w-full bg-red-50 dark:bg-red-900 flex items-center justify-center">
+        <div className="p-8 bg-white dark:bg-red-800 rounded-lg shadow-md">
+          <h2 className="text-2xl mb-4 text-red-800 dark:text-red-100">
+            {initialized ? "Unlock Agent" : "Initialize Agent"}
+          </h2>
+          {!initialized && (
+            <div className="mb-4">
+              <SeedPhraseInput
+                value={recoveryPhrase}
+                onChange={handleRecoveryPhraseChange}
+              />
+              <Input
+                placeholder="DWN Endpoint"
+                value={dwnEndpoint}
+                onChange={(e) => setDwnEndpoint(e.target.value)}
+              />
+            </div>
+          )}
+          <form onSubmit={handleAgentSetup}>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder={initialized ? "Enter password to unlock" : "Set new password"}
+              className="w-full p-2 mb-4 border border-red-300 rounded text-red-800 dark:text-red-100 bg-red-50 dark:bg-red-700 focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            />
+            <button 
+              type="submit" 
+              className="w-full p-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-md shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!initialized && !password}
+            >
+              {initialized ? "Unlock" : recoveryPhrase ? "Recover" : "Generate"}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AgentContext.Provider

@@ -5,11 +5,11 @@ import { toast } from "sonner";
 export function truncateDid(str: string, maxLength: number = 30): string {
   if (str.length <= maxLength) return str;
 
-  const [ , , id ] = str.split(':');
+  const [ , method, id ] = str.split(':');
   str = id ?? str;
   
-  const sideLength = 8;
-  return `${id.slice(0, sideLength)}....${id.slice(-sideLength)}`;
+  const sideLength = 12;
+  return `did:${method}:${id.slice(0, sideLength)}....${id.slice(-sideLength)}`;
 }
 
 export function cn(...inputs: ClassValue[]) {

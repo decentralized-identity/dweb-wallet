@@ -3,7 +3,7 @@ import { Identity } from "@/types";
 import { Web5 } from "@web5/api";
 import { useAgent } from "./Context";
 import { profileDefinition } from "./protocols";
-import { DwnInterface } from "@web5/agent";
+import { DwnInterface, PortableIdentity } from "@web5/agent";
 
 interface IdentityContextProps {
   identities: Identity[];
@@ -15,6 +15,8 @@ interface IdentityContextProps {
   uploadAvatar: (didUri: string, avatar: File) => Promise<string | undefined>;
   uploadBanner: (didUri: string, banner: File) => Promise<string | undefined>;
   getIdentity: (didUri: string) => Promise<Identity | undefined>;
+  exportIdentity: (didUri: string) => Promise<void>;
+  importIdentity: (...identities: PortableIdentity[]) => Promise<void>;
 }
 
 export const IdentitiesContext = createContext<IdentityContextProps>({
@@ -26,7 +28,9 @@ export const IdentitiesContext = createContext<IdentityContextProps>({
   deleteIdentity: async () => {},
   uploadAvatar: async () => undefined,
   uploadBanner: async () => undefined,
-  getIdentity: async () => undefined
+  getIdentity: async () => undefined,
+  exportIdentity: async () => undefined,
+  importIdentity: async () => {}
 });
 
 export interface CreateIdentityParams {
@@ -47,11 +51,85 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [ identities, setIdentities ] = useState<Identity[]>([]);
   const [ selectedIdentity, setSelectedIdentity ] = useState<Identity | undefined>();
   const [ gotMessages, setGotMessages ] = useState<boolean>(false);
+  const [ socketConnecting, setSocketConnecting ] = useState<boolean>(false);
+  const [ socket, setSocket ] = useState<WebSocket | null>(null);
+
+
+  const testSubscribe = async () => {
+    if (socket || socketConnecting) return;
+    setSocketConnecting(true);
+
+    return new Promise((resolve, reject) => {
+      try {
+        console.log('connecting to socket....');
+        // const socket = new WebSocket('ws://localhost:3001/latest');
+        // const socket = new WebSocket('wss://dwn.tbddev.org/latest');
+        const socket = new WebSocket('wss:///dwn.gcda.xyz');
+        setSocket(socket);
+        console.log('connection started');
+
+        socket.onmessage = (event) => {
+          console.log('got message', event);
+        }
+
+        socket.onopen = () => {
+          console.log('connected');
+          resolve('connected');
+        }
+
+        socket.onerror = (error) => {
+          console.log('connection error', error)
+          reject(error);
+        }
+
+        socket.onclose = () => {
+          console.log('connection closed');
+          resolve('closed');
+        }
+      } catch(error) {
+        console.log('some connection caught error', error);
+      } finally {
+        setSocketConnecting(false)
+      }
+    });
+
+    if (agent) {
+      const web5 = new Web5({ agent: agent, connectedDid: agent.agentDid.uri });
+
+      const { status } = await web5.dwn.records.subscribe({
+        from: agent.agentDid.uri,
+        message: {
+          filter: {
+            protocol: profileDefinition.protocol,
+            protocolPath: 'name',
+            dataFormat: 'application/json',
+          }
+        },
+        subscriptionHandler: async (record) => {
+          console.log('received profile record', record);
+        }
+      });
+
+      console.log('checks status', status);
+
+      if (status.code !== 200) {
+        throw new Error(`Failed to subscribe to profile records: ${status.detail}`);
+      }
+    }
+
+    console.log('made it here');
+  }
 
   const loadIdentities = async () => {
     if (loadingIdentities) return;
 
     setLoadingIdentities(true);
+
+    try {
+      await testSubscribe();
+    } catch(error ) {
+      console.log('error', error);
+    }
 
     if (agent && !gotMessages) {
       const agentDid = agent.agentDid.uri;
@@ -68,9 +146,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error(`Failed to get messages: ${status.detail}`);
       }
 
-      console.log('got messages', entries?.length);
       for (const entry of entries!) {
-        const { reply: { status: readStatus, entry: readEntry } } = await agent.dwn.processRequest({
+        const { reply: { status: readStatus } } = await agent.dwn.processRequest({
           target: agentDid,
           author: agentDid,
           messageType: DwnInterface.MessagesRead,
@@ -82,10 +159,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log('error reading message', readStatus.detail);
           continue;
         }
-        console.log('read entry', readEntry?.message.descriptor);
       }
     }
-
 
     const identities = await agent?.identity.list() || [];
     const parsedIdentities = await Promise.all(identities.map(identity => getIdentity(identity.did.uri)));
@@ -128,6 +203,15 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
       await agent.sync.registerIdentity({ did: identity.did.uri, options: { protocols: [
         profileDefinition.protocol,
       ]} });
+
+      const localStorageIdentities = localStorage.getItem('identities');
+      if (localStorageIdentities) {
+        const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
+        parsedIdentities.push(identity.did.uri);
+        localStorage.setItem('identities', JSON.stringify(parsedIdentities));
+      } else {
+        localStorage.setItem('identities', JSON.stringify([ identity.did.uri ]));
+      }
 
       const web5 = new Web5({ agent, connectedDid: identity.did.uri });
 
@@ -328,6 +412,18 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       });
 
+      const { records: walletRecords, status } = await web5.dwn.records.query({
+        message: {
+          filter: {
+            protocol: profileDefinition.protocol,
+            protocolPath: 'connect',
+            dataFormat: 'application/json',
+          }
+        }
+      });
+
+      const wallets = status.code === 200 && walletRecords?.length ? await walletRecords![0].data.json() : { webWallets: [] };
+
       let displayName = '';
       let tagline = '';
       let bio = '';
@@ -349,7 +445,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         tagline,
         bio,
         avatarUrl,
-        bannerUrl
+        bannerUrl,
+        webWallets: wallets.webWallets
       } 
     }
   }
@@ -367,6 +464,60 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }
 
+  const importIdentity = async (...identities: PortableIdentity[]) => {
+    if (agent) {
+      identities.forEach(async identity => {
+        try {
+        const exists = await agent.identity.get({ didUri: identity.portableDid.uri });
+        if (exists) {
+          throw new Error("Identity already exists");
+        }
+
+        const importedIdentity = await agent.identity.import({ portableIdentity: identity });
+        await agent.identity.manage({ portableIdentity: await importedIdentity.export() });
+        await agent.sync.registerIdentity({ did: importedIdentity.did.uri });
+
+        const localStorageIdentities = localStorage.getItem('identities');
+        if (localStorageIdentities) {
+          const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
+          parsedIdentities.push(importedIdentity.did.uri);
+          localStorage.setItem('identities', JSON.stringify(parsedIdentities));
+        } else {
+          localStorage.setItem('identities', JSON.stringify([ importedIdentity.did.uri ]));
+        }
+      } catch(error:any) {
+        console.error('could not import identity', identity.portableDid.uri, error);
+      }
+    });
+
+      await loadIdentities();
+    }
+  }
+
+  const exportIdentity = async (didUri: string) => {
+    const identity = await agent?.identity.get({ didUri });
+    if (!identity) {
+      throw new Error("Identity not found");
+    }
+
+    const portableIdentity = await identity.export();
+
+    const blob = new Blob([
+      JSON.stringify(portableIdentity, null, 2)
+    ], {
+      type: "application/json",
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${didUri.replace(/:/g, '+')}.json`;
+    document.body.append(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     loadIdentities();
   })
@@ -382,7 +533,9 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         identities,
         selectedIdentity,
         setSelectedIdentity,
-        reloadIdentities: loadIdentities
+        reloadIdentities: loadIdentities,
+        exportIdentity,
+        importIdentity
       }}
     >
       {children}

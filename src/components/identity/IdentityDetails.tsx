@@ -1,13 +1,16 @@
 import { useIdentities, useProtocols } from '@/contexts/Context';
+import { EditIcon } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { Button } from '../ui/button';
 
 interface IdentityDetailsProps {
   onBack: () => void;
 }
 
 const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
-  const { selectedIdentity, deleteIdentity } = useIdentities();
+  const { selectedIdentity, deleteIdentity, exportIdentity } = useIdentities();
   const { addProtocol, listProtocols, loadProtocols } = useProtocols();
+  const [ editWallets, setEditWallets ] = useState<string[]>([]);
   const [protocolUrl, setProtocolUrl] = useState('');
   const [isPublished, setIsPublished] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -138,6 +141,44 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
         </div>
 
         <div className="mt-6">
+          <div className="flex items-center">
+            <h3 className="text-lg font-semibold mb-2 text-primary-500">Wallets</h3>
+            <button
+              disabled={editWallets.length > 0}
+              onClick={() => setEditWallets(selectedIdentity.webWallets)}
+              className={`ml-2 mb-2 ${!editWallets ? 'text-primary-500 hover:text-primary-600' : ''} transition-colors duration-200`}
+              aria-label="Add protocol"
+            >
+              <EditIcon />
+            </button>
+          </div>
+          {!editWallets.length && <ul className="list-disc list-inside text-text-light-secondary dark:text-text-dark-secondary">
+            {selectedIdentity.webWallets.map((wallet) => (
+              <li key={wallet}>{wallet}</li>
+            ))}
+          </ul>}
+          {editWallets.length > 0 && <div className="flex flex-col space-y-4">
+            {editWallets.map(wallet => (
+              <div>
+                <input key={wallet} type="text" value={wallet} className="p-2 border border-gray-300 rounded-md" />
+                <button
+                  onClick={() => setEditWallets(editWallets.filter(w => w !== wallet))}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+                >Remove</button>
+              </div>
+            ))}
+            <button 
+              onClick={() => setEditWallets([...editWallets, ''])}
+              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
+            >Add</button>
+            <div>
+              <Button onClick={() => setEditWallets([])}>Save</Button>
+              <Button onClick={() => setEditWallets([])}>Cancel</Button>
+            </div>
+          </div>}
+        </div>
+
+        <div className="mt-6">
           <h3 className="text-lg font-semibold mb-2 text-primary-500">Permissions</h3>
           {selectedPermissions.length > 0 ? (
             <ul className="list-disc list-inside text-text-light-secondary dark:text-text-dark-secondary">
@@ -149,8 +190,15 @@ const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
             <p className="text-text-light-secondary dark:text-text-dark-secondary">No permissions assigned yet.</p>
           )}
         </div>
-
-        {/* Delete Identity Button */}
+        
+        <div className="mt-6">
+          <button
+            onClick={() => exportIdentity(selectedIdentity.didUri)}
+            className="mt-6 w-full px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200"
+          >
+            Backup
+          </button>
+        </div>
         <div className="mt-6">
           <button
             onClick={() => setShowDeleteConfirmation(true)}

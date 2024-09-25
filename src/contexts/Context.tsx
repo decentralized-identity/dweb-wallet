@@ -23,7 +23,7 @@ export const useAgent = () => {
     isConnecting,
     unlock,
     isConnected,
-    isInitializing
+    isInitializing,
   };
 };
 
@@ -43,6 +43,8 @@ export const useIdentities = () => {
     reloadIdentities,
     selectedIdentity,
     setSelectedIdentity,
+    exportIdentity,
+    importIdentity
   } = context;
 
   return {
@@ -55,6 +57,8 @@ export const useIdentities = () => {
     reloadIdentities,
     selectedIdentity,
     setSelectedIdentity,
+    exportIdentity,
+    importIdentity
   };
 };
 

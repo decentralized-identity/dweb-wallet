@@ -9,4 +9,5 @@ export interface Identity {
   bannerUrl?: string;
   protocols?: string[];
   permissions?: string[]; // Add this line
+  webWallets: string[];
 }
