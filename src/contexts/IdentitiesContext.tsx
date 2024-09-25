@@ -7,8 +7,8 @@ import { DwnInterface, PortableIdentity } from "@web5/agent";
 
 interface IdentityContextProps {
   identities: Identity[];
-  reloadIdentities: () => Promise<void>;
   selectedIdentity: Identity | undefined;
+  reloadIdentities: () => Promise<void>;
   setSelectedIdentity: (identity: Identity | undefined) => void;
   createIdentity: (params: CreateIdentityParams) => Promise<string | undefined>;
   deleteIdentity: (didUri: string) => Promise<void>;
@@ -21,8 +21,8 @@ interface IdentityContextProps {
 
 export const IdentitiesContext = createContext<IdentityContextProps>({
   identities: [],
-  reloadIdentities: async () => {},
   selectedIdentity: undefined,
+  reloadIdentities: async () => {},
   setSelectedIdentity: () => {},
   createIdentity: async () => undefined,
   deleteIdentity: async () => {},
@@ -51,85 +51,11 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [ identities, setIdentities ] = useState<Identity[]>([]);
   const [ selectedIdentity, setSelectedIdentity ] = useState<Identity | undefined>();
   const [ gotMessages, setGotMessages ] = useState<boolean>(false);
-  const [ socketConnecting, setSocketConnecting ] = useState<boolean>(false);
-  const [ socket, setSocket ] = useState<WebSocket | null>(null);
-
-
-  const testSubscribe = async () => {
-    if (socket || socketConnecting) return;
-    setSocketConnecting(true);
-
-    return new Promise((resolve, reject) => {
-      try {
-        console.log('connecting to socket....');
-        // const socket = new WebSocket('ws://localhost:3001/latest');
-        // const socket = new WebSocket('wss://dwn.tbddev.org/latest');
-        const socket = new WebSocket('wss:///dwn.gcda.xyz');
-        setSocket(socket);
-        console.log('connection started');
-
-        socket.onmessage = (event) => {
-          console.log('got message', event);
-        }
-
-        socket.onopen = () => {
-          console.log('connected');
-          resolve('connected');
-        }
-
-        socket.onerror = (error) => {
-          console.log('connection error', error)
-          reject(error);
-        }
-
-        socket.onclose = () => {
-          console.log('connection closed');
-          resolve('closed');
-        }
-      } catch(error) {
-        console.log('some connection caught error', error);
-      } finally {
-        setSocketConnecting(false)
-      }
-    });
-
-    if (agent) {
-      const web5 = new Web5({ agent: agent, connectedDid: agent.agentDid.uri });
-
-      const { status } = await web5.dwn.records.subscribe({
-        from: agent.agentDid.uri,
-        message: {
-          filter: {
-            protocol: profileDefinition.protocol,
-            protocolPath: 'name',
-            dataFormat: 'application/json',
-          }
-        },
-        subscriptionHandler: async (record) => {
-          console.log('received profile record', record);
-        }
-      });
-
-      console.log('checks status', status);
-
-      if (status.code !== 200) {
-        throw new Error(`Failed to subscribe to profile records: ${status.detail}`);
-      }
-    }
-
-    console.log('made it here');
-  }
 
   const loadIdentities = async () => {
     if (loadingIdentities) return;
 
     setLoadingIdentities(true);
-
-    try {
-      await testSubscribe();
-    } catch(error ) {
-      console.log('error', error);
-    }
 
     if (agent && !gotMessages) {
       const agentDid = agent.agentDid.uri;
