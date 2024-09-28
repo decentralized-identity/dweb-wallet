@@ -17,20 +17,20 @@ const PermissionRequest: React.FC<{ permissions: ConnectPermissionRequest[] }> =
   };
 
   return (
-    <div className="space-y-2 mt-4">
+    <div>
       {permissions.map(permission => {
         const { sync, records } = formatScopes(permission.permissionScopes);
         return (
-          <div key={permission.protocolDefinition.protocol} className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
-            <h3 className="text-xs font-semibold mb-1 text-primary dark:text-primary-dark">
+          <div key={permission.protocolDefinition.protocol}>
+            <h3>
               {permission.protocolDefinition.protocol}
             </h3>
-            <div className="text-xs flex flex-wrap gap-1 text-text-light-secondary dark:text-text-dark-secondary">
+            <div>
               {records.map(method => (
-                <span key={method} className="bg-secondary/20 px-1 rounded">{method}</span>
+                <span key={method}>{method}</span>
               ))}
               {sync && (
-                <span className="bg-secondary/20 px-1 rounded text-secondary dark:text-secondary-dark">Sync</span>
+                <span>Sync</span>
               )}
             </div>
           </div>
@@ -133,41 +133,39 @@ const DWebConnect: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary flex flex-col">
+    <div>
       <TopBar />
-        <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
+        <div>
         {did && <PublicIdentityCard did={did} />}
         {!connecting && origin && did && permissions.length && (
-          <div className="flex-1 p-4 flex flex-col">
-            <div className="mt-4 flex flex-col items-center space-y-3">
-              <div className="w-full max-w-md px-4 py-2 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/30 dark:border-primary/40">
-                <p className="font-semibold text-sm text-center text-primary dark:text-primary-dark">{origin}</p>
+          <div>
+            <div>
+              <div>
+                <p>{origin}</p>
               </div>
-              <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">is requesting permissions from</p>
-              <div className="w-full max-w-md px-4 py-2 bg-secondary/10 dark:bg-secondary/20 rounded-lg border border-secondary/30 dark:border-secondary/40">
-                <p className="font-semibold text-sm text-center text-secondary dark:text-secondary-dark truncate">{did}</p>
+              <p>is requesting permissions from</p>
+              <div>
+                <p>{did}</p>
               </div>
             </div>
             <PermissionRequest permissions={permissions} />
-            <div className="mt-auto flex justify-center space-x-4 p-4">
+            <div>
               <button
                 onClick={handleDeny}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
                 Deny
               </button>
               <button
                 onClick={handleAgentSetup}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
               >
                 Approve
               </button>
             </div>
           </div>
         )}
-        {connecting && <div className="flex-1 p-4 flex flex-col">
-          {isCreatingDelegate && <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Creating delegate...</p>}
-          {returningGrants && <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Returning grants...</p>}
+        {connecting && <div>
+          {isCreatingDelegate && <p>Creating delegate...</p>}
+          {returningGrants && <p>Returning grants...</p>}
         </div>}
       </div>
     </div>

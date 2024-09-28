@@ -156,10 +156,10 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
 
   if (isInitializing || isConnecting) {
     return (
-      <div className="h-screen w-full bg-red-50 dark:bg-red-900 flex items-center justify-center">
-        <div className="text-center">
+      <div>
+        <div>
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-500 mx-auto mb-4"></div>
-          <p className="text-red-800 dark:text-red-200">
+          <p>
             {isInitializing ? "Initializing..." : "Connecting..."}
           </p>
         </div>
@@ -169,13 +169,13 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
 
   if (!initialized || !web5Agent) {
     return (
-      <div className="h-screen w-full bg-red-50 dark:bg-red-900 flex items-center justify-center">
-        <div className="p-8 bg-white dark:bg-red-800 rounded-lg shadow-md">
-          <h2 className="text-2xl mb-4 text-red-800 dark:text-red-100">
+      <div>
+        <div>
+          <h2>
             {initialized ? "Unlock Agent" : "Initialize Agent"}
           </h2>
           {!initialized && (
-            <div className="mb-4">
+            <div>
               <SeedPhraseInput
                 value={recoveryPhrase}
                 onChange={handleRecoveryPhraseChange}
@@ -193,11 +193,9 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={initialized ? "Enter password to unlock" : "Set new password"}
-              className="w-full p-2 mb-4 border border-red-300 rounded text-red-800 dark:text-red-100 bg-red-50 dark:bg-red-700 focus:ring-2 focus:ring-red-500 focus:border-transparent"
             />
             <button 
               type="submit" 
-              className="w-full p-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-md shadow-md transition duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={!initialized && !password}
             >
               {initialized ? "Unlock" : recoveryPhrase ? "Recover" : "Generate"}

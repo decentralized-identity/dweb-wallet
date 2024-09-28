@@ -73,26 +73,24 @@ const SeedPhraseInput: React.FC<SeedPhraseInputProps> = ({ value, onChange }) =>
         ref={textareaRef}
         value={value}
         onChange={handleInputChange}
-        className="w-full p-2 border rounded-md bg-white dark:bg-gray-800 text-transparent caret-blue-800 dark:caret-blue-200 focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-700 transition-all duration-200"
         rows={4}
         placeholder="Enter your recovery phrase..."
       />
-      <div className="absolute inset-0 p-2 pointer-events-none whitespace-pre-wrap break-words">
+      <div>
         {value.split(' ').map((word, index) => (
           <React.Fragment key={index}>
             {index > 0 && ' '}
-            <span className="inline-block px-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+            <span>
               {word}
             </span>
           </React.Fragment>
         ))}
       </div>
       {suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 mt-1 bg-white dark:bg-gray-800 border rounded-md shadow-lg">
+        <div>
           {suggestions.map((word, index) => (
             <div
               key={index}
-              className="p-2 hover:bg-blue-100 dark:hover:bg-blue-900 cursor-pointer"
               onClick={() => handleSuggestionClick(word)}
             >
               {word}

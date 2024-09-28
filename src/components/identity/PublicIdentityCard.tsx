@@ -23,13 +23,11 @@ const PublicIdentityCard: React.FC<Props> = ({ did }) => {
       <img 
         src={bannerUrl} 
         alt={`${did}'s banner`}
-        className="w-full h-20 object-cover"
       />
-      <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-10 z-20">
+      <div>
         <img 
           src={avatarUrl} 
           alt={`${did}'s avatar`} 
-          className="w-20 h-20 rounded-full border-2 border-surface-light dark:border-surface-dark shadow-lg"
         />
       </div>
     </div>

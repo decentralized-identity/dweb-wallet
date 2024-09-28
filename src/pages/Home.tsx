@@ -85,15 +85,15 @@ const Home: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary flex flex-col">
+    <div>
       <TopBar toggleDarkMode={toggleDarkMode} isDarkMode={isDarkMode} />
       {showSeedScreen && <BackupSeedPhrase />}
       {!showSeedScreen && !isDragging && (
-        <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-          <div className={`md:w-3/10 ${selectedIdentity ? 'hidden md:block' : 'block'} bg-surface-light dark:bg-surface-dark overflow-y-auto`}>
-          <IdentityList />
-        </div>
-        <div className={`flex-grow ${selectedIdentity ? 'block' : 'hidden md:block'} overflow-y-auto`}>
+        <div>
+          <div>
+            <IdentityList />
+          </div>
+        <div>
           {selectedIdentity ? (
             <ProtocolsProvider>
               <IdentityDetails 
@@ -101,16 +101,16 @@ const Home: React.FC = () => {
               />
             </ProtocolsProvider>
           ) : (
-            <div className="h-full flex items-center justify-center">
-              <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">Select an identity to view details</p>
-              </div>
-            )}
-          </div>
+            <div>
+              <p>Select an identity to view details</p>
+            </div>
+          )}
         </div>
+      </div>
       )}
       {!showSeedScreen && isDragging && (
-        <div className="h-full flex items-center justify-center">
-          {!droppedFiles.length && <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">Drop files here to upload</p>}
+        <div>
+          {!droppedFiles.length && <p>Drop files here to upload</p>}
           {droppedFiles.length > 0 && <ul>
             {droppedFiles.map(file => <li key={file.name}>{file.name}</li>)}
           </ul>}

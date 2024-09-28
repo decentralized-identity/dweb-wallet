@@ -6,6 +6,9 @@ import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
 import Home from '@/pages/Home';
 import DWebConnect from '@/pages/DwebConnect';
 import { activatePolyfills } from '@web5/browser';
+import Desktop from './layoutes/Desktop';
+import IdentityList from './components/identity/IdentityList';
+import IdentityDetails from './components/identity/IdentityDetails';
 
 activatePolyfills();
 
@@ -33,8 +36,10 @@ function App() {
       <AgentProvider>
         <IdentitiesProvider>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/dweb-connect/*" element={<DWebConnect />} />
+            <Route path="/" element={<Desktop />}>
+            <Route path="identities" element={<IdentityList />} />
+            <Route path="identity/:didUri" element={<IdentityDetails />} />
+            </Route>
           </Routes>
         </IdentitiesProvider>
       </AgentProvider>
