@@ -7,6 +7,7 @@ import { activatePolyfills } from '@web5/browser';
 import Desktop from './layoutes/Desktop';
 import IdentityDetails from './components/identity/IdentityDetails';
 import AddIdentity from './pages/AddIdentityPage';
+import DWebConnect from './pages/DwebConnect';
 
 activatePolyfills();
 
@@ -40,6 +41,7 @@ function App() {
               <Route path="identity/create" element={<AddIdentity />} />
               <Route path="identity/edit/:didUri" element={<AddIdentity edit />} />
             </Route>
+            <Route path="/dweb-connect" element={<DWebConnect />} />
           </Routes>
         </IdentitiesProvider>
       </AgentProvider>

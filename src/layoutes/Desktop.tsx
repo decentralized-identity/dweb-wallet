@@ -1,5 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
-import { Box, AppBar, Toolbar, Typography, Drawer } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, AppBar, Toolbar, Typography, Drawer, Dialog, DialogTitle, DialogContent, Button } from '@mui/material';
 import { useIdentities } from '@/contexts/Context';
 import IdentityCard from '@/components/identity/IdentityCard';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -18,48 +18,30 @@ const Desktop: React.FC = () => {
   const [ isDragging, setIsDragging ] = useState(false);
   const [ droppedFiles, setDroppedFiles ] = useState<File[]>([]);
 
-  const leftPaneRef = useRef<HTMLDivElement>(null);
-  const rightPaneRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const loadIdentities = async () => {
-      const uniqueIdentities = new Map<string, PortableIdentity>();
-      const identities = await Promise.all(droppedFiles.map(async f => JSON.parse(await f.text()) as PortableIdentity));
-      identities.forEach(i => uniqueIdentities.set(i.portableDid.uri, i));
-      await importIdentity(...Array.from(uniqueIdentities.values())); 
-      setDroppedFiles([]);
-    }
-
-    if (droppedFiles.length > 0) {
-      loadIdentities();
-    }
-  }, [ droppedFiles, importIdentity ]);
-
   useEffect(() => {
     // Handlers for the drag events
     const handleDragEnter = (e: DragEvent) => {
-      console.log('handleDragEnter');
-      e.preventDefault();
+      if (isDragging) return;
+
       e.stopPropagation();
+      e.preventDefault();
       setIsDragging(true);
     };
 
     const handleDragOver = (e: DragEvent) => {
-      console.log('handleDragOver');
-      e.preventDefault();
       e.stopPropagation();
+      e.preventDefault();
     };
 
     const handleDragLeave = (e: DragEvent) => {
-      console.log('handleDragLeave');
-      e.preventDefault();
       e.stopPropagation();
+      e.preventDefault();
       setIsDragging(false);
     };
 
     const handleDrop = (e: DragEvent) => {
-      e.preventDefault();
       e.stopPropagation();
+      e.preventDefault();
 
 
       if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
@@ -73,30 +55,42 @@ const Desktop: React.FC = () => {
     window.addEventListener('dragover', handleDragOver);
     window.addEventListener('dragleave', handleDragLeave);
     window.addEventListener('drop', handleDrop);
+
+    // const preventPropagation = (e: WheelEvent) => {
+    //   e.stopPropagation();
+    // };
+
+    // const leftPane = leftPaneRef.current;
+    // const rightPane = rightPaneRef.current;
+
+    // if (leftPane) leftPane.addEventListener('wheel', preventPropagation);
+    // if (rightPane) rightPane.addEventListener('wheel', preventPropagation);
+
     return () => {
+      // if (leftPane) leftPane.removeEventListener('wheel', preventPropagation);
+      // if (rightPane) rightPane.removeEventListener('wheel', preventPropagation);
+
       window.removeEventListener('dragenter', handleDragEnter);
       window.removeEventListener('dragover', handleDragOver);
       window.removeEventListener('dragleave', handleDragLeave);
       window.removeEventListener('drop', handleDrop);
-    }
-  }, [])
-
-  useEffect(() => {
-    const preventPropagation = (e: WheelEvent) => {
-      e.stopPropagation();
-    };
-
-    const leftPane = leftPaneRef.current;
-    const rightPane = rightPaneRef.current;
-
-    if (leftPane) leftPane.addEventListener('wheel', preventPropagation);
-    if (rightPane) rightPane.addEventListener('wheel', preventPropagation);
-
-    return () => {
-      if (leftPane) leftPane.removeEventListener('wheel', preventPropagation);
-      if (rightPane) rightPane.removeEventListener('wheel', preventPropagation);
     };
   }, []);
+
+  useEffect(() => {
+    const loadIdentities = async () => {
+      if (isDragging) return;
+      const uniqueIdentities = new Map<string, PortableIdentity>();
+      const identities = await Promise.all(droppedFiles.map(async f => JSON.parse(await f.text()) as PortableIdentity));
+      identities.forEach(i => uniqueIdentities.set(i.portableDid.uri, i));
+      await importIdentity(...Array.from(uniqueIdentities.values())); 
+      setDroppedFiles([]);
+    }
+
+    if (droppedFiles.length > 0) {
+      loadIdentities();
+    }
+  }, [ droppedFiles, importIdentity ]);
 
   const handleIdentityClick = (identity: Identity) => {
     setSelectedIdentity(identity);
@@ -142,7 +136,6 @@ const Desktop: React.FC = () => {
           }}
         >
           <Box 
-            ref={leftPaneRef}
             sx={{ 
               p: 2, 
               height: '100%', 
@@ -164,7 +157,6 @@ const Desktop: React.FC = () => {
 
         {/* Main content */}
         <Box 
-          ref={rightPaneRef}
           component="main" 
           sx={{ 
             flexGrow: 1, 
@@ -187,19 +179,16 @@ const Desktop: React.FC = () => {
       </Box>
 
       {/* Drag and drop area */}
-      {isDragging && (
-        <Box 
-          sx={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            width: '100%',
-            height: '100%',
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-          }}
-        />
-      )}
+        <Dialog open={isDragging || droppedFiles.length > 0} onClose={() => setIsDragging(false)}>
+          <DialogTitle>Import DIDs</DialogTitle>
+          <DialogContent>
+            {droppedFiles.length > 0 && (
+              <Typography>Importing...</Typography>
+            ) || (
+              <Typography>Drop your DID files here to import</Typography>
+            )}
+          </DialogContent>
+        </Dialog>
     </Box>
   );
 };

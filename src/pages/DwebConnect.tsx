@@ -1,5 +1,4 @@
 import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
-import TopBar from '@/components/TopBar';
 import { useAgent } from '@/contexts/Context';
 import { toastError } from '@/lib/utils';
 import { ConnectPermissionRequest, DwnInterface, DwnPermissionScope, DwnProtocolDefinition, Oidc, Web5Agent } from '@web5/agent';
@@ -134,7 +133,6 @@ const DWebConnect: React.FC = () => {
 
   return (
     <div>
-      <TopBar />
         <div>
         {did && <PublicIdentityCard did={did} />}
         {!connecting && origin && did && permissions.length && (
