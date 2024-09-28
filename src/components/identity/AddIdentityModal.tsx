@@ -1,15 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import { useIdentities } from '@/contexts/Context';
+import {
+  Button,
+  TextField,
+  Box,
+  Avatar,
+  Typography,
+  CircularProgress,
+  Container,
+  Divider,
+} from '@mui/material';
+import Grid from '@mui/material/Grid2'; // Updated import for Grid2
 
-interface AddIdentityModalProps {
-  onClose: () => void;
-}
-
-const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose }) => {
+const AddIdentityPage: React.FC = () => {
   const { createIdentity, uploadAvatar, uploadBanner } = useIdentities();
-  const [ step, setStep ] = useState(1);
-  const [ didUri, setDidUri ] = useState<string | undefined>();
-  const [ loading, setLoading ] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     persona: '',
@@ -24,40 +31,44 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose }) => {
 
   const submitDisabled = useMemo(() => {
     return formData.persona === '' || formData.name === '' || formData.displayName === '' || formData.dwnEndpoint === '';
-  }, [formData ]);
+  }, [formData]);
 
-  const handleStep1Submit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const didUri = await createIdentity({
-      persona: formData.persona,
-      name: formData.name,
-      displayName: formData.displayName,
-      tagline: formData.tagline,  
-      bio: formData.bio,
-      dwnEndpoint: formData.dwnEndpoint,
-      walletHost: window.location.origin,
-    });
-    setDidUri(didUri);
-    setStep(2);
-    setLoading(false);
-  };
 
-  const handleStep2Submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!didUri) {
-      throw new Error('DidUri is undefined');
+    try {
+      const didUri = await createIdentity({
+        persona: formData.persona,
+        name: formData.name,
+        displayName: formData.displayName,
+        tagline: formData.tagline,  
+        bio: formData.bio,
+        dwnEndpoint: formData.dwnEndpoint,
+        walletHost: window.location.origin,
+      });
+
+      if (!didUri) {
+        throw new Error('Failed to create identity');
+      }
+
+      if (formData.avatar) {
+        await uploadAvatar(didUri, formData.avatar);
+      }
+
+      if (formData.banner) {
+        await uploadBanner(didUri, formData.banner);
+      }
+
+      // Instead of closing, you might want to redirect or show a success message
+      // For example:
+      // router.push('/identities');
+    } catch (error) {
+      console.error('Error creating identity:', error);
+      // Handle error (e.g., show error message to user)
+    } finally {
+      setLoading(false);
     }
-
-    if (formData.avatar) {
-      await uploadAvatar(didUri, formData.avatar);
-    }
-
-    if (formData.banner) {
-      await uploadBanner(didUri, formData.banner);
-    }
-
-    onClose();
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -68,144 +79,151 @@ const AddIdentityModal: React.FC<AddIdentityModalProps> = ({ onClose }) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, files } = e.target;
     if (files && files.length > 0) {
-      setFormData({ ...formData, [name]: files[0] });
+      const file = files[0];
+      setFormData({ ...formData, [name]: file });
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (name === 'avatar') {
+          setAvatarPreview(reader.result as string);
+        } else if (name === 'banner') {
+          setBannerPreview(reader.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
     }
   };
 
   return (
-    <div>
-      <div>
-        <h2>Add New Identity</h2>
-        {loading ? (
-          <div>
-            <div className="animate-spin"></div>
-          </div>
-        ) : step === 1 ? (
-          <form onSubmit={handleStep1Submit}>
-            <div>
-              <label htmlFor="name">Persona</label>
-              <input
-                type="text"
-                id="persona"
-                name="persona"
-                value={formData.persona}
-                onChange={handleInputChange}
-                placeholder="Social, Professional, Gaming, etc."
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="name">Name</label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="John Doe"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="displayName">Display Name</label>
-              <input
-                type="text"
-                id="displayName"
-                name="displayName"
-                value={formData.displayName}
-                onChange={handleInputChange}
-                placeholder="What people call you"
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="tagline">Tagline</label>
-              <input
-                type="text"
-                id="tagline"
-                name="tagline"
-                placeholder="What you do"
-                value={formData.tagline}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="bio">Bio</label>
-              <textarea
-                id="bio"
-                name="bio"
-                placeholder="Tell us about yourself"
-                value={formData.bio}
-                onChange={handleInputChange}
-                rows={4}
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="dwnEndpoint">DWN Endpoint</label>
-              <input
-                type="text"
-                id="dwnEndpoint"
-                name="dwnEndpoint"
-                value={formData.dwnEndpoint}
-                onChange={handleInputChange}
-                required
-              />
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={onClose}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={loading || submitDisabled}
-              >
-                Next
-              </button>
-            </div>
-          </form>
-        ) : (
-          <form onSubmit={handleStep2Submit}>
-            <div>
-              <label htmlFor="avatar">Avatar Image</label>
-              <input
-                type="file"
-                id="avatar"
-                name="avatar"
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-            </div>
-            <div className="mb-4">
-              <label htmlFor="banner">Banner Image</label>
-              <input
-                type="file"
-                id="banner"
-                name="banner"
-                onChange={handleFileChange}
-                accept="image/*"
-              />
-            </div>
-            <div>
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-              >
-                Add Identity
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh'}}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Add New Identity
+        </Typography>
+        <Divider sx={{ mb: 4 }} />
+        <form onSubmit={handleSubmit}>
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" height={400}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  name="name"
+                  required
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <TextField
+                  fullWidth
+                  label="Persona"
+                  name="persona"
+                  value={formData.persona}
+                  onChange={handleInputChange}
+                  placeholder="Social, Professional, Gaming, etc."
+                  required
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <TextField
+                  fullWidth
+                  label="Tagline"
+                  name="tagline"
+                  value={formData.tagline}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <TextField
+                  fullWidth
+                  label="Bio"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  multiline
+                  rows={4}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <TextField
+                  fullWidth
+                  label="DWN Endpoint"
+                  name="dwnEndpoint"
+                  value={formData.dwnEndpoint}
+                  onChange={handleInputChange}
+                  required
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <Box display="flex" alignItems="center">
+                  <Avatar
+                    src={avatarPreview || undefined}
+                    sx={{ width: 60, height: 60, mr: 2 }}
+                  />
+                  <Button
+                    variant="outlined"
+                    component="label"
+                  >
+                    Upload Avatar
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      name="avatar"
+                    />
+                  </Button>
+                </Box>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8 }}>
+                <Box display="flex" alignItems="center">
+                  <Avatar
+                    src={bannerPreview || undefined}
+                    sx={{ width: 60, height: 60, mr: 2 }}
+                  />
+                  <Button
+                    variant="outlined"
+                    component="label"
+                  >
+                    Upload Banner
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      name="banner"
+                    />
+                  </Button>
+                </Box>
+              </Grid>
+              <Grid size={12}>
+                <Typography variant="subtitle1">Banner Preview:</Typography>
+                <img 
+                  src={bannerPreview || undefined} 
+                  alt="Banner preview" 
+                  style={{ width: '100%', height: 'auto', maxHeight: 100, objectFit: 'cover' }} 
+                />
+              </Grid>
+            </Grid>
+          )}
+          <Box mt={4}>
+            <Button
+              type="submit"
+              disabled={loading || submitDisabled}
+              variant="contained"
+              color="primary"
+              size="large"
+            >
+              Add Identity
+            </Button>
+          </Box>
+        </form>
+    </Box>
   );
 };
 
-export default AddIdentityModal;
+export default AddIdentityPage;

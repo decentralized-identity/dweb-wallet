@@ -5,6 +5,8 @@ import IdentityCard from '@/components/identity/IdentityCard';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Identity } from '@/types';
 import SidebarSpeedDial from '@/components/SidebarSpeedDial';
+import { CameraAlt, PersonAddAlt1 } from '@mui/icons-material';
+import { Download } from 'lucide-react';
 
 const drawerWidth = 400; // Wider drawer for identity cards
 const topBarHeight = 64; // Standard AppBar height
@@ -18,6 +20,12 @@ const Desktop: React.FC = () => {
     setSelectedIdentity(identity);
     navigate(`/identity/${identity.didUri}`);
   };
+
+  const actions = [
+    { icon: <PersonAddAlt1 />, name: 'Create a new DID', handler: () => navigate('/identity/create') },
+    { icon: <CameraAlt />, name: 'Scan QR code', handler: () => navigate('/identity/scan') },
+    { icon: <Download />, name: 'Import a DID', handler: () => navigate('/identity/import') },
+  ];
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
@@ -73,6 +81,7 @@ const Desktop: React.FC = () => {
         >
           <Outlet />
           <SidebarSpeedDial
+            actions={actions}
             sx={{
               position: 'absolute',
               bottom: bottomBarHeight + 15,
