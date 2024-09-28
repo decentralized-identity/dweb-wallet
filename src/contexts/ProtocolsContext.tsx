@@ -3,13 +3,11 @@ import { useAgent } from "./Context";
 import { DwnInterface, DwnProtocolDefinition } from "@web5/agent";
 
 interface ProtocolContextProps {
-  addProtocol: (didUri: string, protocolUrl: string, isPublished: boolean) => Promise<void>;
   listProtocols: (didUri: string) => DwnProtocolDefinition[];
   loadProtocols: (didUri: string) => Promise<void>;
 }
 
 export const ProtocolsContext = createContext<ProtocolContextProps>({
-  addProtocol: async () => {},
   listProtocols: () => [],
   loadProtocols: async () => {}
 });
@@ -42,50 +40,9 @@ export const ProtocolsProvider: React.FC<{ children: React.ReactNode }> = ({
     setProtocolsMap(new Map(protocolsMap))
   }
 
-  // this is for testing purposes
-  const addProtocol = async (didUri: string, protocolUrl: string, isPublished: boolean) => {
-    const { reply } = await agent!.dwn.processRequest({
-      author: didUri,
-      target: didUri,
-      messageType: DwnInterface.ProtocolsConfigure,
-      messageParams: {
-        definition: {
-          protocol: protocolUrl,
-          published: isPublished,
-          types: {
-            foo: {},
-            bar: {}
-          },
-          structure: {
-            foo: {
-              $actions: [{
-                who: 'anyone',
-                can: ['create', 'read', 'update', 'delete']
-              }],
-              bar: {
-                $actions: [{
-                  who: 'author',
-                  of: 'bar',
-                  can: ['create', 'read', 'update', 'delete']
-                }]
-              }
-            }
-          }
-        }
-      }
-    });
-
-    if (reply.status.code === 202) {
-      await loadProtocols(didUri)
-    } else {
-      console.error('Failed to add protocol', reply.status);
-    }
-  }
-
   return (
     <ProtocolsContext.Provider
       value={{
-        addProtocol,
         listProtocols,
         loadProtocols
       }}

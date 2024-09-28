@@ -1,22 +1,18 @@
 import React from 'react';
 import { SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material';
-import FileCopyIcon from '@mui/icons-material/FileCopyOutlined';
-import SaveIcon from '@mui/icons-material/Save';
-import PrintIcon from '@mui/icons-material/Print';
-import ShareIcon from '@mui/icons-material/Share';
+import { CameraAlt, Download, PersonAddAlt1 } from '@mui/icons-material';
 
 const actions = [
-  { icon: <FileCopyIcon />, name: 'Copy' },
-  { icon: <SaveIcon />, name: 'Save' },
-  { icon: <PrintIcon />, name: 'Print' },
-  { icon: <ShareIcon />, name: 'Share' },
+  { icon: <PersonAddAlt1 />, name: 'Create a new DID' },
+  { icon: <CameraAlt />, name: 'Scan QR code' },
+  { icon: <Download />, name: 'Import a DID' },
 ];
 
-const SidebarSpeedDial: React.FC = () => {
+const SidebarSpeedDial: React.FC<{ sx?: React.CSSProperties }> = ({ sx }) => {
   return (
     <SpeedDial
       ariaLabel="SpeedDial with persistent tooltips"
-      sx={{ position: 'absolute', top: 16, right: 16 }}
+      sx={sx}
       icon={<SpeedDialIcon />}
     >
       {actions.map((action) => (
@@ -25,6 +21,12 @@ const SidebarSpeedDial: React.FC = () => {
           icon={action.icon}
           tooltipTitle={action.name}
           tooltipOpen
+          sx={{
+            '& .MuiSpeedDialAction-staticTooltipLabel': {
+              maxWidth: 'none',
+              whiteSpace: 'nowrap',
+            },
+          }}
         />
       ))}
     </SpeedDial>

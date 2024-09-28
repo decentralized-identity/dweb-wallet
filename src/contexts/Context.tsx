@@ -69,13 +69,11 @@ export const useProtocols= () => {
   }
 
   const {
-    addProtocol,
     listProtocols,
     loadProtocols,
   } = context;
 
   return {
-    addProtocol,
     listProtocols,
     loadProtocols,
   };

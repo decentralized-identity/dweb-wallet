@@ -10,8 +10,6 @@ import {
   ListItem,
   ListItemText,
   TextField,
-  Checkbox,
-  FormControlLabel,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -19,6 +17,10 @@ import {
   Avatar,
   Chip,
   Paper,
+  Divider,
+  useTheme,
+  Tooltip,
+  ClickAwayListener,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -27,41 +29,29 @@ import {
   Lock,
   Delete,
   Backup,
+  Link as LinkIcon,
+  ContentCopy,
+  QrCode2,
 } from '@mui/icons-material';
+import { QRCodeSVG } from 'qrcode.react';
 
 const IdentityDetails: React.FC = () => {
   const { didUri } = useParams();
   const navigate = useNavigate();
   const { identities, deleteIdentity, exportIdentity } = useIdentities();
-  const { addProtocol, listProtocols, loadProtocols } = useProtocols();
+  const { listProtocols, loadProtocols } = useProtocols();
   const [ editWallets, setEditWallets ] = useState<string[]>([]);
-  const [protocolUrl, setProtocolUrl] = useState('');
-  const [isPublished, setIsPublished] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showAddProtocol, setShowAddProtocol] = useState(false);
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
+  const [qrImageUrl, setQrImageUrl] = useState<string | null>(null);
 
   const selectedIdentity = identities.find(identity => identity.didUri === didUri);
 
+  const theme = useTheme();
+
   const handleBack = () => {
     navigate('/identities');
-  };
-
-  const handleAddProtocol = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedIdentity && protocolUrl) {
-      setIsLoading(true);
-      try {
-        await addProtocol(selectedIdentity.didUri, protocolUrl, isPublished);
-        setProtocolUrl('');
-        setIsPublished(false);
-        setShowAddProtocol(false);
-      } catch (error) {
-        console.error('Error adding protocol:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
   };
 
   const handleDeleteIdentity = async () => {
@@ -75,6 +65,25 @@ const IdentityDetails: React.FC = () => {
     }
   };
 
+  const handleCopyDid = () => {
+    navigator.clipboard.writeText(selectedIdentity!.didUri);
+    setCopyTooltipOpen(true);
+    setTimeout(() => setCopyTooltipOpen(false), 1500);
+  };
+
+  const handleTooltipClose = () => {
+    setCopyTooltipOpen(false);
+  };
+
+  const handleQrCodeClick = () => {
+    setQrDialogOpen(true);
+  };
+
+  const protocols = useMemo(() => {
+    if (!selectedIdentity) return [];
+    return listProtocols(selectedIdentity.didUri);
+  }, [selectedIdentity]);
+
   useEffect(() => {
     if (selectedIdentity) {
       loadProtocols(selectedIdentity.didUri);
@@ -84,6 +93,33 @@ const IdentityDetails: React.FC = () => {
   const selectedPermissions = useMemo(() => {
     return selectedIdentity?.permissions || [];
   }, [selectedIdentity]);
+
+  useEffect(() => {
+    if (selectedIdentity && qrDialogOpen) {
+      if (selectedIdentity.avatarUrl) {
+        // If there's an avatar URL, use it directly
+        setQrImageUrl(selectedIdentity.avatarUrl);
+      } else {
+        // If no avatar, create a canvas with the first letter
+        const canvas = document.createElement('canvas');
+        canvas.width = 100;
+        canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#000000';
+          ctx.beginPath();
+          ctx.arc(50, 50, 50, 0, Math.PI * 2, true);
+          ctx.fill();
+          ctx.fillStyle = '#FFFFFF';
+          ctx.font = '50px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(selectedIdentity.name.charAt(0).toUpperCase(), 50, 50);
+          setQrImageUrl(canvas.toDataURL());
+        }
+      }
+    }
+  }, [selectedIdentity, qrDialogOpen]);
 
   if (!selectedIdentity) {
     return <Typography>Identity not found</Typography>;
@@ -97,62 +133,107 @@ const IdentityDetails: React.FC = () => {
         </IconButton>
       </Box>
 
-      <Paper elevation={3} sx={{ mb: 4, position: 'relative', overflow: 'hidden' }}>
-        <Box
-          component="img"
-          src={selectedIdentity.bannerUrl}
-          alt={`${selectedIdentity.name}'s banner`}
-          sx={{ width: '100%', height: 200, objectFit: 'cover' }}
-        />
-        <Avatar
-          src={selectedIdentity.avatarUrl}
-          alt={`${selectedIdentity.name}'s avatar`}
-          sx={{
-            width: 120,
-            height: 120,
-            position: 'absolute',
-            bottom: -60,
-            left: 24,
-            border: '4px solid white',
-          }}
-        />
+      <Paper elevation={3} sx={{ mb: 4, overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative' }}>
+          <Box
+            component="img"
+            src={selectedIdentity.bannerUrl}
+            alt={`${selectedIdentity.name}'s banner`}
+            sx={{ width: '100%', height: 200, objectFit: 'cover' }}
+          />
+          <Avatar
+            src={selectedIdentity.avatarUrl}
+            alt={`${selectedIdentity.name}'s avatar`}
+            sx={{
+              width: 120,
+              height: 120,
+              position: 'absolute',
+              bottom: -60,
+              left: 24,
+              border: `4px solid ${theme.palette.background.paper}`,
+              boxShadow: theme.shadows[3],
+            }}
+          >
+            {selectedIdentity.name.charAt(0).toUpperCase()}
+          </Avatar>
+        </Box>
+
+        <Box sx={{ mt: 8, p: 3 }}>
+          <Typography variant="h4">{selectedIdentity.name}</Typography>
+          <Typography variant="subtitle1" color="text.secondary">
+            {selectedIdentity.displayName}
+          </Typography>
+          {selectedIdentity.tagline && (
+            <Typography variant="body1" sx={{ mt: 1 }}>
+              {selectedIdentity.tagline}
+            </Typography>
+          )}
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
+            <Typography variant="caption" sx={{ mr: 1 }}>
+              ID: {selectedIdentity.didUri}
+            </Typography>
+            <IconButton
+              size="small"
+              onClick={handleQrCodeClick}
+              aria-label="show QR code"
+              sx={{ p: 0.5, mr: 0.5 }}
+            >
+              <QrCode2 fontSize="small" sx={{ width: 16, height: 16 }} />
+            </IconButton>
+            <ClickAwayListener onClickAway={handleTooltipClose}>
+              <Tooltip
+                title={copyTooltipOpen ? "Copied!" : "Copy to clipboard"}
+                placement="right"
+                open={copyTooltipOpen}
+                disableFocusListener
+                disableHoverListener
+                disableTouchListener
+                PopperProps={{
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -10],
+                      },
+                    },
+                  ],
+                }}
+              >
+                <IconButton
+                  size="small"
+                  onClick={handleCopyDid}
+                  aria-label="copy DID"
+                  sx={{ p: 0.5 }}
+                >
+                  <ContentCopy fontSize="small" sx={{ width: 16, height: 16 }} />
+                </IconButton>
+              </Tooltip>
+            </ClickAwayListener>
+          </Box>
+        </Box>
       </Paper>
 
-      <Box sx={{ ml: 2, mb: 4 }}>
-        <Typography variant="h4">{selectedIdentity.name}</Typography>
-        <Typography variant="subtitle1">{selectedIdentity.displayName}</Typography>
-        {selectedIdentity.tagline && (
-          <Typography variant="body1" sx={{ mt: 1 }}>{selectedIdentity.tagline}</Typography>
-        )}
-        <Typography variant="caption" sx={{ mt: 1, display: 'block' }}>
-          ID: {selectedIdentity.didUri}
-        </Typography>
-      </Box>
-
       {selectedIdentity.bio && (
-        <Box sx={{ mb: 4 }}>
-          <Typography variant="h6">Bio</Typography>
+        <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
+          <Typography variant="h6" gutterBottom>Bio</Typography>
           <Typography variant="body1">{selectedIdentity.bio}</Typography>
-        </Box>
+        </Paper>
       )}
 
-      <Box sx={{ mb: 4 }}>
+      <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <LinkIcon sx={{ mr: 1 }} />
           <Typography variant="h6">Protocols</Typography>
-          <IconButton
-            onClick={() => setShowAddProtocol(!showAddProtocol)}
-            aria-label="Add protocol"
-            size="small"
-            sx={{ ml: 1 }}
-          >
-            <Add />
-          </IconButton>
         </Box>
-        {listProtocols(selectedIdentity.didUri).length > 0 ? (
-          <List>
-            {listProtocols(selectedIdentity.didUri).map((protocol, index) => (
-              <ListItem key={index}>
-                <ListItemText primary={protocol.protocol} />
+        <Divider sx={{ mb: 2 }} />
+        {protocols.length > 0 ? (
+          <List disablePadding>
+            {protocols.map((protocol, index) => (
+              <ListItem key={index} disablePadding>
+                <ListItemText 
+                  primary={protocol.protocol} 
+                  secondary={protocol.published ? 'Published' : 'Private'}
+                />
                 {!protocol.published && (
                   <Lock fontSize="small" color="action" />
                 )}
@@ -162,9 +243,9 @@ const IdentityDetails: React.FC = () => {
         ) : (
           <Typography variant="body2">No protocols added yet.</Typography>
         )}
-      </Box>
+      </Paper>
 
-      <Box sx={{ mb: 4 }}>
+      <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6">Wallets</Typography>
           <IconButton
@@ -172,15 +253,16 @@ const IdentityDetails: React.FC = () => {
             onClick={() => setEditWallets(selectedIdentity.webWallets)}
             aria-label="Edit wallets"
             size="small"
-            sx={{ ml: 1 }}
+            sx={{ ml: 'auto' }}
           >
             <Edit />
           </IconButton>
         </Box>
+        <Divider sx={{ mb: 2 }} />
         {!editWallets.length && (
-          <List>
+          <List disablePadding>
             {selectedIdentity.webWallets.map((wallet) => (
-              <ListItem key={wallet}>
+              <ListItem key={wallet} disablePadding>
                 <ListItemText primary={wallet} />
               </ListItem>
             ))}
@@ -223,10 +305,11 @@ const IdentityDetails: React.FC = () => {
             </Box>
           </Box>
         )}
-      </Box>
+      </Paper>
 
-      <Box sx={{ mb: 4 }}>
+      <Paper elevation={1} sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" sx={{ mb: 2 }}>Permissions</Typography>
+        <Divider sx={{ mb: 2 }} />
         {selectedPermissions.length > 0 ? (
           <Box>
             {selectedPermissions.map((permission, index) => (
@@ -236,7 +319,7 @@ const IdentityDetails: React.FC = () => {
         ) : (
           <Typography variant="body2">No permissions assigned yet.</Typography>
         )}
-      </Box>
+      </Paper>
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
         <Button
@@ -256,47 +339,6 @@ const IdentityDetails: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Add Protocol Dialog */}
-      <Dialog open={showAddProtocol} onClose={() => setShowAddProtocol(false)}>
-        <DialogTitle>Add a Protocol</DialogTitle>
-        <DialogContent>
-          <form onSubmit={handleAddProtocol}>
-            <TextField
-              autoFocus
-              margin="dense"
-              id="protocolUrl"
-              label="Protocol URL"
-              type="text"
-              fullWidth
-              variant="outlined"
-              value={protocolUrl}
-              onChange={(e) => setProtocolUrl(e.target.value)}
-              placeholder="https://example.com/protocol"
-              required
-              disabled={isLoading}
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={isPublished}
-                  onChange={(e) => setIsPublished(e.target.checked)}
-                  disabled={isLoading}
-                />
-              }
-              label="Published"
-            />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowAddProtocol(false)} disabled={isLoading}>
-            Cancel
-          </Button>
-          <Button onClick={handleAddProtocol} disabled={isLoading}>
-            {isLoading ? 'Adding...' : 'Add Protocol'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={showDeleteConfirmation}
@@ -315,6 +357,33 @@ const IdentityDetails: React.FC = () => {
           <Button onClick={handleDeleteIdentity} color="error">
             Delete
           </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* QR Code Dialog */}
+      <Dialog open={qrDialogOpen} onClose={() => setQrDialogOpen(false)}>
+        <DialogTitle sx={{ textAlign: 'center', pb: 0 }}>QR Code for {selectedIdentity.name}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 2 }}>
+            <QRCodeSVG
+              value={selectedIdentity.didUri}
+              size={300}
+              imageSettings={{
+                src: qrImageUrl || '',
+                x: undefined,
+                y: undefined,
+                height: 75,
+                width: 75,
+                excavate: true,
+              }}
+            />
+          </Box>
+          <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+            Scan this QR code to share the DID
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setQrDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
     </Box>

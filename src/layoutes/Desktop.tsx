@@ -2,23 +2,13 @@ import React from 'react';
 import { Box, AppBar, Toolbar, Typography, Drawer, List, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material';
 import { useIdentities } from '@/contexts/Context';
 import IdentityCard from '@/components/identity/IdentityCard';
-import FileCopyIcon from '@mui/icons-material/FileCopyOutlined';
-import SaveIcon from '@mui/icons-material/Save';
-import PrintIcon from '@mui/icons-material/Print';
-import ShareIcon from '@mui/icons-material/Share';
 import { Outlet, useNavigate } from 'react-router-dom';
 import { Identity } from '@/types';
+import SidebarSpeedDial from '@/components/SidebarSpeedDial';
 
 const drawerWidth = 400; // Wider drawer for identity cards
 const topBarHeight = 64; // Standard AppBar height
 const bottomBarHeight = 50; // Custom height for bottom bar
-
-const actions = [
-  { icon: <FileCopyIcon />, name: 'Copy' },
-  { icon: <SaveIcon />, name: 'Save' },
-  { icon: <PrintIcon />, name: 'Print' },
-  { icon: <ShareIcon />, name: 'Share' },
-];
 
 const Desktop: React.FC = () => {
   const { identities, selectedIdentity, setSelectedIdentity } = useIdentities();
@@ -67,22 +57,6 @@ const Desktop: React.FC = () => {
                 />
               ))}
             </List>
-            
-            {/* SpeedDial component */}
-            <SpeedDial
-              ariaLabel="SpeedDial with persistent tooltips"
-              sx={{ position: 'absolute', bottom: 16, right: 16 }}
-              icon={<SpeedDialIcon />}
-            >
-              {actions.map((action) => (
-                <SpeedDialAction
-                  key={action.name}
-                  icon={action.icon}
-                  tooltipTitle={action.name}
-                  tooltipOpen
-                />
-              ))}
-            </SpeedDial>
           </Box>
         </Drawer>
 
@@ -98,6 +72,13 @@ const Desktop: React.FC = () => {
           }}
         >
           <Outlet />
+          <SidebarSpeedDial
+            sx={{
+              position: 'absolute',
+              bottom: bottomBarHeight + 15,
+              right: 15,
+            }}
+          />
         </Box>
       </Box>
 
