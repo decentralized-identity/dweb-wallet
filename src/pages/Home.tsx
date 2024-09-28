@@ -90,12 +90,12 @@ const Home: React.FC = () => {
       {!showSeedScreen && !isDragging && (
         <div>
           <div>
-            <IdentityList />
           </div>
         <div>
           {selectedIdentity ? (
             <ProtocolsProvider>
-              <IdentityDetails />
+              <IdentityDetails 
+/>
             </ProtocolsProvider>
           ) : (
             <div>

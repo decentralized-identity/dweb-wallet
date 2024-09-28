@@ -3,7 +3,7 @@ import { Identity } from "@/types";
 import { Web5 } from "@web5/api";
 import { useAgent } from "./Context";
 import { profileDefinition } from "./protocols";
-import { DwnInterface, PortableIdentity } from "@web5/agent";
+import { DwnInterface, getDwnServiceEndpointUrls, PortableIdentity } from "@web5/agent";
 import { PortableDid } from "@web5/dids";
 
 interface IdentityContextProps {
@@ -14,8 +14,8 @@ interface IdentityContextProps {
   setSelectedIdentity: (identity: Identity | undefined) => void;
   createIdentity: (params: CreateIdentityParams) => Promise<string | undefined>;
   deleteIdentity: (didUri: string) => Promise<void>;
-  uploadAvatar: (didUri: string, avatar: File) => Promise<string | undefined>;
-  uploadBanner: (didUri: string, banner: File) => Promise<string | undefined>;
+  uploadAvatar: (didUri: string, avatar: File | Blob) => Promise<string | undefined>;
+  uploadBanner: (didUri: string, banner: File | Blob) => Promise<string | undefined>;
   getIdentity: (didUri: string) => Promise<Identity | undefined>;
   exportIdentity: (didUri: string) => Promise<void>;
   importIdentity: (...identities: PortableIdentity[]) => Promise<void>;
@@ -42,7 +42,7 @@ export interface CreateIdentityParams {
   displayName: string;
   tagline: string;
   bio: string;
-  dwnEndpoint: string;
+  dwnEndpoints: string[];
   walletHost: string;
 }
 
@@ -97,7 +97,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoadingIdentities(false);
   }
 
-  const createIdentity = async ({ persona, name, displayName, tagline, bio, dwnEndpoint, walletHost }: CreateIdentityParams) => {
+  const createIdentity = async ({ persona, name, displayName, tagline, bio, dwnEndpoints, walletHost }: CreateIdentityParams) => {
     if (agent) {
       const identity = await agent.identity.create({
         store     : true,
@@ -107,7 +107,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
             {
               id              : 'dwn',
               type            : 'DecentralizedWebNode',
-              serviceEndpoint : [ dwnEndpoint ],
+              serviceEndpoint : dwnEndpoints,
               enc             : '#enc',
               sig             : '#sig',
             }
@@ -229,7 +229,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }
 
-  const uploadAvatar = async (didUri: string, avatar: File) => {
+  const uploadAvatar = async (didUri: string, avatar: File | Blob) => {
     if (agent) {
       const web5 = new Web5({ agent, connectedDid: didUri });
 
@@ -256,7 +256,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }
 
-  const uploadBanner = async (didUri: string, banner: File) => {
+  const uploadBanner = async (didUri: string, banner: File | Blob) => {
     if (agent) {
       const web5 = new Web5({ agent, connectedDid: didUri });
 
@@ -365,7 +365,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error('could not parse social records', error);
       }
 
-      
+      const dwnEndpoints = await getDwnServiceEndpointUrls(didUri, agent.did);
+
       return {
         persona,
         didUri,
@@ -375,7 +376,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         bio,
         avatarUrl,
         bannerUrl,
-        webWallets: wallets.webWallets
+        dwnEndpoints,
+        webWallets: wallets.webWallets,
       } 
     }
   }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useIdentities } from '@/contexts/Context';
 import {
   Button,
@@ -12,14 +12,16 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Grid2'; // Updated import for Grid2
 import { PlusIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const AddIdentityPage: React.FC = () => {
+const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
+  const { didUri } = useParams();
   const navigate = useNavigate();
-  const { createIdentity, uploadAvatar, uploadBanner } = useIdentities();
+  const { createIdentity, uploadAvatar, uploadBanner, selectedIdentity, setSelectedIdentity, identities } = useIdentities();
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+
 
   const [formData, setFormData] = useState({
     persona: '',
@@ -27,14 +29,54 @@ const AddIdentityPage: React.FC = () => {
     displayName: '',
     tagline: '',
     bio: '',
-    dwnEndpoint: 'https://dwn.tbddev.org/latest',
-    avatar: null as File | null,
-    banner: null as File | null,
+    dwnEndpoints: ['https://dwn.tbddev.org/latest'],
+    avatar: null as File | Blob | null,
+    banner: null as File | Blob | null,
   });
 
+  useEffect(() => {
+
+    const loadIdentityForm = async () => {
+      if (!selectedIdentity) return;
+
+        let avatar: File | Blob | null = null;
+        if (selectedIdentity.avatarUrl) {
+          avatar = await fetch(selectedIdentity.avatarUrl).then(r => r.blob());
+        }
+
+        let banner: File | Blob | null = null;
+        if (selectedIdentity.bannerUrl) {
+          banner = await fetch(selectedIdentity.bannerUrl).then(r => r.blob());
+        }
+  
+        setFormData({
+          persona: selectedIdentity.persona,
+          name: selectedIdentity.name,
+          displayName: selectedIdentity.displayName,
+          tagline: selectedIdentity.tagline,
+          bio: selectedIdentity.bio,
+          dwnEndpoints: selectedIdentity.dwnEndpoints,
+          avatar,
+          banner,
+        })
+    }
+
+    if (edit && selectedIdentity) {
+      console.log('loading identity form');
+      loadIdentityForm();
+    }
+
+    if (!selectedIdentity) {
+      const identity = identities.find(identity => identity.didUri === didUri);
+      if (identity) {
+        setSelectedIdentity(identity);
+      }
+    }
+  
+  }, [ edit, selectedIdentity, didUri, identities ])
+
   const submitDisabled = useMemo(() => {
-    console.log(formData);
-    return formData.persona === '' || formData.name === '' || formData.displayName === '' || formData.dwnEndpoint === '';
+    return formData.persona === '' || formData.name === '' || formData.displayName === '' || formData.dwnEndpoints.length === 0;
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -48,7 +90,7 @@ const AddIdentityPage: React.FC = () => {
         displayName: formData.displayName,
         tagline: formData.tagline,  
         bio: formData.bio,
-        dwnEndpoint: formData.dwnEndpoint,
+        dwnEndpoints: formData.dwnEndpoints,
         walletHost: window.location.origin,
       });
 
@@ -107,7 +149,7 @@ const AddIdentityPage: React.FC = () => {
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh'}}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Add New Identity
+          {edit ? 'Edit Identity' : 'Add a New Identity'}
         </Typography>
         <Divider sx={{ mb: 4 }} />
         <form onSubmit={handleSubmit}>
@@ -197,14 +239,31 @@ const AddIdentityPage: React.FC = () => {
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  fullWidth
-                  label="DWN Endpoint"
-                  name="dwnEndpoint"
-                  value={formData.dwnEndpoint}
-                  onChange={handleInputChange}
-                  required
-                />
+                {formData.dwnEndpoints.map((dwnEndpoint, index) => (
+                  <Box>
+                    <TextField
+                      key={dwnEndpoint}
+                      fullWidth
+                    label="DWN Endpoint"
+                    name="dwnEndpoint"
+                    value={dwnEndpoint}
+                    onChange={handleInputChange}
+                      required
+                    />
+                    <Button
+                      variant="outlined"
+                      onClick={() => formData.dwnEndpoints.splice(index, 1)}
+                    >
+                      Remove
+                    </Button>
+                  </Box>
+                ))}
+                <Button
+                  variant="outlined"
+                  onClick={() => formData.dwnEndpoints.push('https://dwn.tbddev.org/latest')}
+                >
+                  Add Endpoint
+                </Button>
               </Grid>
               {bannerPreview && (
                 <Grid size={12}>

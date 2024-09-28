@@ -10,4 +10,5 @@ export interface Identity {
   protocols?: string[];
   permissions?: string[]; // Add this line
   webWallets: string[];
+  dwnEndpoints: string[];
 }

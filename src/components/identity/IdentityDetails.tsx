@@ -93,6 +93,10 @@ const IdentityDetails: React.FC = () => {
     }
   };
 
+  const handleEditIdentity = () => {
+    navigate(`/identity/edit/${selectedIdentity?.didUri}`);
+  }
+
   const handleDeleteIdentity = async () => {
     if (selectedIdentity) {
       try {
@@ -195,7 +199,7 @@ const IdentityDetails: React.FC = () => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
         >
-          <MenuItem onClick={() => alert('Edit')}>
+          <MenuItem onClick={handleEditIdentity}>
             <ListItemIcon>
               <Create fontSize="small" />
             </ListItemIcon>

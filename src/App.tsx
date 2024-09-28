@@ -1,4 +1,4 @@
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { AgentProvider } from '@/contexts/AgentContext';
 import { IdentitiesProvider } from '@/contexts/IdentitiesContext';
 import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
@@ -6,12 +6,11 @@ import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
 import { activatePolyfills } from '@web5/browser';
 import Desktop from './layoutes/Desktop';
 import IdentityDetails from './components/identity/IdentityDetails';
-import AddIdentityModal from './components/identity/AddIdentityModal';
+import AddIdentity from './pages/AddIdentityPage';
 
 activatePolyfills();
 
 function App() {
-  const navigate = useNavigate();
 
   window.addEventListener('message', async e => {
     const { type, did } = e.data;
@@ -38,7 +37,8 @@ function App() {
             <Route path="/" element={<Desktop />}>
               <Route index element={<div />} />
               <Route path="identity/:didUri" element={<IdentityDetails />} />
-              <Route path="identity/create" element={<AddIdentityModal />} />
+              <Route path="identity/create" element={<AddIdentity />} />
+              <Route path="identity/edit/:didUri" element={<AddIdentity edit />} />
             </Route>
           </Routes>
         </IdentitiesProvider>

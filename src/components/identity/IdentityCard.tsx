@@ -1,33 +1,37 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardMedia, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, useTheme } from '@mui/material';
+import { Card, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, useTheme, alpha } from '@mui/material';
 import { Identity } from '@/types';
 import { truncateDid } from '@/lib/utils';
-import { CopyIcon } from 'lucide-react';
+import { CopyIcon, CheckCircle } from 'lucide-react';
 
 interface IdentityCardProps {
   identity: Identity;
   selected: boolean;
+  compact?: boolean;
   onClick: () => void;
 }
 
 const StyledCard = styled(Card)(({ theme }) => ({
   position: 'relative',
-  marginBottom: theme.spacing(2),
-  transition: theme.transitions.create(['background-color', 'box-shadow'], {
-    duration: theme.transitions.duration.short,
+  transition: theme.transitions.create(['background-color', 'box-shadow', 'transform'], {
+    duration: theme.transitions.duration.shorter,
   }),
   '&:hover': {
-    backgroundColor: theme.palette.action.hover,
+    transform: 'translateY(-2px)',
+    boxShadow: theme.shadows[4],
   },
 }));
 
-const AvatarWrapper = styled(Box)(({ theme }) => ({
+const BannerOverlay = styled(Box)(({ theme }) => ({
   position: 'absolute',
-  top: theme.spacing(2),
-  left: theme.spacing(2),
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
 }));
 
-const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick }) => {
+const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick, compact = false }) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const theme = useTheme();
 
@@ -47,66 +51,129 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
       onClick={onClick}
       raised={selected}
       sx={{ 
-        cursor: selected ? 'default' : 'pointer',
+        cursor: 'pointer',
         bgcolor: selected ? 'action.selected' : 'background.paper',
+        display: 'flex',
+        flexDirection: compact ? 'row' : 'column',
+        alignItems: compact ? 'center' : 'stretch',
+        height: compact ? 72 : 200,
+        width: compact ? '100%' : '100%',
+        maxWidth: compact ? 'none' : 550,
+        overflow: 'hidden',
+        borderRadius: 2,
+        margin: theme.spacing(1), // Added margin
       }}
     >
-      <CardMedia
-        component="img"
-        height="140"
-        sx={{ opacity: selected ? 0.5 : 1 }}
-        image={identity.bannerUrl}
-        alt={`${identity.name}'s banner`}
-      />
-      <AvatarWrapper>
-        <Avatar 
-          src={identity.avatarUrl} 
-          alt={identity.name}
-          sx={{ 
-            width: 56, 
-            height: 56, 
-            border: selected ? `3px solid ${theme.palette.primary.main}` : '2px solid white'
-          }}
-        >
-          {identity.name.charAt(0).toUpperCase()}
-        </Avatar>
-      </AvatarWrapper>
-      <CardContent>
-        <Typography variant="h6" component="div">
-          {identity.name}
-        </Typography>
-        {identity.displayName && (
-          <Typography variant="body2">
-            {identity.displayName}
-          </Typography>
-        )}
-        <Typography variant="caption" sx={{ display: 'flex', alignItems: 'center' }}>
-          {truncateDid(identity.didUri, 50)}
-          {selected && <ClickAwayListener onClickAway={handleTooltipClose}>
-            <Tooltip
-              sx={{ zIndex: (theme) => theme.zIndex.drawer + 2 }}
-              placement="right"
-              onClose={handleTooltipClose}
-              open={tooltipOpen}
-              title="Copied!"
-              PopperProps={{
-                modifiers: [
-                  {
-                    name: 'offset',
-                    options: {
-                      offset: [0, -10],
-                    },
-                  },
-                ],
+      {!compact && (
+        <Box sx={{ position: 'relative', height: '100%', width: '100%' }}>
+          <Box
+            component="img"
+            src={identity.bannerUrl}
+            alt={`${identity.name}'s banner`}
+            sx={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+          <BannerOverlay />
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 16,
+              left: 16,
+              right: 16,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+            }}
+          >
+            <Typography variant="h6" component="div" sx={{ color: 'common.white', mb: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+              {identity.name}
+            </Typography>
+            {identity.displayName && (
+              <Typography variant="body2" sx={{ color: 'common.white', mb: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+                {identity.displayName}
+              </Typography>
+            )}
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography variant="caption" sx={{ color: 'common.white', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+                {truncateDid(identity.didUri, 30)}
+              </Typography>
+              <ClickAwayListener onClickAway={handleTooltipClose}>
+                <Tooltip
+                  open={tooltipOpen}
+                  title="Copied!"
+                  placement="top"
+                  onClose={handleTooltipClose}
+                >
+                  <Box component="span" sx={{ ml: 0.5, cursor: 'pointer' }}>
+                    <CopyIcon size={14} color="white" onClick={handleCopyDid} />
+                  </Box>
+                </Tooltip>
+              </ClickAwayListener>
+            </Box>
+          </Box>
+          <Avatar 
+            src={identity.avatarUrl} 
+            alt={identity.name}
+            sx={{ 
+              position: 'absolute',
+              top: 16,
+              left: 16,
+              width: 64,
+              height: 64,
+              border: `3px solid ${theme.palette.background.paper}`,
+              boxShadow: theme.shadows[3],
+            }}
+          >
+            {identity.name.charAt(0).toUpperCase()}
+          </Avatar>
+          {selected && (
+            <CheckCircle 
+              size={24}
+              color={theme.palette.primary.main}
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                background: theme.palette.background.paper,
+                borderRadius: '50%',
               }}
-            >
-              <Box component="span" sx={{ ml: 0.5, cursor: 'pointer' }}>
-                <CopyIcon size={12} onClick={handleCopyDid} />
-              </Box>
-            </Tooltip>
-          </ClickAwayListener>}
-        </Typography>
-      </CardContent>
+            />
+          )}
+        </Box>
+      )}
+      {compact && (
+        <Box sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          width: '100%',
+          height: '100%',
+          px: 2,
+        }}>
+          <Avatar 
+            src={identity.avatarUrl} 
+            alt={identity.name}
+            sx={{ 
+              width: 48, 
+              height: 48, 
+              mr: 2,
+            }}
+          >
+            {identity.name.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+            <Typography variant="subtitle1" noWrap>
+              {identity.name}
+            </Typography>
+            <Typography variant="caption" noWrap sx={{ color: 'text.secondary' }}>
+              {truncateDid(identity.didUri, 20)}
+            </Typography>
+          </Box>
+          {selected && <CheckCircle size={20} color={theme.palette.primary.main} style={{ marginLeft: 8 }} />}
+        </Box>
+      )}
     </StyledCard>
   );
 };

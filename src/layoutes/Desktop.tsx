@@ -94,6 +94,7 @@ const Desktop: React.FC = () => {
                 identity={identity}
                 selected={selectedIdentity?.didUri === identity.didUri}
                 onClick={() => handleIdentityClick(identity)}
+                compact={true}
               />
             ))}
           </Box>
