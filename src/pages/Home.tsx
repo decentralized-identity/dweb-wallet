@@ -1,6 +1,5 @@
 import BottomBar from "@/components/BottomBar";
 import IdentityDetails from "@/components/identity/IdentityDetails";
-import IdentityList from "@/components/identity/IdentityList";
 import TopBar from "@/components/TopBar";
 import { useBackupSeed, useIdentities } from "@/contexts/Context";
 import { ProtocolsProvider } from "@/contexts/ProtocolsContext";
@@ -96,9 +95,7 @@ const Home: React.FC = () => {
         <div>
           {selectedIdentity ? (
             <ProtocolsProvider>
-              <IdentityDetails 
-                onBack={() => setSelectedIdentity(undefined)}
-              />
+              <IdentityDetails />
             </ProtocolsProvider>
           ) : (
             <div>

@@ -14,7 +14,8 @@ self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 // disable workbox logging
-self.__WB_
+//@ts-expect-error - I don't know why this erros
+self.__WB_DISABLE_DEV_LOGS = true;
 
 // self.__WB_MANIFEST is the default injection point
 precacheAndRoute(self.__WB_MANIFEST);

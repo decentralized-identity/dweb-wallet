@@ -5,7 +5,6 @@ import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
 
 import { activatePolyfills } from '@web5/browser';
 import Desktop from './layoutes/Desktop';
-import IdentityList from './components/identity/IdentityList';
 import IdentityDetails from './components/identity/IdentityDetails';
 import AddIdentityModal from './components/identity/AddIdentityModal';
 
@@ -37,7 +36,7 @@ function App() {
         <IdentitiesProvider>
           <Routes>
             <Route path="/" element={<Desktop />}>
-              <Route index element={<IdentityList />} />
+              <Route index element={<div />} />
               <Route path="identity/:didUri" element={<IdentityDetails />} />
               <Route path="identity/create" element={<AddIdentityModal />} />
             </Route>

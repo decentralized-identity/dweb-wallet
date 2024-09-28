@@ -1,5 +1,5 @@
-import React from 'react';
-import { Box, AppBar, Toolbar, Typography, Drawer, List, SpeedDial, SpeedDialIcon, SpeedDialAction } from '@mui/material';
+import React, { useRef, useEffect } from 'react';
+import { Box, AppBar, Toolbar, Typography, Drawer } from '@mui/material';
 import { useIdentities } from '@/contexts/Context';
 import IdentityCard from '@/components/identity/IdentityCard';
 import { Outlet, useNavigate } from 'react-router-dom';
@@ -13,8 +13,27 @@ const topBarHeight = 64; // Standard AppBar height
 const bottomBarHeight = 50; // Custom height for bottom bar
 
 const Desktop: React.FC = () => {
-  const { identities, selectedIdentity, setSelectedIdentity } = useIdentities();
   const navigate = useNavigate();
+  const { identities, selectedIdentity, setSelectedIdentity } = useIdentities();
+  const leftPaneRef = useRef<HTMLDivElement>(null);
+  const rightPaneRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const preventPropagation = (e: WheelEvent) => {
+      e.stopPropagation();
+    };
+
+    const leftPane = leftPaneRef.current;
+    const rightPane = rightPaneRef.current;
+
+    if (leftPane) leftPane.addEventListener('wheel', preventPropagation);
+    if (rightPane) rightPane.addEventListener('wheel', preventPropagation);
+
+    return () => {
+      if (leftPane) leftPane.removeEventListener('wheel', preventPropagation);
+      if (rightPane) rightPane.removeEventListener('wheel', preventPropagation);
+    };
+  }, []);
 
   const handleIdentityClick = (identity: Identity) => {
     setSelectedIdentity(identity);
@@ -39,7 +58,12 @@ const Desktop: React.FC = () => {
       </AppBar>
 
       {/* Main content area */}
-      <Box sx={{ display: 'flex', flexGrow: 1, pt: `${topBarHeight}px`, pb: `${bottomBarHeight}px` }}>
+      <Box sx={{ 
+        display: 'flex', 
+        flexGrow: 1, 
+        pt: `${topBarHeight}px`, 
+        pb: `${bottomBarHeight}px`
+      }}>
         {/* Sidebar */}
         <Drawer
           variant="permanent"
@@ -49,34 +73,42 @@ const Desktop: React.FC = () => {
             [`& .MuiDrawer-paper`]: { 
               width: drawerWidth, 
               boxSizing: 'border-box',
-              height: `calc(100% - ${topBarHeight}px - ${bottomBarHeight}px)`,
               top: `${topBarHeight}px`,
+              height: `calc(100% - ${topBarHeight}px - ${bottomBarHeight}px)`,
+              overflowY: 'auto',
             },
           }}
         >
-          <Box sx={{ overflow: 'auto', p: 2, height: '100%', position: 'relative' }}>
-            <List>
-              {identities.map((identity) => (
-                <IdentityCard
-                  key={identity.didUri}
-                  identity={identity}
-                  selected={selectedIdentity?.didUri === identity.didUri}
-                  onClick={() => handleIdentityClick(identity)}
-                />
-              ))}
-            </List>
+          <Box 
+            ref={leftPaneRef}
+            sx={{ 
+              p: 2, 
+              height: '100%', 
+              overflowY: 'auto',
+              overscrollBehavior: 'contain',
+            }}
+          >
+            {identities.map((identity) => (
+              <IdentityCard
+                key={identity.didUri}
+                identity={identity}
+                selected={selectedIdentity?.didUri === identity.didUri}
+                onClick={() => handleIdentityClick(identity)}
+              />
+            ))}
           </Box>
         </Drawer>
 
         {/* Main content */}
         <Box 
+          ref={rightPaneRef}
           component="main" 
           sx={{ 
             flexGrow: 1, 
-            p: 3, 
             width: `calc(100% - ${drawerWidth}px)`,
-            overflow: 'auto',
-            height: `calc(100vh - ${topBarHeight}px - ${bottomBarHeight}px)`,
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            position: 'relative',
           }}
         >
           <Outlet />
@@ -84,7 +116,7 @@ const Desktop: React.FC = () => {
             actions={actions}
             sx={{
               position: 'absolute',
-              bottom: bottomBarHeight + 15,
+              bottom: 15,
               right: 15,
             }}
           />

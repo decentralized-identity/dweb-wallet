@@ -7,12 +7,15 @@ import {
   Avatar,
   Typography,
   CircularProgress,
-  Container,
   Divider,
+  IconButton,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2'; // Updated import for Grid2
+import { PlusIcon } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AddIdentityPage: React.FC = () => {
+  const navigate = useNavigate();
   const { createIdentity, uploadAvatar, uploadBanner } = useIdentities();
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -30,6 +33,7 @@ const AddIdentityPage: React.FC = () => {
   });
 
   const submitDisabled = useMemo(() => {
+    console.log(formData);
     return formData.persona === '' || formData.name === '' || formData.displayName === '' || formData.dwnEndpoint === '';
   }, [formData]);
 
@@ -60,9 +64,7 @@ const AddIdentityPage: React.FC = () => {
         await uploadBanner(didUri, formData.banner);
       }
 
-      // Instead of closing, you might want to redirect or show a success message
-      // For example:
-      // router.push('/identities');
+      navigate(`/identity/${didUri}`);
     } catch (error) {
       console.error('Error creating identity:', error);
       // Handle error (e.g., show error message to user)
@@ -94,6 +96,14 @@ const AddIdentityPage: React.FC = () => {
     }
   };
 
+  const handleClearBanner = (e: React.MouseEvent) => {
+    if (formData.banner) {
+      e.preventDefault();
+      setBannerPreview(null);
+      setFormData({ ...formData, banner: null });
+    }
+  }
+
   return (
     <Box sx={{ bgcolor: 'background.default', minHeight: '100vh'}}>
         <Typography variant="h4" component="h1" gutterBottom>
@@ -110,21 +120,59 @@ const AddIdentityPage: React.FC = () => {
               <Grid size={{ xs: 12, sm: 8 }}>
                 <TextField
                   fullWidth
-                  label="Name"
-                  value={formData.name}
+                  label="Persona"
+                  name="persona"
+                  value={formData.persona}
                   onChange={handleInputChange}
-                  name="name"
+                  placeholder="Social, Professional, Gaming, etc."
                   required
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 8 }}>
                 <TextField
                   fullWidth
-                  label="Persona"
-                  name="persona"
-                  value={formData.persona}
+                  label="Display Name"
+                  name="displayName"
+                  value={formData.displayName}
                   onChange={handleInputChange}
-                  placeholder="Social, Professional, Gaming, etc."
+                  placeholder="Display Name"
+                  required
+                />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8 }} sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
+                  <Avatar
+                    src={avatarPreview || undefined}
+                    sx={{ width: 60, height: 60 }}
+                  />
+                  <IconButton
+                    component="label"
+                    sx={{
+                      position: 'absolute',
+                      right: 10,
+                      bottom: 10,
+                      opacity: 0.5,
+                      backgroundColor: 'background.paper',
+                      '&:hover': { backgroundColor: 'background.default' },
+                    }}
+                  >
+                    <PlusIcon />
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      width={20}
+                      name="avatar"
+                    />
+                  </IconButton>
+                </Box>
+                <TextField
+                  fullWidth
+                  label="Name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  name="name"
                   required
                 />
               </Grid>
@@ -158,38 +206,38 @@ const AddIdentityPage: React.FC = () => {
                   required
                 />
               </Grid>
+              {bannerPreview && (
+                <Grid size={12}>
+                  <Box display="flex" flexDirection="column" alignItems="left">
+                    <Typography variant="subtitle2">Banner Preview:</Typography>
+                    <Box
+                      sx={{
+                        width: '100%',
+                        maxWidth: 680,
+                        height: 100,
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <img 
+                        src={bannerPreview} 
+                        alt="Banner preview" 
+                        style={{ width: '100%', height: 'auto', maxHeight: 100, objectFit: 'cover' }} 
+                      />
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
               <Grid size={{ xs: 12, sm: 8 }}>
-                <Box display="flex" alignItems="center">
-                  <Avatar
-                    src={avatarPreview || undefined}
-                    sx={{ width: 60, height: 60, mr: 2 }}
-                  />
+                {<Box display="flex" alignItems="center">
                   <Button
                     variant="outlined"
                     component="label"
+                    onClick={handleClearBanner}
                   >
-                    Upload Avatar
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      name="avatar"
-                    />
-                  </Button>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <Box display="flex" alignItems="center">
-                  <Avatar
-                    src={bannerPreview || undefined}
-                    sx={{ width: 60, height: 60, mr: 2 }}
-                  />
-                  <Button
-                    variant="outlined"
-                    component="label"
-                  >
-                    Upload Banner
+                    {bannerPreview ? 'Clear Banner' : 'Upload Banner'}
                     <input
                       type="file"
                       hidden
@@ -198,29 +246,21 @@ const AddIdentityPage: React.FC = () => {
                       name="banner"
                     />
                   </Button>
-                </Box>
+                </Box>}
               </Grid>
-              <Grid size={12}>
-                <Typography variant="subtitle1">Banner Preview:</Typography>
-                <img 
-                  src={bannerPreview || undefined} 
-                  alt="Banner preview" 
-                  style={{ width: '100%', height: 'auto', maxHeight: 100, objectFit: 'cover' }} 
-                />
-              </Grid>
+              <Box mt={4}>
+                <Button
+                  type="submit"
+                  disabled={loading || submitDisabled}
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                >
+                  Add Identity
+                </Button>
+              </Box>
             </Grid>
           )}
-          <Box mt={4}>
-            <Button
-              type="submit"
-              disabled={loading || submitDisabled}
-              variant="contained"
-              color="primary"
-              size="large"
-            >
-              Add Identity
-            </Button>
-          </Box>
         </form>
     </Box>
   );

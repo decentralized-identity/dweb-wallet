@@ -29,10 +29,10 @@ export const profileDefinition: DwnProtocolDefinition = {
       dataFormats: ['application/json']
     },
     avatar: {
-      dataFormats: ['image/gif', 'image/png', 'image/jpeg']
+      dataFormats: ['image/gif', 'image/png', 'image/jpeg', 'image/webp']
     },
     hero: {
-      dataFormats: ['image/gif', 'image/png', 'image/jpeg']
+      dataFormats: ['image/gif', 'image/png', 'image/jpeg', 'image/webp']
     }
   },
   structure: {

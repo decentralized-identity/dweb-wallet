@@ -1,13 +1,25 @@
 import React, { useMemo } from 'react';
 import { Convert } from '@web5/common';
 import { profileDefinition } from '@/contexts/protocols';
+import { Card, CardContent, CardMedia, Typography, Avatar, Box, styled } from '@mui/material';
+import { truncateDid } from '@/lib/utils';
 
 interface Props {
   did: string;
 }
 
-const PublicIdentityCard: React.FC<Props> = ({ did }) => {
+const StyledCard = styled(Card)(({ theme }) => ({
+  position: 'relative',
+  marginBottom: theme.spacing(2),
+}));
 
+const AvatarWrapper = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: theme.spacing(2),
+  left: theme.spacing(2),
+}));
+
+const PublicIdentityCard: React.FC<Props> = ({ did }) => {
   const profileProtocolB64 = Convert.string(profileDefinition.protocol).toBase64Url();
 
   const bannerUrl = useMemo(() => {
@@ -19,18 +31,33 @@ const PublicIdentityCard: React.FC<Props> = ({ did }) => {
   }, [did]);
   
   return (
-    <div className="relative">
-      <img 
-        src={bannerUrl} 
+    <StyledCard>
+      <CardMedia
+        component="img"
+        height="140"
+        image={bannerUrl}
         alt={`${did}'s banner`}
       />
-      <div>
-        <img 
+      <AvatarWrapper>
+        <Avatar 
           src={avatarUrl} 
-          alt={`${did}'s avatar`} 
+          alt={`${did}'s avatar`}
+          sx={{ 
+            width: 56, 
+            height: 56, 
+            border: '2px solid white'
+          }}
         />
-      </div>
-    </div>
+      </AvatarWrapper>
+      <CardContent>
+        <Typography variant="h6" component="div">
+          Public Identity
+        </Typography>
+        <Typography variant="caption">
+          {truncateDid(did, 50)}
+        </Typography>
+      </CardContent>
+    </StyledCard>
   );
 }
 

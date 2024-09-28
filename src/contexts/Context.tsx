@@ -44,7 +44,8 @@ export const useIdentities = () => {
     selectedIdentity,
     setSelectedIdentity,
     exportIdentity,
-    importIdentity
+    importIdentity,
+    getDid
   } = context;
 
   return {
@@ -58,7 +59,8 @@ export const useIdentities = () => {
     selectedIdentity,
     setSelectedIdentity,
     exportIdentity,
-    importIdentity
+    importIdentity,
+    getDid
   };
 };
 

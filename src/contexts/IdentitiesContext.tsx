@@ -4,10 +4,12 @@ import { Web5 } from "@web5/api";
 import { useAgent } from "./Context";
 import { profileDefinition } from "./protocols";
 import { DwnInterface, PortableIdentity } from "@web5/agent";
+import { PortableDid } from "@web5/dids";
 
 interface IdentityContextProps {
   identities: Identity[];
   selectedIdentity: Identity | undefined;
+  getDid: (didUri: string, withPrivate?: boolean) => Promise<PortableDid | undefined>;
   reloadIdentities: () => Promise<void>;
   setSelectedIdentity: (identity: Identity | undefined) => void;
   createIdentity: (params: CreateIdentityParams) => Promise<string | undefined>;
@@ -30,7 +32,8 @@ export const IdentitiesContext = createContext<IdentityContextProps>({
   uploadBanner: async () => undefined,
   getIdentity: async () => undefined,
   exportIdentity: async () => undefined,
-  importIdentity: async () => {}
+  importIdentity: async () => {},
+  getDid: async () => undefined,
 });
 
 export interface CreateIdentityParams {
@@ -444,6 +447,24 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     URL.revokeObjectURL(url);
   };
 
+  const getDid = async (didUri: string, withPrivate: boolean = false) => {
+    if (agent) {
+      const did = await agent.did.get({ didUri, tenant: didUri });
+      if (!did) return undefined;
+      const portableDid = await did.export();
+      if (!withPrivate) {
+        // return the did without the private key
+        return {
+          uri: portableDid.uri,
+          document: portableDid.document,
+          metadata: portableDid.metadata
+        }
+      }
+
+      return portableDid;
+    }
+  }
+
   useEffect(() => {
     loadIdentities();
   })
@@ -461,7 +482,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         setSelectedIdentity,
         reloadIdentities: loadIdentities,
         exportIdentity,
-        importIdentity
+        importIdentity,
+        getDid
       }}
     >
       {children}

@@ -16,6 +16,7 @@ const SidebarSpeedDial: React.FC<{
           key={action.name}
           icon={action.icon}
           tooltipTitle={action.name}
+          onClick={action.handler}
           tooltipOpen
           sx={{
             '& .MuiSpeedDialAction-staticTooltipLabel': {
