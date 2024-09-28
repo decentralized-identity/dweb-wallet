@@ -126,6 +126,9 @@ const DWebConnect: React.FC = () => {
   }
 
   const handleDeny = () => {
+    window.opener.postMessage({
+      type: 'dweb-connect-authorization-response',
+    }, origin);
     window.close();
   };
 
