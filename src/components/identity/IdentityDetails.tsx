@@ -1,306 +1,314 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useIdentities, useProtocols } from '@/contexts/Context';
-import { EditIcon } from 'lucide-react';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Button } from '../ui/button';
+import { QRCodeCanvas} from 'qrcode.react';
+import Grid from '@mui/material/Grid2';
+import {
+  Box, Typography, Avatar, Paper, Divider, IconButton,
+  useTheme, alpha, styled, List, ListItem, ListItemText,
+  ListItemIcon, Menu, MenuItem, Tooltip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  ClickAwayListener
+} from '@mui/material';
+import {
+  Edit, Delete, GetApp, ContentCopy, QrCode2,
+  Lock, Public, Language, MoreVert,
+  Person2Outlined,
+} from '@mui/icons-material';
 
-interface IdentityDetailsProps {
-  onBack: () => void;
-}
+const BannerOverlay = styled(Box)(({ theme }) => ({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
+}));
 
-const IdentityDetails: React.FC<IdentityDetailsProps> = ({ onBack }) => {
-  const { selectedIdentity, deleteIdentity, exportIdentity } = useIdentities();
-  const { addProtocol, listProtocols, loadProtocols } = useProtocols();
-  const [ editWallets, setEditWallets ] = useState<string[]>([]);
-  const [protocolUrl, setProtocolUrl] = useState('');
-  const [isPublished, setIsPublished] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [showAddProtocol, setShowAddProtocol] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+const IdentityDetails: React.FC = () => {
+  const { selectedIdentity, deleteIdentity, exportIdentity, dwnEndpoints, wallets } = useIdentities();
+  const [ confirmDelete, setConfirmDelete ] = useState(false);
+  const [ backupDialogOpen, setBackupDialogOpen ] = useState(false);
+  const [ showQrCode, setShowQrCode ] = useState(false);
+  const { listProtocols, loadProtocols } = useProtocols();
+  const navigate = useNavigate();
+  const theme = useTheme();
 
-  const handleAddProtocol = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedIdentity && protocolUrl) {
-      setIsLoading(true);
-      try {
-        await addProtocol(selectedIdentity.didUri, protocolUrl, isPublished);
-        setProtocolUrl('');
-        setIsPublished(false);
-        setShowAddProtocol(false);
-      } catch (error) {
-        console.error('Error adding protocol:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-  };
-
-  const handleDeleteIdentity = async () => {
-    if (selectedIdentity) {
-      try {
-        await deleteIdentity(selectedIdentity.didUri);
-        onBack();
-      } catch (error) {
-        console.error('Error deleting identity:', error);
-      }
-    }
-  };
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [protocols, setProtocols] = useState<any[]>([]);
+  const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
+  const [copyTooltipText, setCopyTooltipText] = useState("Copy DID");
 
   useEffect(() => {
     if (selectedIdentity) {
-      loadProtocols(selectedIdentity.didUri);
+      loadProtocols(selectedIdentity.didUri).then(() => {
+        setProtocols(listProtocols(selectedIdentity.didUri));
+      });
     }
-  }, [selectedIdentity, loadProtocols]);
+  }, [selectedIdentity, loadProtocols, listProtocols]);
 
-  const selectedPermissions = useMemo(() => {
-    return selectedIdentity?.permissions || [];
+  if (!selectedIdentity) return null;
+
+  const social = useMemo(() => {
+    if (selectedIdentity) {
+      return selectedIdentity.profile.social;
+    }
   }, [selectedIdentity]);
 
-  if (!selectedIdentity) {
-    return (
-      <div className="h-full flex flex-col bg-surface-light dark:bg-surface-dark">
-        <div className="flex-grow flex items-center justify-center">
-          <p className="text-text-light-secondary dark:text-text-dark-secondary">No identity selected</p>
-        </div>
-      </div>
-    );
+  const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleDelete = async () => {
+    if (selectedIdentity) {
+      await deleteIdentity(selectedIdentity.didUri);
+      navigate('/');
+    }
+  };
+
+  const handleBackup = async () => {
+    if (selectedIdentity) {
+      await exportIdentity(selectedIdentity.didUri);
+      setBackupDialogOpen(false);
+    }
   }
 
+  const handleCopyDid = () => {
+    navigator.clipboard.writeText(selectedIdentity.didUri);
+    setCopyTooltipText("Copied!");
+    setCopyTooltipOpen(true);
+    setTimeout(() => {
+      setCopyTooltipText("Copy DID");
+      setCopyTooltipOpen(false);
+    }, 1500);
+  };
+
+  const handleTooltipClose = () => {
+    setCopyTooltipOpen(false);
+    setCopyTooltipText("Copy DID");
+  };
+
   return (
-    <div className="h-full flex flex-col bg-surface-light dark:bg-surface-dark">
-      <div className="relative">
-        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-black/50 to-transparent z-10">
-          <button 
-            onClick={onBack} 
-            className="m-4 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200 md:hidden"
-          >
-            ← Back
-          </button>
-        </div>
-        <img 
-          src={selectedIdentity.bannerUrl} 
-          alt={`${selectedIdentity.name}'s banner`}
-          className="w-full h-48 object-cover"
-        />
-        <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-16 z-20">
-          <img 
-            src={selectedIdentity.avatarUrl} 
-            alt={`${selectedIdentity.name}'s avatar`} 
-            className="w-32 h-32 rounded-full border-4 border-surface-light dark:border-surface-dark shadow-lg"
-          />
-        </div>
-      </div>
-      
-      <div className="flex-grow p-6 pt-20 overflow-y-auto">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-primary-500">{selectedIdentity.name}</h2>
-          <p className="text-lg text-text-light-secondary dark:text-text-dark-secondary">{selectedIdentity.displayName}</p>
-          {selectedIdentity.tagline && (
-            <p className="text-sm mt-2 italic text-text-light-secondary dark:text-text-dark-secondary">{selectedIdentity.tagline}</p>
-          )}
-          <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary mt-2">ID: {selectedIdentity.didUri}</p>
-        </div>
-        
-        {selectedIdentity.bio && (
-          <div className="mt-6 text-center max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-primary-500 mb-2">Bio</h3>
-            <p className="text-text-light-secondary dark:text-text-dark-secondary">{selectedIdentity.bio}</p>
-          </div>
-        )}
-        
-        <div className="mt-6">
-          <div className="flex items-center">
-            <h3 className="text-lg font-semibold text-primary-500">Protocols</h3>
-            <button
-              onClick={() => setShowAddProtocol(!showAddProtocol)}
-              className="ml-2 text-primary-500 hover:text-primary-600 transition-colors duration-200"
-              aria-label="Add protocol"
+    <Box sx={{ pb: 4 }}>
+      <Box sx={{ maxWidth: 1200, margin: '0 auto', px: 3 }}>
+        <Paper elevation={3} sx={{ mt: 3, mb: 4 }}>
+          <Box sx={{ position: 'relative', height: 300 }}>
+            <Box
+              component="img"
+              src={selectedIdentity.profile.heroUrl}
+              alt={`${social?.displayName || 'user'}'s banner`}
+              sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+            <BannerOverlay />
+              <Box sx={{ position: 'absolute', bottom: 16, left: 16, right: 16, display: 'flex', alignItems: 'flex-end' }}>
+              <Avatar
+                src={selectedIdentity.profile.avatarUrl}
+                alt={social?.displayName || 'user'}
+                sx={{ width: 120, height: 120, border: `4px solid ${theme.palette.background.paper}`, mr: 2 }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
-          </div>
-          {listProtocols(selectedIdentity.didUri).length > 0 ? (
-            <ul className="mt-2 list-disc list-inside text-text-light-secondary dark:text-text-dark-secondary">
-              {listProtocols(selectedIdentity.didUri).map((protocol, index) => (
-                <li key={index}>
-                  {protocol.protocol}
-                  {!protocol.published && (
-                    <span className="ml-2">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                      </svg>
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-2 text-text-light-secondary dark:text-text-dark-secondary">No protocols added yet.</p>
-          )}
-        </div>
-
-        <div className="mt-6">
-          <div className="flex items-center">
-            <h3 className="text-lg font-semibold mb-2 text-primary-500">Wallets</h3>
-            <button
-              disabled={editWallets.length > 0}
-              onClick={() => setEditWallets(selectedIdentity.webWallets)}
-              className={`ml-2 mb-2 ${!editWallets ? 'text-primary-500 hover:text-primary-600' : ''} transition-colors duration-200`}
-              aria-label="Add protocol"
-            >
-              <EditIcon />
-            </button>
-          </div>
-          {!editWallets.length && <ul className="list-disc list-inside text-text-light-secondary dark:text-text-dark-secondary">
-            {selectedIdentity.webWallets.map((wallet) => (
-              <li key={wallet}>{wallet}</li>
-            ))}
-          </ul>}
-          {editWallets.length > 0 && <div className="flex flex-col space-y-4">
-            {editWallets.map(wallet => (
-              <div>
-                <input key={wallet} type="text" value={wallet} className="p-2 border border-gray-300 rounded-md" />
-                <button
-                  onClick={() => setEditWallets(editWallets.filter(w => w !== wallet))}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
-                >Remove</button>
-              </div>
-            ))}
-            <button 
-              onClick={() => setEditWallets([...editWallets, ''])}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
-            >Add</button>
-            <div>
-              <Button onClick={() => setEditWallets([])}>Save</Button>
-              <Button onClick={() => setEditWallets([])}>Cancel</Button>
-            </div>
-          </div>}
-        </div>
-
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-2 text-primary-500">Permissions</h3>
-          {selectedPermissions.length > 0 ? (
-            <ul className="list-disc list-inside text-text-light-secondary dark:text-text-dark-secondary">
-              {selectedPermissions.map((permission, index) => (
-                <li key={index}>{permission}</li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-text-light-secondary dark:text-text-dark-secondary">No permissions assigned yet.</p>
-          )}
-        </div>
-        
-        <div className="mt-6">
-          <button
-            onClick={() => exportIdentity(selectedIdentity.didUri)}
-            className="mt-6 w-full px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200"
-          >
-            Backup
-          </button>
-        </div>
-        <div className="mt-6">
-          <button
-            onClick={() => setShowDeleteConfirmation(true)}
-            className="w-full px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
-          >
-            Delete Identity
-          </button>
-        </div>
-
-        {/* Add Protocol Modal */}
-        {showAddProtocol && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4 text-primary-500">Add a Protocol</h3>
-              <form onSubmit={handleAddProtocol} className="space-y-4">
-                <div>
-                  <label htmlFor="protocolUrl" className="block text-sm font-medium text-text-light-secondary dark:text-text-dark-secondary">
-                    Protocol URL
-                  </label>
-                  <input
-                    type="text"
-                    id="protocolUrl"
-                    value={protocolUrl}
-                    onChange={(e) => setProtocolUrl(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                    placeholder="https://example.com/protocol"
-                    required
-                    disabled={isLoading}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <input
-                    id="isPublished"
-                    type="checkbox"
-                    checked={isPublished}
-                    onChange={(e) => setIsPublished(e.target.checked)}
-                    className="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300 rounded"
-                    disabled={isLoading}
-                  />
-                  <label htmlFor="isPublished" className="ml-2 block text-sm text-text-light-secondary dark:text-text-dark-secondary">
-                    Published
-                  </label>
-                </div>
-                <div className="flex justify-end space-x-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddProtocol(false)}
-                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200"
-                    disabled={isLoading}
+              {social?.displayName?.charAt(0).toUpperCase() || 'U'}
+            </Avatar>
+            <Box sx={{ flexGrow: 1 }}>
+              {social?.displayName && (
+                <Typography variant="subtitle1" sx={{ color: 'common.white', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
+                  {social.displayName} ({selectedIdentity.persona})
+                </Typography>
+              )}
+            </Box>
+            <IconButton onClick={handleMenuOpen} sx={{ color: 'common.white' }}>
+              <MoreVert />
+            </IconButton>
+          </Box>
+        </Box>
+        <Box sx={{ p: 3 }}>
+          <Typography variant="body1" gutterBottom>{social?.tagline}</Typography>
+          <Divider sx={{ my: 2 }} />
+          <Grid container spacing={2}>
+            <Grid size={12}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                <Person2Outlined sx={{ mr: 1 }} />
+                <Typography variant="body2" sx={{ mr: 1 }}>
+                  {selectedIdentity.didUri}
+                </Typography>
+                <ClickAwayListener onClickAway={handleTooltipClose}>
+                  <Tooltip
+                    title={copyTooltipText}
+                    open={copyTooltipOpen}
+                    onClose={handleTooltipClose}
+                    disableFocusListener
+                    disableHoverListener
+                    disableTouchListener
                   >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <span className="flex items-center justify-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        Adding...
-                      </span>
-                    ) : (
-                      'Add Protocol'
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
+                    <IconButton size="small" onClick={handleCopyDid}>
+                      <ContentCopy fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </ClickAwayListener>
+                <Tooltip title="Show QR Code">
+                  <IconButton size="small" onClick={() => setShowQrCode(true)}>
+                    <QrCode2 fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6  }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
+                {dwnEndpoints.map(endpoint => (
+                    <Box key={endpoint} sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Language sx={{ mr: 1 }} />
+                      <Typography variant="body2">{endpoint}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Grid>
+          </Grid>
+          {social?.bio && (
+            <>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="body2">{social.bio}</Typography>
+            </>
+          )}
+        </Box>
+        </Paper>
+      </Box>
 
-        {/* Delete Confirmation Modal */}
-        {showDeleteConfirmation && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg w-full max-w-md">
-              <h3 className="text-lg font-semibold mb-4 text-primary-500">Confirm Deletion</h3>
-              <p className="mb-4 text-text-light-secondary dark:text-text-dark-secondary">
-                Are you sure you want to delete this identity? This action cannot be undone.
-              </p>
-              <div className="flex justify-end space-x-2">
-                <button
-                  onClick={() => setShowDeleteConfirmation(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteIdentity}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+      <Box sx={{ maxWidth: 1200, margin: '0 auto', px: 3 }}>
+        <Grid container spacing={3}>
+          {/* Permissions section */}
+          <Grid size={12}>
+            <Paper elevation={1} sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>Permissions</Typography>
+              <Divider sx={{ mb: 2 }} />
+              {/* {selectedIdentity.permissions && selectedIdentity.permissions.length > 0 ? (
+                <Box>
+                  {selectedIdentity.permissions.map((permission, index) => (
+                    <Chip key={index} label={permission} sx={{ mr: 1, mb: 1 }} />
+                  ))}
+                </Box>
+              ) : (
+                <Typography variant="body2">No permissions assigned yet.</Typography>
+              )} */}
+            </Paper>
+          </Grid>
+
+          {/* Protocols section */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
+              <Typography variant="h6" gutterBottom>Protocols</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <List>
+                {protocols.map((protocol, index) => (
+                  <ListItem key={index}>
+                    <ListItemIcon>
+                      {protocol.published ? <Public fontSize="small" /> : <Lock fontSize="small" />}
+                    </ListItemIcon>
+                    <ListItemText primary={protocol.protocol} secondary={protocol.published ? 'Published' : 'Private'} />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
+
+          {/* Wallets section */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
+              <Typography variant="h6" gutterBottom>Wallets</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <List>
+                {wallets.map((wallet, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={wallet} />
+                  </ListItem>
+                ))}
+              </List>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
+
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={() => { handleMenuClose(); navigate(`/identity/edit/${selectedIdentity.didUri}`); }}>
+          <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
+          <ListItemText>Edit Identity</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={() => setBackupDialogOpen(true)}>
+          <ListItemIcon><GetApp fontSize="small" /></ListItemIcon>
+          <ListItemText>Backup Identity</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={() => setConfirmDelete(true)} sx={{ color: theme.palette.error.main }}>
+          <ListItemIcon><Delete fontSize="small" sx={{ color: theme.palette.error.main }} /></ListItemIcon>
+          <ListItemText>Delete Identity</ListItemText>
+        </MenuItem>
+      </Menu>
+
+      {confirmDelete && (
+        <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+          <DialogTitle>Delete Identity</DialogTitle>
+          <DialogContent>Are you sure you want to delete this identity?</DialogContent>
+          <DialogActions>
+            <Button onClick={() => setConfirmDelete(false)}>Cancel</Button>
+            <Button onClick={handleDelete} sx={{ color: theme.palette.error.main }}>Delete</Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {backupDialogOpen && (
+        <Dialog open={backupDialogOpen} onClose={() => setBackupDialogOpen(false)}>
+          <DialogTitle>Backup Identity</DialogTitle>
+          <DialogContent>
+            <Box>
+              Back up your identity to a file. This contains your private key information.
+            </Box>
+            <Typography variant="body2" sx={{ mt: 2 }}>{selectedIdentity.didUri}</Typography>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleBackup}>Download File</Button>
+            <Button onClick={() => setBackupDialogOpen(false)} sx={{ color: theme.palette.error.main }}>Cancel</Button>
+          </DialogActions>
+        </Dialog>
+      )}
+
+      {showQrCode && 
+        <Dialog open={showQrCode} onClose={() => setShowQrCode(false)} >
+          <DialogTitle sx={{ textAlign: 'center' }}>Scan QR Code</DialogTitle>
+          <DialogContent>
+            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 1 }}>
+              <QRCodeCanvas
+                value={selectedIdentity.didUri}
+                size={256}
+                bgColor={'#FFFFFF'}
+                fgColor={'#000000'}
+                level="Q"
+                imageSettings={{
+                  src: selectedIdentity.profile.avatarUrl || '',
+                  height: 67,
+                  width: 67,
+                  excavate: true,
+                }}
+              />
+            </Box>
+            <Typography variant="caption" sx={{ textAlign: 'center' }}>{selectedIdentity.didUri}</Typography>
+            <Typography variant="body2" sx={{ mt: 2, textAlign: 'center' }}>
+              Scan the QR code to resolve this identity. 
+            </Typography>
+            <Button onClick={() => setShowQrCode(false)} sx={{ mt: 2, display: 'block', margin: '0 auto' }}>Close</Button>
+          </DialogContent>
+        </Dialog>
+      }
+    </Box>
   );
 };
 

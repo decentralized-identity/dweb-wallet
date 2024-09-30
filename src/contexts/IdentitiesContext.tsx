@@ -1,47 +1,68 @@
 import React, { createContext, useEffect, useState } from "react";
-import { Identity } from "@/types";
-import { Web5 } from "@web5/api";
+import { BearerIdentity, getDwnServiceEndpointUrls, PortableIdentity, Web5Agent } from "@web5/agent";
+
+import Web5Helper from "@/lib/Web5Helper";
+import ProfileProtocol, { profileDefinition } from "@/lib/ProfileProtocol";
+
 import { useAgent } from "./Context";
-import { profileDefinition } from "./protocols";
-import { DwnInterface, PortableIdentity } from "@web5/agent";
+import { Identity } from "@/lib/types";
+import { Convert } from "@web5/common";
 
-interface IdentityContextProps {
-  identities: Identity[];
-  selectedIdentity: Identity | undefined;
-  reloadIdentities: () => Promise<void>;
-  setSelectedIdentity: (identity: Identity | undefined) => void;
-  createIdentity: (params: CreateIdentityParams) => Promise<string | undefined>;
-  deleteIdentity: (didUri: string) => Promise<void>;
-  uploadAvatar: (didUri: string, avatar: File) => Promise<string | undefined>;
-  uploadBanner: (didUri: string, banner: File) => Promise<string | undefined>;
-  getIdentity: (didUri: string) => Promise<Identity | undefined>;
-  exportIdentity: (didUri: string) => Promise<void>;
-  importIdentity: (...identities: PortableIdentity[]) => Promise<void>;
+const loadProfileFromBearerIdentity = (agent: Web5Agent) => async (identity: BearerIdentity): Promise<Identity> => {
+  const profileProtocol = ProfileProtocol(identity.did.uri, agent);
+  const social = await profileProtocol.getSocial();
+  const avatar = await profileProtocol.getAvatar();
+  const avatarUrl = avatar ? `https://dweb/${identity.did.uri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/avatar` : undefined;
+  const hero = await profileProtocol.getHero();
+  const heroUrl = hero ? `https://dweb/${identity.did.uri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/hero` : undefined;
+
+  return {
+    persona: identity.metadata.name,
+    didUri: identity.did.uri,
+    profile: {
+      social,
+      avatar,
+      avatarUrl,
+      hero,
+      heroUrl
+    }
+  }
 }
-
-export const IdentitiesContext = createContext<IdentityContextProps>({
-  identities: [],
-  selectedIdentity: undefined,
-  reloadIdentities: async () => {},
-  setSelectedIdentity: () => {},
-  createIdentity: async () => undefined,
-  deleteIdentity: async () => {},
-  uploadAvatar: async () => undefined,
-  uploadBanner: async () => undefined,
-  getIdentity: async () => undefined,
-  exportIdentity: async () => undefined,
-  importIdentity: async () => {}
-});
 
 export interface CreateIdentityParams {
   persona: string;
-  name: string;
   displayName: string;
   tagline: string;
   bio: string;
-  dwnEndpoint: string;
   walletHost: string;
+  dwnEndpoints: string[];
+  avatar?: Blob;
+  hero?: Blob;
 }
+
+export interface UpdateIdentityParams extends Omit<CreateIdentityParams, 'walletHost' | 'persona'> {
+  didUri: string;
+}
+
+interface IdentityContextProps {
+  identities: Identity[];
+  loadIdentities: () => Promise<void>;
+  createIdentity: (params: CreateIdentityParams) => Promise<Identity>;
+  updateIdentity: (params: UpdateIdentityParams) => Promise<void>;
+  deleteIdentity: (didUri: string) => Promise<void>;
+  exportIdentity: (didUri: string) => Promise<PortableIdentity>;
+  importIdentity: (walletHost: string, ...identities: PortableIdentity[]) => Promise<void>;
+
+  /** Identity specific */
+  selectedIdentity: Identity | undefined;
+  wallets: string[];
+  dwnEndpoints: string[];
+  selectIdentity: (didUri: string | undefined) => void;
+  setWallets: (wallets: string[]) => Promise<void>;
+  setDwnEndpoints: (dwnEndpoints: string[]) => Promise<void>;
+}
+
+export const IdentitiesContext = createContext<IdentityContextProps | null>(null);
 
 export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -50,53 +71,69 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [ loadingIdentities, setLoadingIdentities ] = useState<boolean>(false);
   const [ identities, setIdentities ] = useState<Identity[]>([]);
   const [ selectedIdentity, setSelectedIdentity ] = useState<Identity | undefined>();
-  const [ gotMessages, setGotMessages ] = useState<boolean>(false);
+  const [ wallets, setWalletsState ] = useState<string[]>([]);
+  const [ dwnEndpoints, setDwnEndpointsState ] = useState<string[]>([]);
+
+  const setIdentityWallets = async (didUri: string, wallets: string[]) => {
+    if (!agent) return;
+    const web5Helper = Web5Helper(didUri, agent);
+    let record = await web5Helper.getRecord(profileDefinition.protocol, 'connect');
+    if (!record) {
+      record = await web5Helper.createRecord(profileDefinition.protocol, 'connect', 'application/json', { webWallets: wallets });
+    } else {
+      await web5Helper.updateRecord(record, 'application/json', { webWallets: wallets });
+    }
+  }
+
+  const selectIdentity = (didUri: string | undefined) => {
+    const identity = identities.find(identity => identity.didUri === didUri);
+    setSelectedIdentity(identity);
+  }
 
   const loadIdentities = async () => {
+    if (!agent) return;
     if (loadingIdentities) return;
-
     setLoadingIdentities(true);
 
-    if (agent && !gotMessages) {
-      const agentDid = agent.agentDid.uri;
-      const { reply: { status, entries } } = await agent.dwn.processRequest({
-        target: agentDid,
-        author: agentDid,
-        messageType: DwnInterface.MessagesQuery,
-        messageParams: {
-          filters: []
-        }
-      });
-      setGotMessages(true);
-      if (status.code !== 200) {
-        throw new Error(`Failed to get messages: ${status.detail}`);
-      }
-
-      for (const entry of entries!) {
-        const { reply: { status: readStatus } } = await agent.dwn.processRequest({
-          target: agentDid,
-          author: agentDid,
-          messageType: DwnInterface.MessagesRead,
-          messageParams: {
-            messageCid: entry,
-          }
-        });
-        if (readStatus.code !== 200) {
-          console.log('error reading message', readStatus.detail);
-          continue;
-        }
-      }
-    }
-
     const identities = await agent?.identity.list() || [];
-    const parsedIdentities = await Promise.all(identities.map(identity => getIdentity(identity.did.uri)));
-    setIdentities(parsedIdentities.filter(identity => identity !== undefined) as Identity[]);
+    const parsedIdentities = await Promise.all(identities.map(loadProfileFromBearerIdentity(agent)));
+    setIdentities(parsedIdentities);
     setLoadingIdentities(false);
   }
 
-  const createIdentity = async ({ persona, name, displayName, tagline, bio, dwnEndpoint, walletHost }: CreateIdentityParams) => {
-    if (agent) {
-      const identity = await agent.identity.create({
+  const loadSelectedIdentity = async () => {
+    if (!selectedIdentity) return;
+    const wallets = await getWallets(selectedIdentity.didUri);
+    setWalletsState(wallets);
+    const dwnEndpoints = await getDwnEndpoints(selectedIdentity.didUri);
+    setDwnEndpointsState(dwnEndpoints);
+  }
+
+  const getWallets = async (didUri: string) => {
+    if (!agent) return [];
+    const web5Helper = Web5Helper(didUri, agent);
+
+    const record = await web5Helper.getRecord(profileDefinition.protocol, 'connect');
+    if (!record) {
+      return [];
+    } else {
+      const { webWallets } = await record.data.json() as { webWallets: string[] };
+      return webWallets;
+    }
+  }
+
+  const setWallets = async (wallets: string[]) => {
+    if (!agent) return;
+    if (!selectedIdentity) return;
+    await setIdentityWallets(selectedIdentity.didUri, wallets);
+  }
+
+  const createIdentity = async ({ persona, dwnEndpoints, walletHost, displayName, tagline, bio, avatar, hero }: CreateIdentityParams) => {
+    if (!agent) {
+      throw new Error("Agent not found");
+    }
+
+    const identity = await agent.identity.create({
         store     : true,
         didMethod : 'dht',
         didOptions: {
@@ -104,7 +141,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
             {
               id              : 'dwn',
               type            : 'DecentralizedWebNode',
-              serviceEndpoint : [ dwnEndpoint ],
+              serviceEndpoint : dwnEndpoints,
               enc             : '#enc',
               sig             : '#sig',
             }
@@ -122,299 +159,152 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
             }
           ]
         },
-        metadata: { name: persona }
-      });
+      metadata: { name: persona }
+    });
 
-      await agent.identity.manage({ portableIdentity: await identity.export() });
-      await agent.sync.registerIdentity({ did: identity.did.uri, options: { protocols: [
-        profileDefinition.protocol,
-      ]} });
+    await agent.identity.manage({ portableIdentity: await identity.export() });
+    await agent.sync.registerIdentity({ did: identity.did.uri, options: { protocols: [
+      profileDefinition.protocol,
+    ]} });
 
-      const localStorageIdentities = localStorage.getItem('identities');
-      if (localStorageIdentities) {
-        const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
-        parsedIdentities.push(identity.did.uri);
-        localStorage.setItem('identities', JSON.stringify(parsedIdentities));
-      } else {
-        localStorage.setItem('identities', JSON.stringify([ identity.did.uri ]));
-      }
-
-      const web5 = new Web5({ agent, connectedDid: identity.did.uri });
-
-      // configure the profile protocol
-      const { status: configureProfileStatus, protocol } = await web5.dwn.protocols.configure({
-        message: {
-          definition: profileDefinition
-        }
-      });
-      
-      if (configureProfileStatus.code !== 202) {
-        throw new Error(`Failed to configure profile protocol: ${configureProfileStatus.detail}`);
-      }
-
-      const { status: protocolSendStatus } = await protocol!.send(identity.did.uri);
-      if (protocolSendStatus.code !== 202) {
-        console.info('failed to send profile protocol to remote', protocolSendStatus.detail);
-      }
-
-      // write the name into the profile protocol
-      const { status: profileStatus, record: profileRecord } = await web5.dwn.records.create({
-        data: { name },
-        message: {
-          published: true,
-          protocol: profileDefinition.protocol,
-          protocolPath: 'name',
-          dataFormat: 'application/json',
-        }
-      });
-
-      if (profileStatus.code !== 202) {
-        throw new Error(`Failed to write name to profile: ${profileStatus.detail}`);
-      }
-
-      const { status: profileSendStatus } = await profileRecord!.send();
-      if (profileSendStatus.code !== 202) {
-        console.info('failed to send profile record to remote', profileSendStatus.detail);
-      }
-
-      // write to the social object in the profile protocol
-      const { status: socialStatus, record: socialRecord } = await web5.dwn.records.create({
-        data: {
-          displayName,
-          tagline,
-          bio,
-          apps: {}
-        },
-        message: {
-          published: true,
-          protocol: profileDefinition.protocol,
-          protocolPath: 'social',
-          dataFormat: 'application/json',
-        }
-      });
-
-      if (socialStatus.code !== 202) {
-        throw new Error(`Failed to write social to profile: ${socialStatus.detail}`);
-      }
-
-      const { status: socialSendStatus } = await socialRecord!.send();
-      if (socialSendStatus.code !== 202) {
-        console.info('failed to send social record to remote', socialSendStatus.detail);
-      }
-
-      // write the wallet Url
-      const { status: walletStatus, record: walletRecord } = await web5.dwn.records.create({
-        data: { webWallets: [ walletHost ] },
-        message: {
-          published: true,
-          protocol: profileDefinition.protocol,
-          protocolPath: 'connect',
-          dataFormat: 'application/json',
-        }
-      });
-
-      if (walletStatus.code !== 202) {
-        throw new Error(`Failed to write wallet to profile: ${walletStatus.detail}`);
-      }
-
-      const { status: walletSendStatus } = await walletRecord!.send();
-      if (walletSendStatus.code !== 202) {
-        console.info('failed to send wallet record to remote', walletSendStatus.detail);
-      }
-
-      return identity.did.uri;
+    const localStorageIdentities = localStorage.getItem('identities');
+    if (localStorageIdentities) {
+      const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
+      parsedIdentities.push(identity.did.uri);
+      localStorage.setItem('identities', JSON.stringify(parsedIdentities));
+    } else {
+      localStorage.setItem('identities', JSON.stringify([ identity.did.uri ]));
     }
+
+    /** Configure profile protocol */
+    const web5Helper = Web5Helper(identity.did.uri, agent);
+    await web5Helper.configureProtocol(profileDefinition);
+
+    /** Set Wallet Information */
+    await setWallets([ walletHost ]);
+
+    /** Set Profile Information */
+    const profileProtocol = ProfileProtocol(identity.did.uri, agent);
+    await profileProtocol.setSocial({ displayName, tagline, bio, apps: {} });
+
+    if (avatar) {
+      await profileProtocol.setAvatar(avatar);
+    }
+
+    if (hero) {
+      await profileProtocol.setHero(hero);
+    }
+
+    const craetedIdentity = {
+      persona: persona,
+      didUri: identity.did.uri,
+      profile: {
+        social: { displayName, tagline, bio, apps: {} },
+        avatar,
+        hero
+      }
+    }
+
+    setIdentities([ ...identities, craetedIdentity ]);
+    return craetedIdentity;
   }
 
-  const uploadAvatar = async (didUri: string, avatar: File) => {
-    if (agent) {
-      const web5 = new Web5({ agent, connectedDid: didUri });
-
-      const { status, record } = await web5.dwn.records.create({
-        data: new Blob([avatar], { type: avatar.type }),
-        message: {
-          published: true,
-          protocol: profileDefinition.protocol,
-          protocolPath: 'avatar',
-          dataFormat: avatar.type,
-        }
-      });
-
-      if (status.code !== 202 || !record) {
-        throw new Error(`Failed to upload avatar: ${status.detail}`);
-      }
-
-      const { status: sendStatus } = await record.send();
-      if (sendStatus.code !== 202) {
-        console.info('failed to send avatar record to remote', sendStatus.detail);
-      }
-
-      return `https://dweb/${didUri}/records/${record.id}`;
+  const updateIdentity = async ({ didUri, displayName, tagline, bio, avatar, hero }: UpdateIdentityParams) => {
+    if (!agent) {
+      throw new Error("Agent not found");
     }
-  }
 
-  const uploadBanner = async (didUri: string, banner: File) => {
-    if (agent) {
-      const web5 = new Web5({ agent, connectedDid: didUri });
-
-      const { status, record } = await web5.dwn.records.create({
-        data: new Blob([banner], { type: banner.type }),
-        message: {
-          published: true,
-          protocol: profileDefinition.protocol,
-          protocolPath: 'hero',
-          dataFormat: banner.type,
-        }
-      });
-
-      if (status.code !== 202 || !record) {
-        throw new Error(`Failed to upload banner: ${status.detail}`);
-      }
-
-      const { status: sendStatus } = await record.send();
-      if (sendStatus.code !== 202) {
-        console.info('failed to send banner record to remote', sendStatus.detail);
-      }
-
-      return `https://dweb/${didUri}/records/${record.id}`;
+    const identity = identities.find(identity => identity.didUri === didUri);
+    if (!identity) {
+      throw new Error("Identity not found");
     }
-  }
 
-  const getIdentity = async (didUri: string): Promise<Identity | undefined> => {
-    if (agent) {
-      const web5 = new Web5({ agent, connectedDid: didUri });
-      const { records: nameRecords } = await web5.dwn.records.query({
-        message: {
-          filter: {
-            protocol: profileDefinition.protocol,
-            protocolPath: 'name',
-            dataFormat: 'application/json',
-          }
-        }
-      });
+    const profileProtocol = ProfileProtocol(didUri, agent);
 
-      let name = '';
+    if (identity.profile.social?.displayName !== displayName || identity.profile.social?.tagline !== tagline || identity.profile.social?.bio !== bio) {
+      await profileProtocol.setSocial({ displayName, tagline, bio, apps: {} });
+    }
 
-      try {
-        if (nameRecords && nameRecords.length > 0) {
-          ({ name } = await nameRecords![0].data.json());
-        } 
-      } catch(error) {
-        console.info('could not parse name records', error);
-      }
+    if (avatar !== identity.profile.avatar) {
+      await profileProtocol.setAvatar(avatar || null);
+    }
 
-      const identity = await agent.identity.get({ didUri })
-      const persona = identity?.metadata.name || 'Unknown Persona';
+    if (hero !== identity.profile.hero) {
+      await profileProtocol.setHero(hero || null);
+    }
 
-      const { records: avatarRecords } = await web5.dwn.records.query({
-        message: {
-          filter: {
-            protocol: profileDefinition.protocol,
-            protocolPath: 'avatar',
-          }
-        }
-      });
-
-      const avatarUrl = avatarRecords && avatarRecords.length > 0 ? `https://dweb/${didUri}/records/${avatarRecords[0].id}` : undefined;
-
-      const { records: bannerRecords } = await web5.dwn.records.query({
-        message: {
-          filter: {
-            protocol: profileDefinition.protocol,
-            protocolPath: 'hero',
-          }
-        }
-      });
-
-      const bannerUrl = bannerRecords && bannerRecords.length > 0 ? `https://dweb/${didUri}/records/${bannerRecords[0].id}` : undefined;
-
-      const { records: socialRecords } = await web5.dwn.records.query({
-        message: {
-          filter: {
-            protocol: profileDefinition.protocol,
-            protocolPath: 'social',
-            dataFormat: 'application/json',
-          }
-        }
-      });
-
-      const { records: walletRecords, status } = await web5.dwn.records.query({
-        message: {
-          filter: {
-            protocol: profileDefinition.protocol,
-            protocolPath: 'connect',
-            dataFormat: 'application/json',
-          }
-        }
-      });
-
-      const wallets = status.code === 200 && walletRecords?.length ? await walletRecords![0].data.json() : { webWallets: [] };
-
-      let displayName = '';
-      let tagline = '';
-      let bio = '';
-
-      try {
-        if (socialRecords && socialRecords.length > 0) {
-          ({ displayName, tagline, bio } = await socialRecords![0].data.json());
-        }
-      } catch(error) {
-        console.error('could not parse social records', error);
-      }
-
-      
-      return {
-        persona,
-        didUri,
-        name: name || '',
+    const updatedIdentity = {
+      ...identity,
+      profile: {
+        ...identity.profile,
         displayName,
         tagline,
         bio,
-        avatarUrl,
-        bannerUrl,
-        webWallets: wallets.webWallets
-      } 
+        avatar,
+        hero
+      }
     }
+
+    const updatedIdentities = identities.map(identity => {
+      if (identity.didUri === didUri) {
+        return updatedIdentity;
+      }
+      return identity;
+    });
+
+    setSelectedIdentity(updatedIdentity);
+    setIdentities(updatedIdentities);
   }
-  
+
   const deleteIdentity = async (didUri: string) => {
     if (agent) {
       await agent.identity.delete({ tenant: agent.agentDid.uri, didUri });
 
       try {
-        await agent.did.delete({ didUri });
+        await agent.did.delete({ didUri, tenant: agent.agentDid.uri });
       } catch(error) {
+        /** Newer versions of `@web5/agent` should not throw an error here */
         console.error('could not delete identity', error);
       }
 
+      setIdentities(identities.filter(identity => identity.didUri !== didUri));
     }
   }
 
-  const importIdentity = async (...identities: PortableIdentity[]) => {
+  const importIdentity = async (walletHost: string, ...identities: PortableIdentity[]) => {
     if (agent) {
-      identities.forEach(async identity => {
+      await Promise.all(identities.map(async identity => {
         try {
-        const exists = await agent.identity.get({ didUri: identity.portableDid.uri });
-        if (exists) {
-          throw new Error("Identity already exists");
-        }
+          const exists = await agent.identity.get({ didUri: identity.portableDid.uri });
+          if (exists) {
+            throw new Error("Identity already exists");
+          }
 
-        const importedIdentity = await agent.identity.import({ portableIdentity: identity });
-        await agent.identity.manage({ portableIdentity: await importedIdentity.export() });
-        await agent.sync.registerIdentity({ did: importedIdentity.did.uri });
+          const importedIdentity = await agent.identity.import({ portableIdentity: identity });
+          await agent.identity.manage({ portableIdentity: await importedIdentity.export() });
+          await agent.sync.registerIdentity({ did: importedIdentity.did.uri });
 
-        const localStorageIdentities = localStorage.getItem('identities');
-        if (localStorageIdentities) {
-          const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
-          parsedIdentities.push(importedIdentity.did.uri);
-          localStorage.setItem('identities', JSON.stringify(parsedIdentities));
-        } else {
-          localStorage.setItem('identities', JSON.stringify([ importedIdentity.did.uri ]));
+          const localStorageIdentities = localStorage.getItem('identities');
+          if (localStorageIdentities) {
+            const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
+            parsedIdentities.push(importedIdentity.did.uri);
+            localStorage.setItem('identities', JSON.stringify(parsedIdentities));
+          } else {
+            localStorage.setItem('identities', JSON.stringify([ importedIdentity.did.uri ]));
+          }
+
+          const web5Helper = Web5Helper(importedIdentity.did.uri, agent);
+          await web5Helper.configureProtocol(profileDefinition);
+
+          const wallets = await getWallets(importedIdentity.did.uri);
+          if (wallets.length === 0 || !wallets.includes(walletHost)) {
+            wallets.push(walletHost);
+            await setIdentityWallets(importedIdentity.did.uri, wallets);
+          }
+        } catch(error:any) {
+          console.error('could not import identity', identity.portableDid.uri, error);
         }
-      } catch(error:any) {
-        console.error('could not import identity', identity.portableDid.uri, error);
-      }
-    });
+      }));
 
       await loadIdentities();
     }
@@ -427,41 +317,46 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     const portableIdentity = await identity.export();
-
-    const blob = new Blob([
-      JSON.stringify(portableIdentity, null, 2)
-    ], {
-      type: "application/json",
-    });
-
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${didUri.replace(/:/g, '+')}.json`;
-    document.body.append(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    return portableIdentity;
   };
+
+  const getDwnEndpoints = async (didUri: string) => {
+    if (!agent) return [];
+    
+    return getDwnServiceEndpointUrls(didUri, agent.did);
+  }
+
+  /* TODO: Implement in `@web5/agent` */
+  const setDwnEndpoints = async (_dwnEndpoints: string[]) => {
+    throw new Error("Not implemented");
+  }
 
   useEffect(() => {
     loadIdentities();
-  })
+  });
+
+  useEffect(() => {
+    if (selectedIdentity && agent) {
+      loadSelectedIdentity();
+    }
+  }, [ selectedIdentity ]);
 
   return (
     <IdentitiesContext.Provider
       value={{
-        getIdentity,
-        uploadAvatar,
-        uploadBanner,
-        createIdentity,
-        deleteIdentity,
         identities,
+        wallets,
+        dwnEndpoints,
         selectedIdentity,
-        setSelectedIdentity,
-        reloadIdentities: loadIdentities,
+        loadIdentities,
+        setWallets,
+        createIdentity,
+        updateIdentity,
+        deleteIdentity,
+        selectIdentity,
+        importIdentity,
         exportIdentity,
-        importIdentity
+        setDwnEndpoints
       }}
     >
       {children}

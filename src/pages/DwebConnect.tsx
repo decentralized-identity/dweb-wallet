@@ -1,10 +1,13 @@
 import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
-import TopBar from '@/components/TopBar';
 import { useAgent } from '@/contexts/Context';
 import { toastError } from '@/lib/utils';
 import { ConnectPermissionRequest, DwnInterface, DwnPermissionScope, DwnProtocolDefinition, Oidc, Web5Agent } from '@web5/agent';
 import { DidJwk } from '@web5/dids';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Box, Typography, Button, CircularProgress, Divider, List, ListItem, ListItemIcon, ListItemText, Chip, AppBar, Toolbar } from '@mui/material';
+import { Lock, Public, SyncAlt } from '@mui/icons-material';
+import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
+import { topBarHeight } from '@/layoutes/Desktop';
 
 const PermissionRequest: React.FC<{ permissions: ConnectPermissionRequest[] }> = ({ permissions }) => {
   const formatScopes = (scopes: DwnPermissionScope[]) => {
@@ -17,26 +20,32 @@ const PermissionRequest: React.FC<{ permissions: ConnectPermissionRequest[] }> =
   };
 
   return (
-    <div className="space-y-2 mt-4">
-      {permissions.map(permission => {
+    <List disablePadding>
+      {permissions.map((permission, index) => {
         const { sync, records } = formatScopes(permission.permissionScopes);
         return (
-          <div key={permission.protocolDefinition.protocol} className="bg-primary/10 dark:bg-primary/20 p-2 rounded-lg">
-            <h3 className="text-xs font-semibold mb-1 text-primary dark:text-primary-dark">
-              {permission.protocolDefinition.protocol}
-            </h3>
-            <div className="text-xs flex flex-wrap gap-1 text-text-light-secondary dark:text-text-dark-secondary">
-              {records.map(method => (
-                <span key={method} className="bg-secondary/20 px-1 rounded">{method}</span>
-              ))}
-              {sync && (
-                <span className="bg-secondary/20 px-1 rounded text-secondary dark:text-secondary-dark">Sync</span>
-              )}
-            </div>
-          </div>
+          <React.Fragment key={permission.protocolDefinition.protocol}>
+            <ListItem>
+              <ListItemIcon>
+                {permission.protocolDefinition.published ? <Public /> : <Lock />}
+              </ListItemIcon>
+              <ListItemText 
+                primary={permission.protocolDefinition.protocol}
+                secondary={
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
+                    {records.map((method) => (
+                      <Chip key={method} label={method} size="small" />
+                    ))}
+                    {sync && <Chip icon={<SyncAlt />} label="Sync" size="small" />}
+                  </Box>
+                }
+              />
+            </ListItem>
+            {index < permissions.length - 1 && <Divider variant="inset" component="li" />}
+          </React.Fragment>
         );
       })}
-    </div>
+    </List>
   );
 };
 
@@ -53,21 +62,29 @@ const DWebConnect: React.FC = () => {
     return isCreatingDelegate || returningGrants;
   }, [ isCreatingDelegate, returningGrants ]);
 
+  useEffect(() => {
 
-  window.addEventListener('message', async e => {
-    const { type, did, permissions } = e.data;
-    if (type === 'dweb-connect-authorization-request') {
-      if (!window?.opener?.closed) {
-        setOrigin(e.origin);
-        setDid(did);
-        setPermissions(permissions);
-      } else {
-        window.close();
+    const authRequest = async (e: MessageEvent) => {
+      const { type, did, permissions } = e.data;
+      if (type === 'dweb-connect-authorization-request') {
+        if (!window?.opener?.closed) {
+          setOrigin(e.origin);
+          setDid(did);
+          setPermissions(permissions);
+        } else {
+          window.close();
+        }
       }
     }
-  });
 
-  window.opener?.postMessage({ type: 'dweb-connect-loaded' }, '*');
+    window.addEventListener('message', authRequest);
+    window.opener?.postMessage({ type: 'dweb-connect-loaded' }, '*');
+
+    return () => {
+      window.removeEventListener('message', authRequest);
+    };
+  }, []);
+
 
 
   const handleAgentSetup = async () => {
@@ -133,44 +150,63 @@ const DWebConnect: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-full bg-background-light dark:bg-background-dark text-text-light-primary dark:text-text-dark-primary flex flex-col">
-      <TopBar />
-        <div className="flex-grow flex flex-col md:flex-row overflow-hidden">
-        {did && <PublicIdentityCard did={did} />}
-        {!connecting && origin && did && permissions.length && (
-          <div className="flex-1 p-4 flex flex-col">
-            <div className="mt-4 flex flex-col items-center space-y-3">
-              <div className="w-full max-w-md px-4 py-2 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/30 dark:border-primary/40">
-                <p className="font-semibold text-sm text-center text-primary dark:text-primary-dark">{origin}</p>
-              </div>
-              <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">is requesting permissions from</p>
-              <div className="w-full max-w-md px-4 py-2 bg-secondary/10 dark:bg-secondary/20 rounded-lg border border-secondary/30 dark:border-secondary/40">
-                <p className="font-semibold text-sm text-center text-secondary dark:text-secondary-dark truncate">{did}</p>
-              </div>
-            </div>
+    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+      {/* Top Bar */}
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <Typography variant="h6" noWrap component="div">
+            Digital Identity Wallet
+          </Typography>
+        </Toolbar>
+      </AppBar>
+      {!connecting && origin && did && permissions.length > 0 && (
+        <Box sx={{ mt: `${topBarHeight}px`, p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <img
+              src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=128`}
+              style={{ width: 64, height: 64 }}
+            />
+          </Box>
+          <Typography variant="h5" color="text.secondary">{origin}</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
+            is requesting permissions from
+          </Typography>
+          <PublicIdentityCard did={did} />
+          <Typography variant="subtitle1" gutterBottom>Requested Permissions:</Typography>
+          <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
             <PermissionRequest permissions={permissions} />
-            <div className="mt-auto flex justify-center space-x-4 p-4">
-              <button
-                onClick={handleDeny}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Deny
-              </button>
-              <button
-                onClick={handleAgentSetup}
-                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-              >
-                Approve
-              </button>
-            </div>
-          </div>
-        )}
-        {connecting && <div className="flex-1 p-4 flex flex-col">
-          {isCreatingDelegate && <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Creating delegate...</p>}
-          {returningGrants && <p className="text-sm text-text-light-secondary dark:text-text-dark-secondary">Returning grants...</p>}
-        </div>}
-      </div>
-    </div>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2, gap: 2 }}>
+            <Button 
+              variant="contained" 
+              color="error"
+              startIcon={<CloseIcon />}
+              onClick={handleDeny}
+              sx={{ minWidth: 120 }}
+            >
+              Deny
+            </Button>
+            <Button 
+              variant="contained" 
+              color="success"
+              startIcon={<CheckIcon />}
+              onClick={handleAgentSetup}
+              sx={{ minWidth: 120 }}
+            >
+              Approve
+            </Button>
+          </Box>
+        </Box>
+      )}
+      {connecting && (
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <CircularProgress size={48} sx={{ mb: 2 }} />
+          <Typography variant="body1">
+            {isCreatingDelegate ? 'Creating delegate...' : 'Returning grants...'}
+          </Typography>
+        </Box>
+      )}
+    </Box>
   );
 };
 

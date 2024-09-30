@@ -16,7 +16,8 @@ const WebConnect: React.FC = () => {
   }, [ permissionRequests ]);
 
   useEffect(() => {
-    window.addEventListener("message", (event) => {
+
+    const eventRequests = (event: MessageEvent) => {
       const eventRequests = event.data as {
         requests: DwnPermissionScope[];
         definition: DwnProtocolDefinition;
@@ -27,8 +28,14 @@ const WebConnect: React.FC = () => {
       });
 
       setPermissionRequests(new Map(permissionRequests));
-    }, false);
-  });
+    }
+
+    window.addEventListener("message", eventRequests, false);
+
+    return () => {
+      window.removeEventListener("message", eventRequests);
+    }
+  }, []);
 
   const getRequestLabels =  (scopes: DwnPermissionScope[]): string => {
     const labels: string[] = [];

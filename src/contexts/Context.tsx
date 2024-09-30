@@ -33,32 +33,36 @@ export const useIdentities = () => {
     throw new Error("useAgent must be used within a Web5Provider");
   }
 
-  const {
-    getIdentity,
-    uploadAvatar,
-    uploadBanner,
-    createIdentity,
+  const { 
+    createIdentity, 
+    updateIdentity,
+    identities, 
+    loadIdentities, 
+    selectedIdentity, 
+    selectIdentity, 
     deleteIdentity,
-    identities,
-    reloadIdentities,
-    selectedIdentity,
-    setSelectedIdentity,
     exportIdentity,
-    importIdentity
+    dwnEndpoints,
+    wallets,
+    importIdentity,
+    setWallets,
+    setDwnEndpoints
   } = context;
 
   return {
-    getIdentity,
-    uploadAvatar,
-    uploadBanner,
-    createIdentity,
-    deleteIdentity,
     identities,
-    reloadIdentities,
-    selectedIdentity,
-    setSelectedIdentity,
+    loadIdentities,
+    createIdentity,
+    updateIdentity,
+    deleteIdentity,
     exportIdentity,
-    importIdentity
+    importIdentity,
+    selectedIdentity,
+    wallets,
+    dwnEndpoints,
+    selectIdentity,
+    setWallets,
+    setDwnEndpoints
   };
 };
 
@@ -69,18 +73,15 @@ export const useProtocols= () => {
   }
 
   const {
-    addProtocol,
     listProtocols,
     loadProtocols,
   } = context;
 
   return {
-    addProtocol,
     listProtocols,
     loadProtocols,
   };
 };
-
 
 export const useTheme = () => {
   const context = useContext(ThemeContext);
