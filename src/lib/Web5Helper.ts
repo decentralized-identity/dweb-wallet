@@ -25,15 +25,28 @@ const Web5Helper = (didUri: string, agent: Web5Agent) => {
     updateRecord: async (record: DwnRecord, dataFormat: string, data: any) => {
       const { status } = await record.update({ data, dataFormat });
       if (status.code !== 202) {
-        throw new Error('Web5Context: Failed to update name');
+        throw new Error('Web5Helper: Failed to update name');
       }
 
       const { status: sendStatus } = await record.send();
       if (sendStatus.code !== 202) {
-        console.info(`Web5Context: Failed to send ${record.protocol} record at ${record.protocolPath}: ${sendStatus.detail}`);
+        console.info(`Web5Helper: Failed to send ${record.protocol} record at ${record.protocolPath}: ${sendStatus.detail}`);
       }
 
       return record; 
+    },
+    deleteRecord: async (record: DwnRecord) => {
+      const { status } = await record.delete();
+      if (status.code !== 202) {
+        throw new Error('Web5Helper: Failed to delete record');
+      }
+
+      const { status: sendStatus } = await record.send();
+      if (sendStatus.code !== 202) {
+        console.info(`Web5Helper: Failed to send delete ${record.protocol} record at ${record.protocolPath}: ${sendStatus.detail}`);
+      }
+
+      return record;
     },
     createRecord: async (protocol: string, protocolPath: string, dataFormat: string, data: any) => {
       const { status, record } = await web5.dwn.records.create({
@@ -47,12 +60,12 @@ const Web5Helper = (didUri: string, agent: Web5Agent) => {
       });
   
       if (status.code !== 202) {
-        throw new Error(`Web5Context: Failed to create ${protocol} record at ${protocolPath}: ${status.detail}`);
+        throw new Error(`Web5Helper: Failed to create ${protocol} record at ${protocolPath}: ${status.detail}`);
       }
   
       const { status: sendStatus } = await record!.send();
       if (sendStatus.code !== 202) {
-        console.info(`Web5Context: Failed to send ${protocol} record at ${protocolPath}: ${sendStatus.detail}`);
+        console.info(`Web5Helper: Failed to send ${protocol} record at ${protocolPath}: ${sendStatus.detail}`);
       }
   
       return record!;
@@ -69,7 +82,7 @@ const Web5Helper = (didUri: string, agent: Web5Agent) => {
       if (status.code === 200 && protocols && protocols.length > 0) {
         const existingDefinition = protocols[0].definition;
         if (canonicalize(existingDefinition) !== canonicalize(definition)) {
-          throw new Error(`Web5Context: Protocol ${definition.protocol} already configured with a different definition`);
+          throw new Error(`Web5Helper: Protocol ${definition.protocol} already configured with a different definition`);
         }
 
         return { status, protocol: protocols[0] };
@@ -82,12 +95,12 @@ const Web5Helper = (didUri: string, agent: Web5Agent) => {
       });
 
       if (configureProfileStatus.code !== 202) {
-        throw new Error(`Web5Context: Failed to configure protocol ${definition.protocol}: ${configureProfileStatus.detail}`);
+        throw new Error(`Web5Helper: Failed to configure protocol ${definition.protocol}: ${configureProfileStatus.detail}`);
       }
 
       const { status: protocolSendStatus } = await protocol!.send(didUri);
       if (protocolSendStatus.code !== 202) {
-        console.info(`Web5Context: Failed to send protocol ${definition.protocol} to ${didUri}`);
+        console.info(`Web5Helper: Failed to send protocol ${definition.protocol} to ${didUri}`);
       }
 
       return protocol!;

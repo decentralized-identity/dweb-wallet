@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useIdentities, useProfile, useProtocols } from '@/contexts/Context';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useIdentities, useProtocols } from '@/contexts/Context';
 import { QRCodeCanvas} from 'qrcode.react';
 import Grid from '@mui/material/Grid2';
 import {
@@ -30,9 +30,7 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
 }));
 
 const IdentityDetails: React.FC = () => {
-  const { didUri } = useParams();
-  const { identities, selectedIdentity, selectIdentity, deleteIdentity, exportIdentity, dwnEndpoints, wallets } = useIdentities();
-  const { social, avatarUrl, heroUrl } = useProfile();
+  const { selectedIdentity, deleteIdentity, exportIdentity, dwnEndpoints, wallets } = useIdentities();
   const [ confirmDelete, setConfirmDelete ] = useState(false);
   const [ backupDialogOpen, setBackupDialogOpen ] = useState(false);
   const [ showQrCode, setShowQrCode ] = useState(false);
@@ -46,13 +44,6 @@ const IdentityDetails: React.FC = () => {
   const [copyTooltipText, setCopyTooltipText] = useState("Copy DID");
 
   useEffect(() => {
-
-    if (identities && didUri && selectedIdentity?.didUri !== didUri) {
-      selectIdentity(didUri);
-    }
-  }, [didUri, selectedIdentity, selectIdentity ]);
-
-  useEffect(() => {
     if (selectedIdentity) {
       loadProtocols(selectedIdentity.didUri).then(() => {
         setProtocols(listProtocols(selectedIdentity.didUri));
@@ -61,6 +52,12 @@ const IdentityDetails: React.FC = () => {
   }, [selectedIdentity, loadProtocols, listProtocols]);
 
   if (!selectedIdentity) return null;
+
+  const social = useMemo(() => {
+    if (selectedIdentity) {
+      return selectedIdentity.profile.social;
+    }
+  }, [selectedIdentity]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -106,16 +103,16 @@ const IdentityDetails: React.FC = () => {
           <Box sx={{ position: 'relative', height: 300 }}>
             <Box
               component="img"
-              src={heroUrl}
-              alt={`${name}'s banner`}
+              src={selectedIdentity.profile.heroUrl}
+              alt={`${social?.displayName || 'user'}'s banner`}
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
             <BannerOverlay />
               <Box sx={{ position: 'absolute', bottom: 16, left: 16, right: 16, display: 'flex', alignItems: 'flex-end' }}>
               <Avatar
-              src={avatarUrl}
-              alt={social?.displayName || 'user'}
-              sx={{ width: 120, height: 120, border: `4px solid ${theme.palette.background.paper}`, mr: 2 }}
+                src={selectedIdentity.profile.avatarUrl}
+                alt={social?.displayName || 'user'}
+                sx={{ width: 120, height: 120, border: `4px solid ${theme.palette.background.paper}`, mr: 2 }}
             >
               {social?.displayName?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
@@ -296,7 +293,7 @@ const IdentityDetails: React.FC = () => {
                 fgColor={'#000000'}
                 level="Q"
                 imageSettings={{
-                  src: avatarUrl || '',
+                  src: selectedIdentity.profile.avatarUrl || '',
                   height: 67,
                   width: 67,
                   excavate: true,

@@ -13,12 +13,13 @@ import {
 import Grid from '@mui/material/Grid2'; // Updated import for Grid2
 import { PlusIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Identity } from '@/contexts/IdentitiesContext';
+import { Identity } from '@/lib/types';
 
 const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const { didUri } = useParams();
   const navigate = useNavigate();
-  const { createIdentity, selectedIdentity, selectIdentity, identities, dwnEndpoints } = useIdentities();
+  const { createIdentity, updateIdentity, selectedIdentity, selectIdentity, identities, dwnEndpoints } = useIdentities();
+  const [loadedIdentity, setLoadedIdentity] = useState(false);
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
@@ -34,6 +35,8 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
     banner: null as File | Blob | null,
   });
 
+  const isEdit = edit && selectedIdentity;
+
   useEffect(() => {
 
     const loadIdentityForm = async () => {
@@ -47,10 +50,15 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
         dwnEndpoints,
         avatar: selectedIdentity.profile.avatar || null,
         banner: selectedIdentity.profile.hero || null,
-      })
+      });
+
+      setAvatarPreview(selectedIdentity.profile.avatar ? URL.createObjectURL(selectedIdentity.profile.avatar) : null);
+      setBannerPreview(selectedIdentity.profile.hero ? URL.createObjectURL(selectedIdentity.profile.hero) : null);
+
+      setLoadedIdentity(true);
     }
 
-    if (edit && selectedIdentity) {
+    if (isEdit && !loadedIdentity) {
       loadIdentityForm();
     }
 
@@ -58,11 +66,20 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
       selectIdentity(didUri);
     }
 
-  }, [ edit, selectedIdentity, didUri, identities ])
+  }, [ isEdit, selectedIdentity, didUri, identities ])
+
 
   const submitDisabled = useMemo(() => {
+    if (isEdit) {
+      return formData.displayName === selectedIdentity.profile.social?.displayName &&
+             formData.tagline === selectedIdentity.profile.social?.tagline &&
+             formData.bio === selectedIdentity.profile.social?.bio &&
+             formData.avatar === selectedIdentity.profile.avatar &&
+             formData.banner === selectedIdentity.profile.hero;
+    }
+
     return formData.persona === '' || formData.displayName === '' || formData.dwnEndpoints.length === 0;
-  }, [formData]);
+  }, [ isEdit, formData ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +87,18 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
 
     try {
       let identity: Identity | undefined;
-      if (edit) {
+      if (isEdit) {
+        await updateIdentity({
+          didUri: selectedIdentity.didUri,
+          dwnEndpoints: formData.dwnEndpoints,
+          displayName: formData.displayName,
+          tagline: formData.tagline,
+          bio: formData.bio,
+          avatar: formData.avatar ? new Blob([formData.avatar], { type: formData.avatar.type }) : undefined,
+          hero: formData.banner ? new Blob([formData.banner], { type: formData.banner.type }) : undefined,
+        });
+
+        identity = selectedIdentity;
       } else {
         identity = await createIdentity({
           persona: formData.persona,
@@ -130,7 +158,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   return (
     <Box sx={{ bgcolor: 'background.default' }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          {edit ? 'Edit Identity' : 'Add a New Identity'}
+          {isEdit ? `Edit ${selectedIdentity.persona} Identity` : 'Add a New Identity'}
         </Typography>
         <Divider sx={{ mb: 4 }} />
         <form onSubmit={handleSubmit}>
@@ -140,7 +168,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
             </Box>
           ) : (
             <Grid container spacing={3}>
-              <Grid size={{ xs: 12, sm: 8 }}>
+              {!edit && <Grid size={{ xs: 12, sm: 8 }}>
                 <TextField
                   fullWidth
                   label="Persona"
@@ -150,7 +178,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
                   placeholder="Social, Professional, Gaming, etc."
                   required
                 />
-              </Grid>
+              </Grid>}
               <Grid size={{ xs: 12, sm: 8 }} sx={{ display: 'flex', alignItems: 'center' }}>
                 <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
                   <Avatar
@@ -286,8 +314,18 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
                   color="primary"
                   size="large"
                 >
-                  Add Identity
+                  {isEdit ? 'Update Identity' : 'Add Identity'}
                 </Button>
+                {isEdit && (
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    sx={{ ml: 2 }}
+                    onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
+                  >
+                    Cancel
+                  </Button>
+                )}
               </Box>
             </Grid>
           )}

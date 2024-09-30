@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Box, AppBar, Toolbar, Typography, Drawer, Dialog, DialogTitle, DialogContent, Button } from '@mui/material';
-import { useIdentities, useProfile } from '@/contexts/Context';
+import { Box, AppBar, Toolbar, Typography, Drawer, Dialog, DialogTitle, DialogContent } from '@mui/material';
+import { useIdentities } from '@/contexts/Context';
 import IdentityCard from '@/components/identity/IdentityCard';
 import { Outlet, useNavigate } from 'react-router-dom';
 import SidebarSpeedDial from '@/components/SidebarSpeedDial';
 import { CameraAlt, PersonAddAlt1 } from '@mui/icons-material';
 import { Download } from 'lucide-react';
 import { PortableIdentity } from '@web5/agent';
-import { Identity } from '@/contexts/IdentitiesContext';
-import { ProfileProvider } from '@/contexts/ProfileContext';
+import { Identity } from '@/lib/types';
 
 const drawerWidth = 400; // Wider drawer for identity cards
 export const topBarHeight = 64; // Standard AppBar height
@@ -128,15 +127,13 @@ const Desktop: React.FC = () => {
             }}
           >
             {identities.map((identity) => (
-              <ProfileProvider key={identity.didUri} identity={identity}>
-                <IdentityCard
-                  key={identity.didUri}
-                  identity={identity}
-                  selected={selectedIdentity?.didUri === identity.didUri}
-                  onClick={() => handleIdentityClick(identity)}
-                  compact={true}
-                />
-              </ProfileProvider>
+              <IdentityCard
+                key={identity.didUri}
+                identity={identity}
+                selected={selectedIdentity?.didUri === identity.didUri}
+                onClick={() => handleIdentityClick(identity)}
+                compact={true}
+              />
             ))}
           </Box>
         </Drawer>

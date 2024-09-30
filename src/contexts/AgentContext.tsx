@@ -34,11 +34,9 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
 
   const [initialized, setInitialized] = useState(false);
-  const [dwnEndpoint, setDwnEndpoint] = useState('https://dwn.tbddev.org/latest');
-  const [recoveryPhrase, setRecoveryPhrase] = useState('');
-  const [password, setPassword] = useState('');
   const [isConnecting, setIsConnecting] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+  const [dwnEndpoint, setDwnEndpoint] = useState('https://dwn.tbddev.org/latest');
   const [web5Agent, setWeb5Agent] = useState<
     Web5PlatformAgent| undefined
   >(undefined);
@@ -137,15 +135,8 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const handleRecoveryPhraseChange = (phrase: string) => {
-    setRecoveryPhrase(phrase);
-  }
-
   const handleAgentSetup = async (password: string) => {
-    if (!initialized && recoveryPhrase && password) {
-      await recover(recoveryPhrase.trim(), password, dwnEndpoint);
-      setBackupSeed(recoveryPhrase.trim());
-    } else if (!initialized && password) {
+   if (!initialized && password) {
       const recoveryPhrase = await initialize(password, dwnEndpoint);
       if (recoveryPhrase) {
         setBackupSeed(recoveryPhrase);
@@ -212,6 +203,14 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
                   </Grid>
                 ))}
               </Grid>
+              {!initialized && <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+                <TextField
+                  label="DWN Endpoint"
+                  value={dwnEndpoint}
+                  onChange={(e) => setDwnEndpoint(e.target.value)}
+                  fullWidth
+                />
+              </Grid>}
               <Button
                 type="submit"
                 variant="contained"

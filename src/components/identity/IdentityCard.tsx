@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { Card, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, useTheme, alpha } from '@mui/material';
 import { truncateDid } from '@/lib/utils';
 import { CopyIcon, CheckCircle } from 'lucide-react';
-import { Identity } from '@/contexts/IdentitiesContext';
-import { useProfile } from '@/contexts/Context';
+import { Identity } from '@/lib/types';
 
 interface IdentityCardProps {
   identity: Identity;
@@ -34,8 +33,9 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
 
 const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick, compact = false }) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
-  const { social, avatarUrl, heroUrl } = useProfile();
   const theme = useTheme();
+
+  const social = identity.profile.social;
 
   const handleCopyDid = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -70,7 +70,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
         <Box sx={{ position: 'relative', height: '100%', width: '100%' }}>
           <Box
             component="img"
-            src={heroUrl}
+            src={identity.profile.heroUrl}
             alt={`${social?.displayName || 'user'}'s banner`}
             sx={{
               width: '100%',
@@ -114,7 +114,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
             </Box>
           </Box>
           <Avatar 
-            src={avatarUrl} 
+            src={identity.profile.avatarUrl} 
             alt={social?.displayName || 'user'}
             sx={{ 
               position: 'absolute',
@@ -152,7 +152,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
           px: 2,
         }}>
           <Avatar 
-            src={avatarUrl} 
+            src={identity.profile.avatarUrl} 
             alt={social?.displayName || 'user'}
             sx={{ 
               width: 48, 

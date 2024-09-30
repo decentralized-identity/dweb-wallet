@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Convert } from '@web5/common';
-import { profileDefinition } from '@/contexts/protocols';
 import { Card, CardContent, CardMedia, Typography, Avatar, Box, styled } from '@mui/material';
 import { truncateDid } from '@/lib/utils';
+import { profileDefinition } from '@/lib/ProfileProtocol';
 
 interface Props {
   did: string;

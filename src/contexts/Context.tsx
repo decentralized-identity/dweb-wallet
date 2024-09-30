@@ -4,7 +4,6 @@ import { IdentitiesContext } from "./IdentitiesContext";
 import { ProtocolsContext } from "./ProtocolsContext";
 import { ThemeContext } from "./ThemeContext";
 import { BackupSeedContext } from "./BackupSeedContext";
-import { ProfileContext } from "./ProfileContext";
 
 export const useAgent = () => {
   const context = useContext(AgentContext);
@@ -34,27 +33,36 @@ export const useIdentities = () => {
     throw new Error("useAgent must be used within a Web5Provider");
   }
 
-  return {
-    ...context,
-  };
-};
+  const { 
+    createIdentity, 
+    updateIdentity,
+    identities, 
+    loadIdentities, 
+    selectedIdentity, 
+    selectIdentity, 
+    deleteIdentity,
+    exportIdentity,
+    dwnEndpoints,
+    wallets,
+    importIdentity,
+    setWallets,
+    setDwnEndpoints
+  } = context;
 
-export const useProfile = () => {
-  const context = useContext(ProfileContext);
-  if (!context) {
-    throw new Error("useProfile must be used within a ProfileProvider");
-  }
-  const { social, avatar, hero, avatarUrl, heroUrl, setSocial, setAvatar, setHero} = context;
-
   return {
-    social,
-    avatar,
-    avatarUrl,
-    hero,
-    heroUrl,
-    setSocial,
-    setAvatar,
-    setHero,
+    identities,
+    loadIdentities,
+    createIdentity,
+    updateIdentity,
+    deleteIdentity,
+    exportIdentity,
+    importIdentity,
+    selectedIdentity,
+    wallets,
+    dwnEndpoints,
+    selectIdentity,
+    setWallets,
+    setDwnEndpoints
   };
 };
 

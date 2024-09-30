@@ -2,30 +2,29 @@ import React, { createContext, useEffect, useState } from "react";
 import { BearerIdentity, getDwnServiceEndpointUrls, PortableIdentity, Web5Agent } from "@web5/agent";
 
 import Web5Helper from "@/lib/Web5Helper";
-import ProfileProtocol from "@/lib/ProfileProtocol";
+import ProfileProtocol, { profileDefinition } from "@/lib/ProfileProtocol";
 
-import { ProfileData } from "./ProfileContext";
-import { profileDefinition } from "./protocols";
 import { useAgent } from "./Context";
-
-export interface Identity {
-  persona: string;
-  didUri: string;
-  profile: ProfileData;
-}
+import { Identity } from "@/lib/types";
+import { Convert } from "@web5/common";
 
 const loadProfileFromBearerIdentity = (agent: Web5Agent) => async (identity: BearerIdentity): Promise<Identity> => {
   const profileProtocol = ProfileProtocol(identity.did.uri, agent);
   const social = await profileProtocol.getSocial();
   const avatar = await profileProtocol.getAvatar();
+  const avatarUrl = avatar ? `https://dweb/${identity.did.uri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/avatar` : undefined;
   const hero = await profileProtocol.getHero();
+  const heroUrl = hero ? `https://dweb/${identity.did.uri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/hero` : undefined;
+
   return {
     persona: identity.metadata.name,
     didUri: identity.did.uri,
     profile: {
       social,
       avatar,
-      hero
+      avatarUrl,
+      hero,
+      heroUrl
     }
   }
 }
@@ -41,7 +40,7 @@ export interface CreateIdentityParams {
   hero?: Blob;
 }
 
-export interface UpdateIdentityParams extends Omit<CreateIdentityParams, 'walletHost'> {
+export interface UpdateIdentityParams extends Omit<CreateIdentityParams, 'walletHost' | 'persona'> {
   didUri: string;
 }
 
@@ -49,6 +48,7 @@ interface IdentityContextProps {
   identities: Identity[];
   loadIdentities: () => Promise<void>;
   createIdentity: (params: CreateIdentityParams) => Promise<Identity>;
+  updateIdentity: (params: UpdateIdentityParams) => Promise<void>;
   deleteIdentity: (didUri: string) => Promise<void>;
   exportIdentity: (didUri: string) => Promise<PortableIdentity>;
   importIdentity: (walletHost: string, ...identities: PortableIdentity[]) => Promise<void>;
@@ -209,6 +209,53 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     return craetedIdentity;
   }
 
+  const updateIdentity = async ({ didUri, displayName, tagline, bio, avatar, hero }: UpdateIdentityParams) => {
+    if (!agent) {
+      throw new Error("Agent not found");
+    }
+
+    const identity = identities.find(identity => identity.didUri === didUri);
+    if (!identity) {
+      throw new Error("Identity not found");
+    }
+
+    const profileProtocol = ProfileProtocol(didUri, agent);
+
+    if (identity.profile.social?.displayName !== displayName || identity.profile.social?.tagline !== tagline || identity.profile.social?.bio !== bio) {
+      await profileProtocol.setSocial({ displayName, tagline, bio, apps: {} });
+    }
+
+    if (avatar !== identity.profile.avatar) {
+      await profileProtocol.setAvatar(avatar || null);
+    }
+
+    if (hero !== identity.profile.hero) {
+      await profileProtocol.setHero(hero || null);
+    }
+
+    const updatedIdentity = {
+      ...identity,
+      profile: {
+        ...identity.profile,
+        displayName,
+        tagline,
+        bio,
+        avatar,
+        hero
+      }
+    }
+
+    const updatedIdentities = identities.map(identity => {
+      if (identity.didUri === didUri) {
+        return updatedIdentity;
+      }
+      return identity;
+    });
+
+    setSelectedIdentity(updatedIdentity);
+    setIdentities(updatedIdentities);
+  }
+
   const deleteIdentity = async (didUri: string) => {
     if (agent) {
       await agent.identity.delete({ tenant: agent.agentDid.uri, didUri });
@@ -304,6 +351,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         loadIdentities,
         setWallets,
         createIdentity,
+        updateIdentity,
         deleteIdentity,
         selectIdentity,
         importIdentity,
