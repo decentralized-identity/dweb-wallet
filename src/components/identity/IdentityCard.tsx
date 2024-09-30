@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Card, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, useTheme, alpha } from '@mui/material';
-import { Identity } from '@/types';
 import { truncateDid } from '@/lib/utils';
 import { CopyIcon, CheckCircle } from 'lucide-react';
+import { Identity } from '@/contexts/IdentitiesContext';
+import { useProfile } from '@/contexts/Context';
 
 interface IdentityCardProps {
   identity: Identity;
@@ -33,6 +34,7 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
 
 const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick, compact = false }) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
+  const { social, avatarUrl, heroUrl } = useProfile();
   const theme = useTheme();
 
   const handleCopyDid = (event: React.MouseEvent) => {
@@ -68,8 +70,8 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
         <Box sx={{ position: 'relative', height: '100%', width: '100%' }}>
           <Box
             component="img"
-            src={identity.bannerUrl}
-            alt={`${identity.name}'s banner`}
+            src={heroUrl}
+            alt={`${social?.displayName || 'user'}'s banner`}
             sx={{
               width: '100%',
               height: '100%',
@@ -88,12 +90,9 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
               alignItems: 'flex-start',
             }}
           >
-            <Typography variant="h6" component="div" sx={{ color: 'common.white', mb: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-              {identity.name}
-            </Typography>
-            {identity.displayName && (
+            {social?.displayName && (
               <Typography variant="body2" sx={{ color: 'common.white', mb: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-                {identity.displayName}
+                {social.displayName}
               </Typography>
             )}
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -115,8 +114,8 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
             </Box>
           </Box>
           <Avatar 
-            src={identity.avatarUrl} 
-            alt={identity.name}
+            src={avatarUrl} 
+            alt={social?.displayName || 'user'}
             sx={{ 
               position: 'absolute',
               top: 16,
@@ -127,7 +126,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
               boxShadow: theme.shadows[3],
             }}
           >
-            {identity.name.charAt(0).toUpperCase()}
+            {social?.displayName?.charAt(0).toUpperCase() || 'U'}
           </Avatar>
           {selected && (
             <CheckCircle 
@@ -153,19 +152,19 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick
           px: 2,
         }}>
           <Avatar 
-            src={identity.avatarUrl} 
-            alt={identity.name}
+            src={avatarUrl} 
+            alt={social?.displayName || 'user'}
             sx={{ 
               width: 48, 
               height: 48, 
               mr: 2,
             }}
           >
-            {identity.name.charAt(0).toUpperCase()}
+            {social?.displayName?.charAt(0).toUpperCase() || 'U'}
           </Avatar>
           <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
             <Typography variant="subtitle1" noWrap>
-              {identity.name}
+              {social?.displayName || ''}
             </Typography>
             <Typography variant="caption" noWrap sx={{ color: 'text.secondary' }}>
               {truncateDid(identity.didUri, 20)}

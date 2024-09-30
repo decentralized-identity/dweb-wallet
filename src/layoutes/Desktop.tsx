@@ -1,81 +1,65 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Box, AppBar, Toolbar, Typography, Drawer, Dialog, DialogTitle, DialogContent, Button } from '@mui/material';
-import { useIdentities } from '@/contexts/Context';
+import { useIdentities, useProfile } from '@/contexts/Context';
 import IdentityCard from '@/components/identity/IdentityCard';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { Identity } from '@/types';
 import SidebarSpeedDial from '@/components/SidebarSpeedDial';
 import { CameraAlt, PersonAddAlt1 } from '@mui/icons-material';
 import { Download } from 'lucide-react';
 import { PortableIdentity } from '@web5/agent';
+import { Identity } from '@/contexts/IdentitiesContext';
+import { ProfileProvider } from '@/contexts/ProfileContext';
 
 const drawerWidth = 400; // Wider drawer for identity cards
-const topBarHeight = 64; // Standard AppBar height
+export const topBarHeight = 64; // Standard AppBar height
 
 const Desktop: React.FC = () => {
   const navigate = useNavigate();
-  const { identities, selectedIdentity, setSelectedIdentity, importIdentity } = useIdentities();
+  const { identities, selectedIdentity, selectIdentity, importIdentity } = useIdentities();
   const [ isDragging, setIsDragging ] = useState(false);
   const [ droppedFiles, setDroppedFiles ] = useState<File[]>([]);
 
-  useEffect(() => {
-    // Handlers for the drag events
-    const handleDragEnter = (e: DragEvent) => {
-      if (isDragging) return;
+  const handleDragLeave = useCallback((e: DragEvent) =>  {
+    console.log('drag leave');
+    e.stopPropagation();
+    e.preventDefault();
 
-      e.stopPropagation();
-      e.preventDefault();
-      setIsDragging(true);
-    };
-
-    const handleDragOver = (e: DragEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
-    };
-
-    const handleDragLeave = (e: DragEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
+    if (isDragging) {
       setIsDragging(false);
-    };
+    }
+  }, [setIsDragging]);
 
-    const handleDrop = (e: DragEvent) => {
-      e.stopPropagation();
-      e.preventDefault();
+  const handleDrop = useCallback((e: DragEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
 
+    if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
+      const filesArray = Array.from(e.dataTransfer.files);
+      setDroppedFiles(filesArray as File[]);
+      e.dataTransfer.clearData();
+    }
+  }, [setDroppedFiles]);
 
-      if (e.dataTransfer?.files && e.dataTransfer.files.length > 0) {
-        const filesArray = Array.from(e.dataTransfer.files);
-        setDroppedFiles(filesArray as File[]);
-        e.dataTransfer.clearData();
-      }
-    };
+  const handleDragEnter = useCallback((e: DragEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
 
+    if (isDragging) return;
+
+    setIsDragging(true);
+  }, [isDragging, setIsDragging]);
+
+  useEffect(() => {
     window.addEventListener('dragenter', handleDragEnter);
-    window.addEventListener('dragover', handleDragOver);
     window.addEventListener('dragleave', handleDragLeave);
     window.addEventListener('drop', handleDrop);
 
-    // const preventPropagation = (e: WheelEvent) => {
-    //   e.stopPropagation();
-    // };
-
-    // const leftPane = leftPaneRef.current;
-    // const rightPane = rightPaneRef.current;
-
-    // if (leftPane) leftPane.addEventListener('wheel', preventPropagation);
-    // if (rightPane) rightPane.addEventListener('wheel', preventPropagation);
-
     return () => {
-      // if (leftPane) leftPane.removeEventListener('wheel', preventPropagation);
-      // if (rightPane) rightPane.removeEventListener('wheel', preventPropagation);
-
-      window.removeEventListener('dragenter', handleDragEnter);
-      window.removeEventListener('dragover', handleDragOver);
-      window.removeEventListener('dragleave', handleDragLeave);
       window.removeEventListener('drop', handleDrop);
+      window.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('dragenter', handleDragEnter);
     };
-  }, []);
+  }, [ ]);
 
   useEffect(() => {
     const loadIdentities = async () => {
@@ -83,7 +67,7 @@ const Desktop: React.FC = () => {
       const uniqueIdentities = new Map<string, PortableIdentity>();
       const identities = await Promise.all(droppedFiles.map(async f => JSON.parse(await f.text()) as PortableIdentity));
       identities.forEach(i => uniqueIdentities.set(i.portableDid.uri, i));
-      await importIdentity(...Array.from(uniqueIdentities.values())); 
+      await importIdentity(window.location.origin, ...Array.from(uniqueIdentities.values())); 
       setDroppedFiles([]);
     }
 
@@ -93,7 +77,7 @@ const Desktop: React.FC = () => {
   }, [ droppedFiles, importIdentity ]);
 
   const handleIdentityClick = (identity: Identity) => {
-    setSelectedIdentity(identity);
+    selectIdentity(identity.didUri);
     navigate(`/identity/${identity.didUri}`);
   };
 
@@ -144,13 +128,15 @@ const Desktop: React.FC = () => {
             }}
           >
             {identities.map((identity) => (
-              <IdentityCard
-                key={identity.didUri}
-                identity={identity}
-                selected={selectedIdentity?.didUri === identity.didUri}
-                onClick={() => handleIdentityClick(identity)}
-                compact={true}
-              />
+              <ProfileProvider key={identity.didUri} identity={identity}>
+                <IdentityCard
+                  key={identity.didUri}
+                  identity={identity}
+                  selected={selectedIdentity?.didUri === identity.didUri}
+                  onClick={() => handleIdentityClick(identity)}
+                  compact={true}
+                />
+              </ProfileProvider>
             ))}
           </Box>
         </Drawer>

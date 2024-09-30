@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useIdentities, useProtocols } from '@/contexts/Context';
+import { useIdentities, useProfile, useProtocols } from '@/contexts/Context';
 import { QRCodeCanvas} from 'qrcode.react';
 import Grid from '@mui/material/Grid2';
 import {
-  Box, Typography, Avatar, Paper, Divider, Chip, IconButton,
+  Box, Typography, Avatar, Paper, Divider, IconButton,
   useTheme, alpha, styled, List, ListItem, ListItemText,
   ListItemIcon, Menu, MenuItem, Tooltip,
   Dialog,
@@ -31,7 +31,8 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
 
 const IdentityDetails: React.FC = () => {
   const { didUri } = useParams();
-  const { identities, selectedIdentity, setSelectedIdentity, deleteIdentity, exportIdentity } = useIdentities();
+  const { identities, selectedIdentity, selectIdentity, deleteIdentity, exportIdentity, dwnEndpoints, wallets } = useIdentities();
+  const { social, avatarUrl, heroUrl } = useProfile();
   const [ confirmDelete, setConfirmDelete ] = useState(false);
   const [ backupDialogOpen, setBackupDialogOpen ] = useState(false);
   const [ showQrCode, setShowQrCode ] = useState(false);
@@ -45,13 +46,11 @@ const IdentityDetails: React.FC = () => {
   const [copyTooltipText, setCopyTooltipText] = useState("Copy DID");
 
   useEffect(() => {
+
     if (identities && didUri && selectedIdentity?.didUri !== didUri) {
-      const identity = identities.find(identity => identity.didUri === didUri);
-      if (identity) {
-        setSelectedIdentity(identity);
-      }
+      selectIdentity(didUri);
     }
-  }, [didUri, identities, selectedIdentity, setSelectedIdentity]);
+  }, [didUri, selectedIdentity, selectIdentity ]);
 
   useEffect(() => {
     if (selectedIdentity) {
@@ -107,26 +106,23 @@ const IdentityDetails: React.FC = () => {
           <Box sx={{ position: 'relative', height: 300 }}>
             <Box
               component="img"
-              src={selectedIdentity.bannerUrl}
-              alt={`${selectedIdentity.name}'s banner`}
+              src={heroUrl}
+              alt={`${name}'s banner`}
               sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
             />
             <BannerOverlay />
               <Box sx={{ position: 'absolute', bottom: 16, left: 16, right: 16, display: 'flex', alignItems: 'flex-end' }}>
               <Avatar
-                src={selectedIdentity.avatarUrl}
-              alt={selectedIdentity.name}
+              src={avatarUrl}
+              alt={social?.displayName || 'user'}
               sx={{ width: 120, height: 120, border: `4px solid ${theme.palette.background.paper}`, mr: 2 }}
             >
-              {selectedIdentity.name.charAt(0).toUpperCase()}
+              {social?.displayName?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
             <Box sx={{ flexGrow: 1 }}>
-              <Typography variant="h4" sx={{ color: 'common.white', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
-                {selectedIdentity.name}
-              </Typography>
-              {selectedIdentity.displayName && (
+              {social?.displayName && (
                 <Typography variant="subtitle1" sx={{ color: 'common.white', textShadow: '0 1px 2px rgba(0,0,0,0.6)' }}>
-                  {selectedIdentity.displayName} ({selectedIdentity.persona})
+                  {social.displayName} ({selectedIdentity.persona})
                 </Typography>
               )}
             </Box>
@@ -136,7 +132,7 @@ const IdentityDetails: React.FC = () => {
           </Box>
         </Box>
         <Box sx={{ p: 3 }}>
-          <Typography variant="body1" gutterBottom>{selectedIdentity.tagline}</Typography>
+          <Typography variant="body1" gutterBottom>{social?.tagline}</Typography>
           <Divider sx={{ my: 2 }} />
           <Grid container spacing={2}>
             <Grid size={12}>
@@ -166,23 +162,21 @@ const IdentityDetails: React.FC = () => {
                 </Tooltip>
               </Box>
             </Grid>
-            {selectedIdentity.dwnEndpoints && (
-              <Grid size={{ xs: 12, sm: 6  }}>
-                <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
-                  {selectedIdentity.dwnEndpoints.map(endpoint => (
-                      <Box key={endpoint} sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Language sx={{ mr: 1 }} />
-                        <Typography variant="body2">{endpoint}</Typography>
-                    </Box>
-                  ))}
-                </Box>
-              </Grid>
-            )}
+            <Grid size={{ xs: 12, sm: 6  }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start' }}>
+                {dwnEndpoints.map(endpoint => (
+                    <Box key={endpoint} sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Language sx={{ mr: 1 }} />
+                      <Typography variant="body2">{endpoint}</Typography>
+                  </Box>
+                ))}
+              </Box>
+            </Grid>
           </Grid>
-          {selectedIdentity.bio && (
+          {social?.bio && (
             <>
               <Divider sx={{ my: 2 }} />
-              <Typography variant="body2">{selectedIdentity.bio}</Typography>
+              <Typography variant="body2">{social.bio}</Typography>
             </>
           )}
         </Box>
@@ -196,7 +190,7 @@ const IdentityDetails: React.FC = () => {
             <Paper elevation={1} sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>Permissions</Typography>
               <Divider sx={{ mb: 2 }} />
-              {selectedIdentity.permissions && selectedIdentity.permissions.length > 0 ? (
+              {/* {selectedIdentity.permissions && selectedIdentity.permissions.length > 0 ? (
                 <Box>
                   {selectedIdentity.permissions.map((permission, index) => (
                     <Chip key={index} label={permission} sx={{ mr: 1, mb: 1 }} />
@@ -204,7 +198,7 @@ const IdentityDetails: React.FC = () => {
                 </Box>
               ) : (
                 <Typography variant="body2">No permissions assigned yet.</Typography>
-              )}
+              )} */}
             </Paper>
           </Grid>
 
@@ -232,7 +226,7 @@ const IdentityDetails: React.FC = () => {
               <Typography variant="h6" gutterBottom>Wallets</Typography>
               <Divider sx={{ mb: 2 }} />
               <List>
-                {selectedIdentity.webWallets.map((wallet, index) => (
+                {wallets.map((wallet, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={wallet} />
                   </ListItem>
@@ -302,7 +296,7 @@ const IdentityDetails: React.FC = () => {
                 fgColor={'#000000'}
                 level="Q"
                 imageSettings={{
-                  src: selectedIdentity.avatarUrl || '',
+                  src: avatarUrl || '',
                   height: 67,
                   width: 67,
                   excavate: true,

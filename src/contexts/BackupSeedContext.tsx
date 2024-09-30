@@ -34,7 +34,7 @@ export const BackupSeedProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
     window.addEventListener('storage', checkLocalStorage);
     return () => window.removeEventListener('storage', checkLocalStorage);
-  });
+  }, []);
 
   const setBackupSeed = (seed: string) => {
     localStorage.setItem('recoveryPhrase', seed);

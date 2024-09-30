@@ -13,11 +13,12 @@ import {
 import Grid from '@mui/material/Grid2'; // Updated import for Grid2
 import { PlusIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { Identity } from '@/contexts/IdentitiesContext';
 
 const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const { didUri } = useParams();
   const navigate = useNavigate();
-  const { createIdentity, uploadAvatar, uploadBanner, selectedIdentity, setSelectedIdentity, identities } = useIdentities();
+  const { createIdentity, selectedIdentity, selectIdentity, identities, dwnEndpoints } = useIdentities();
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
@@ -25,7 +26,6 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
 
   const [formData, setFormData] = useState({
     persona: '',
-    name: '',
     displayName: '',
     tagline: '',
     bio: '',
@@ -39,44 +39,29 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
     const loadIdentityForm = async () => {
       if (!selectedIdentity) return;
 
-        let avatar: File | Blob | null = null;
-        if (selectedIdentity.avatarUrl) {
-          avatar = await fetch(selectedIdentity.avatarUrl).then(r => r.blob());
-        }
-
-        let banner: File | Blob | null = null;
-        if (selectedIdentity.bannerUrl) {
-          banner = await fetch(selectedIdentity.bannerUrl).then(r => r.blob());
-        }
-  
-        setFormData({
-          persona: selectedIdentity.persona,
-          name: selectedIdentity.name,
-          displayName: selectedIdentity.displayName,
-          tagline: selectedIdentity.tagline,
-          bio: selectedIdentity.bio,
-          dwnEndpoints: selectedIdentity.dwnEndpoints,
-          avatar,
-          banner,
-        })
+      setFormData({
+        persona: selectedIdentity.persona,
+        displayName: selectedIdentity.profile.social?.displayName || '',
+        tagline: selectedIdentity.profile.social?.tagline || '',
+        bio: selectedIdentity.profile.social?.bio || '',
+        dwnEndpoints,
+        avatar: selectedIdentity.profile.avatar || null,
+        banner: selectedIdentity.profile.hero || null,
+      })
     }
 
     if (edit && selectedIdentity) {
-      console.log('loading identity form');
       loadIdentityForm();
     }
 
     if (!selectedIdentity) {
-      const identity = identities.find(identity => identity.didUri === didUri);
-      if (identity) {
-        setSelectedIdentity(identity);
-      }
+      selectIdentity(didUri);
     }
-  
+
   }, [ edit, selectedIdentity, didUri, identities ])
 
   const submitDisabled = useMemo(() => {
-    return formData.persona === '' || formData.name === '' || formData.displayName === '' || formData.dwnEndpoints.length === 0;
+    return formData.persona === '' || formData.displayName === '' || formData.dwnEndpoints.length === 0;
   }, [formData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -84,29 +69,25 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
     setLoading(true);
 
     try {
-      const didUri = await createIdentity({
-        persona: formData.persona,
-        name: formData.name,
-        displayName: formData.displayName,
-        tagline: formData.tagline,  
-        bio: formData.bio,
-        dwnEndpoints: formData.dwnEndpoints,
-        walletHost: window.location.origin,
-      });
+      let identity: Identity | undefined;
+      if (edit) {
+      } else {
+        identity = await createIdentity({
+          persona: formData.persona,
+          displayName: formData.displayName,
+          tagline: formData.tagline,  
+          bio: formData.bio,
+          dwnEndpoints: formData.dwnEndpoints,
+          walletHost: window.location.origin,
+          avatar: formData.avatar ? new Blob([formData.avatar], { type: formData.avatar.type }) : undefined,
+          hero: formData.banner ? new Blob([formData.banner], { type: formData.banner.type }) : undefined,
+        });
+      }
 
-      if (!didUri) {
+      if (!identity) {
         throw new Error('Failed to create identity');
       }
-
-      if (formData.avatar) {
-        await uploadAvatar(didUri, formData.avatar);
-      }
-
-      if (formData.banner) {
-        await uploadBanner(didUri, formData.banner);
-      }
-
-      navigate(`/identity/${didUri}`);
+      navigate(`/identity/${identity.didUri}`);
     } catch (error) {
       console.error('Error creating identity:', error);
       // Handle error (e.g., show error message to user)
@@ -147,7 +128,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   }
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh'}}>
+    <Box sx={{ bgcolor: 'background.default' }}>
         <Typography variant="h4" component="h1" gutterBottom>
           {edit ? 'Edit Identity' : 'Add a New Identity'}
         </Typography>
@@ -167,17 +148,6 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
                   value={formData.persona}
                   onChange={handleInputChange}
                   placeholder="Social, Professional, Gaming, etc."
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  fullWidth
-                  label="Display Name"
-                  name="displayName"
-                  value={formData.displayName}
-                  onChange={handleInputChange}
-                  placeholder="Display Name"
                   required
                 />
               </Grid>
@@ -211,10 +181,11 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
                 </Box>
                 <TextField
                   fullWidth
-                  label="Name"
-                  value={formData.name}
+                  label="Display Name"
+                  name="displayName"
+                  value={formData.displayName}
                   onChange={handleInputChange}
-                  name="name"
+                  placeholder="Display Name"
                   required
                 />
               </Grid>
@@ -240,7 +211,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
               </Grid>
               <Grid size={{ xs: 12, sm: 8 }}>
                 {formData.dwnEndpoints.map((dwnEndpoint, index) => (
-                  <Box>
+                  <Box key={dwnEndpoint} display="flex" alignItems="center">
                     <TextField
                       key={dwnEndpoint}
                       fullWidth
