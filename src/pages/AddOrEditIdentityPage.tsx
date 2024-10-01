@@ -15,16 +15,16 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Identity } from '@/lib/types';
 import { PageContainer } from '@toolpad/core';
 
-const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
+const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const { didUri } = useParams();
   const navigate = useNavigate();
-  const { createIdentity, updateIdentity, selectedIdentity, selectIdentity, identities, dwnEndpoints } = useIdentities();
+  const { createIdentity, updateIdentity, selectedIdentity, selectIdentity, dwnEndpoints } = useIdentities();
   const [loadedIdentity, setLoadedIdentity] = useState(false);
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  const defaultForm = {
     persona: '',
     displayName: '',
     tagline: '',
@@ -32,14 +32,29 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
     dwnEndpoints: ['https://dwn.tbddev.org/latest'],
     avatar: null as File | Blob | null,
     banner: null as File | Blob | null,
-  });
+  }
+
+  const [formData, setFormData] = useState(defaultForm);
 
   const isEdit = edit && selectedIdentity;
 
-  useEffect(() => {
+  const resetForm = () => {
+    setFormData(defaultForm);
+    setAvatarPreview(null);
+    setBannerPreview(null);
+  }
 
+  useEffect(() => {
+    if (didUri && selectedIdentity?.didUri !== didUri) {
+      selectIdentity(didUri);
+    }
+  }, [ didUri, selectedIdentity ]);
+
+  useEffect(() => {
     const loadIdentityForm = async () => {
-      if (!selectedIdentity) return;
+      if (!selectedIdentity) {
+        return;
+      };
 
       setFormData({
         persona: selectedIdentity.persona,
@@ -57,15 +72,14 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
       setLoadedIdentity(true);
     }
 
-    if (isEdit && !loadedIdentity) {
+    if (isEdit && selectedIdentity?.didUri === didUri && !loadedIdentity) {
       loadIdentityForm();
+    } else if (!isEdit && selectedIdentity) {
+      selectIdentity(undefined);
+      resetForm();
     }
 
-    if (!selectedIdentity) {
-      selectIdentity(didUri);
-    }
-
-  }, [ isEdit, selectedIdentity, didUri, identities, dwnEndpoints, loadedIdentity, selectIdentity ]);
+  }, [ isEdit, selectedIdentity, loadedIdentity, didUri ]);
 
 
   const submitDisabled = useMemo(() => {
@@ -332,4 +346,4 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   );
 };
 
-export default AddIdentityPage;
+export default AddOrEditIdentityPage;

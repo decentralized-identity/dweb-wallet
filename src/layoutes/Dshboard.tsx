@@ -1,4 +1,4 @@
-import AddIdentityPage from "@/pages/AddIdentityPage";
+import AddOrEditIdentityPage from "@/pages/AddOrEditIdentityPage";
 import DWebConnect from "@/pages/DwebConnect";
 import IdentitiesListPage from "@/pages/IdentitiesListPage";
 import IdentityDetailsPage from "@/pages/IdentityDetailsPage";
@@ -55,8 +55,8 @@ const Dashboard:React.FC = () => {
           <Route index element={<IdentitiesListPage />} />
           <Route path="/search" element={<SearchIdentitiesPage />} />
           <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
-          <Route path="/identity/edit/:didUri" element={<AddIdentityPage edit />} />
-          <Route path="/identities/create" element={<AddIdentityPage />} />
+          <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
+          <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
           <Route path="/identities/import" element={<div>Coming Soon</div>} />
           <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
           <Route path="/dweb-connect" element={<DWebConnect />} />
