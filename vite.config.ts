@@ -26,8 +26,8 @@ export default defineConfig({
             },
       
             manifest: {
-              name: 'nSecure Wallet',
-              short_name: 'nSecure',
+              name: 'DWebWallet',
+              short_name: 'DWebWallet',
               description: 'Decentralized identity manager',
               theme_color: '#E03A3E',
             },

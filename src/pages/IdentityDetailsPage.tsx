@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useIdentities, useProtocols } from '@/contexts/Context';
+import { useIdentities } from '@/contexts/Context';
 import { QRCodeCanvas} from 'qrcode.react';
 import Grid from '@mui/material/Grid2';
 import {
@@ -32,7 +32,7 @@ const IdentityDetailsPage: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [backupDialogOpen, setBackupDialogOpen] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
-  const [protocols, setProtocols] = useState<any[]>([]);
+  const [ protocols ] = useState<any[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
   const [copyTooltipText, setCopyTooltipText] = useState("Copy DID");
