@@ -24,7 +24,7 @@ export default defineConfig({
                 config: true,
             },
             manifest: {
-                name: 'DWeb Wallet',
+                name: 'DWebWallet',
                 short_name: 'DWebWallet',
                 description: 'Decentralized identity manager',
                 theme_color: '#E03A3E',
