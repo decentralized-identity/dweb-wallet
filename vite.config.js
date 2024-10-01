@@ -2,22 +2,31 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 import path from 'path';
 import react from '@vitejs/plugin-react';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-/**@ts-expect-error */
+import svgr from 'vite-plugin-svgr';
 import nodePolyfills from 'vite-plugin-node-stdlib-browser';
 // https://vitejs.dev/config/
 export default defineConfig({
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+        },
+    },
     define: {
         global: "globalThis",
     },
     plugins: [
+        svgr(),
         react(),
         nodePolyfills(),
         VitePWA({
+            devOptions: {
+                enabled: true,
+            },
+            registerType: 'prompt',
+            includeAssets: ['favicon.ico', 'logo.png'],
             strategies: 'injectManifest',
             srcDir: 'src',
             filename: "sw.ts",
-            registerType: 'autoUpdate',
             injectRegister: false,
             pwaAssets: {
                 disabled: false,
@@ -41,17 +50,6 @@ export default defineConfig({
                 cleanupOutdatedCaches: true,
                 clientsClaim: true
             },
-            devOptions: {
-                enabled: true,
-                navigateFallback: 'index.html',
-                suppressWarnings: true,
-                type: 'module',
-            }
         })
-    ],
-    resolve: {
-        alias: {
-            "@": path.resolve(__dirname, "./src"),
-        },
-    },
+    ]
 });
