@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useIdentities, useProtocols } from '@/contexts/Context';
+import { useIdentities } from '@/contexts/Context';
 import { QRCodeCanvas} from 'qrcode.react';
 import Grid from '@mui/material/Grid2';
 import {
@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import {
   Edit, Delete, GetApp, ContentCopy, QrCode2,
-  Lock, Public, Language, MoreVert,
+  Language, MoreVert,
   Person2Outlined,
 } from '@mui/icons-material';
 
@@ -35,22 +35,12 @@ const IdentityDetails: React.FC = () => {
   const [ confirmDelete, setConfirmDelete ] = useState(false);
   const [ backupDialogOpen, setBackupDialogOpen ] = useState(false);
   const [ showQrCode, setShowQrCode ] = useState(false);
-  const { listProtocols, loadProtocols } = useProtocols();
   const navigate = useNavigate();
   const theme = useTheme();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [protocols, setProtocols] = useState<any[]>([]);
   const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
   const [copyTooltipText, setCopyTooltipText] = useState("Copy DID");
-
-  useEffect(() => {
-    if (selectedIdentity) {
-      loadProtocols(selectedIdentity.didUri).then(() => {
-        setProtocols(listProtocols(selectedIdentity.didUri));
-      });
-    }
-  }, [selectedIdentity, loadProtocols, listProtocols]);
 
   const social = useMemo(() => {
     if (selectedIdentity) {
@@ -214,14 +204,14 @@ const IdentityDetails: React.FC = () => {
               <Typography variant="h6" gutterBottom>Protocols</Typography>
               <Divider sx={{ mb: 2 }} />
               <List>
-                {protocols.map((protocol, index) => (
+                {/* {protocols.map((protocol, index) => (
                   <ListItem key={index}>
                     <ListItemIcon>
                       {protocol.published ? <Public fontSize="small" /> : <Lock fontSize="small" />}
                     </ListItemIcon>
                     <ListItemText primary={protocol.protocol} secondary={protocol.published ? 'Published' : 'Private'} />
                   </ListItem>
-                ))}
+                ))} */}
               </List>
             </Paper>
           </Grid>

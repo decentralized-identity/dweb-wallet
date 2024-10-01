@@ -71,7 +71,7 @@ const SearchIdentitiesPage: React.FC = () => {
     setDid('');
   }
 
-  return (<PageContainer title={undefined} breadCrumbs={breadCrumbs}>
+  return (<PageContainer title={title} breadcrumbs={breadCrumbs}>
     <TextField
       fullWidth
       label="Search for a DID"
@@ -80,7 +80,7 @@ const SearchIdentitiesPage: React.FC = () => {
       value={didInput}
       onChange={handleInputChange}
     />
-  {did && <PublicIdentityCard did={did} social={social} heroUrl={heroUrl} avatarUrl={avatarUrl} />}
+    {did && <PublicIdentityCard did={did} social={social} heroUrl={heroUrl} avatarUrl={avatarUrl} />}
   </PageContainer>)
 }
 

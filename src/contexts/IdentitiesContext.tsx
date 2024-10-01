@@ -327,7 +327,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   /* TODO: Implement in `@web5/agent` */
-  const setDwnEndpoints = async (_dwnEndpoints: string[]) => {
+  const setDwnEndpoints = async () => {
     throw new Error("Not implemented");
   }
 

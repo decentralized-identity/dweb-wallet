@@ -158,7 +158,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const breadCrumbs = selectedIdentity ?  [] : []
 
   return (
-    <PageContainer title={title} breadCrumbs={breadCrumbs}>
+    <PageContainer title={title} breadcrumbs={breadCrumbs}>
       <form onSubmit={handleSubmit}>
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" height={400}>

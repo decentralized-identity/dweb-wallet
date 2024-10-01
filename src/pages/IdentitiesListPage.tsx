@@ -8,7 +8,7 @@ const IdentitiesListPage: React.FC = () => {
   const { identities } = useIdentities();
   const navigate = useNavigate();
 
-  return (<PageContainer breadCrumbs={[]}>
+  return (<PageContainer>
     {identities.map((identity) => (
       <IdentityCard
         key={identity.didUri}

@@ -1,109 +1,75 @@
-import { Web5PlatformAgent } from "@web5/agent";
-import { Web5UserAgent } from "@web5/user-agent";
-import React, { createContext, useEffect, useState } from "react";
-import { useBackupSeed } from "./Context";
-import { TextField, Button, CircularProgress, Typography, Box, Container, Paper } from "@mui/material";
+import React, { createContext, useCallback, useEffect, useState } from "react";
+
+import { AppProvider } from "@toolpad/core";
 import Grid from '@mui/material/Grid2';
 import LockIcon from '@mui/icons-material/Lock';
 import PinInput from '../components/PinInput';
-import { AppProvider } from "@toolpad/core";
+import { TextField, Button, CircularProgress, Typography, Box, Container, Paper } from "@mui/material";
+
+import { Web5UserAgent } from "@web5/user-agent";
+
+import { useBackupSeed } from "./Context";
 
 interface Web5ContextProps {
+  unlocked: boolean;
   initialized: boolean;
-  agent?: Web5PlatformAgent;
-  unlock: (password: string) => Promise<Web5PlatformAgent>;
-  initialize: (password: string, dwnEndpoint: string) => Promise<string | undefined>;
-  recover: (recoveryPhrase:string, password: string, dwnEndpoint: string) => Promise<void>;
-  isInitializing: boolean;
-  isConnecting: boolean;
+  agent?: Web5UserAgent;
 }
 
 export const AgentContext = createContext<Web5ContextProps>({
+  unlocked: false,
   initialized: false,
-  isConnecting: false,
-  isInitializing: false,
-  recover: async () => {},
-  initialize: async () => {
-    throw new Error("Web5Context not initialized");
-  },
-  unlock: async () => {
-    throw new Error("Web5Context not initialized");
-  },
 });
 
 export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { setBackupSeed } = useBackupSeed();
+
+  const [web5Agent, setWeb5Agent] = useState<Web5UserAgent | undefined>(undefined);
 
   const [initialized, setInitialized] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
+
+  const [unlocked, setUnlocked] = useState(false);
+
+  const [isConnecting, setIsConnecting] = useState(false);
   const [dwnEndpoint, setDwnEndpoint] = useState('https://dwn.tbddev.org/latest');
-  const [web5Agent, setWeb5Agent] = useState<
-    Web5PlatformAgent| undefined
-  >(undefined);
-  const { setBackupSeed } = useBackupSeed();
   const [pin, setPin] = useState(['', '', '', '']);
 
   useEffect(() => {
-    const checkInitialized = async () => {
-      const agent = await Web5UserAgent.create();
-      const firstLaunch = await agent.firstLaunch();
-      if (!firstLaunch) {
-        // get password from local storage if it exists
-        const password = localStorage.getItem('password');
-        if (password) {
-          await unlock(password);
-        }
-      }
+    let loading = false;
 
-      setInitialized(!firstLaunch);
-    };
+    const loadAgent = async () => {
+      if (loading) return;
+      loading = true;
+      const agent = await Web5UserAgent.create();
+      setInitialized(!await agent.firstLaunch());
+      setWeb5Agent(agent);
+      loading = false;
+    }
 
     if (!web5Agent) {
-      checkInitialized();
+      loadAgent();
     }
 
-  }, [ web5Agent ]);
+  });
 
-  const recover = async (recoveryPhrase: string, password: string, dwnEndpoint: string) => {
-    const agent = await Web5UserAgent.create();
-    await agent.initialize({ recoveryPhrase, password, dwnEndpoints: [ dwnEndpoint ] });
-    await agent.start({ password });
-
-    await agent.sync.registerIdentity({ did: agent.agentDid.uri })
-    await agent.sync.sync('pull');
-  }
-
-  const initialize = async (password: string, dwnEndpoint: string): Promise<string | undefined> => {
-    setIsInitializing(true);
-    try {
-      const agent = await Web5UserAgent.create();
-      if (await agent.firstLaunch()) {
-        setInitialized(true);
-        const recoveryPhrase = await agent.initialize({ password, dwnEndpoints: [ dwnEndpoint ] });
-        await agent.start({ password });
-
-        await agent.sync.registerIdentity({ did: agent.agentDid.uri })
-        await agent.sync.sync('pull');
-        return recoveryPhrase;
-      }
-    } catch (error) {
-      setIsInitializing(false);
-      throw error;
-    } finally {
-      setIsInitializing(false);
+  const unlock = useCallback(async (password: string) => {
+    if (!web5Agent) {
+      throw new Error("Agent not initialized");
     }
-  }
 
-  const unlock = async (password: string) => {
+    if (unlocked) {
+      return;
+    }
+
     setIsConnecting(true);
     try {
-        const agent = await Web5UserAgent.create();
-        await agent.start({ password });
-        await agent.sync.sync('pull');
-
+        await web5Agent.start({ password });
+        await web5Agent.sync.sync('pull');
         localStorage.setItem('password', password);
+        setUnlocked(true);
 
         // After 2 minutes of inactivity, remove the password from local storage
         let inactivityTimer = setTimeout(() => {
@@ -115,6 +81,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
           clearTimeout(inactivityTimer);
           const newTimer = setTimeout(() => {
             localStorage.removeItem('password');
+            setUnlocked(false);
           }, 2 * 60 * 1000);
           return newTimer;
         };
@@ -123,19 +90,51 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
         window.addEventListener('mousemove', () => {
           inactivityTimer = resetTimer();
         });
+
         window.addEventListener('keypress', () => {
           inactivityTimer = resetTimer();
         });
-        
-        setWeb5Agent(agent);
-        return agent;
+
     } catch (error) {
       setIsConnecting(false);
       throw error;
     } finally {
       setIsConnecting(false);
     }
-  };
+  }, [ web5Agent, unlocked ]);
+
+  useEffect(() => {
+
+    if (web5Agent && initialized && !unlocked) {
+      const password = localStorage.getItem('password');
+      if (password) {
+        unlock(password);
+      }
+    }
+  }, [ web5Agent, initialized, unlocked, unlock ]);
+
+  const initialize = useCallback(async (password: string, dwnEndpoint: string): Promise<string | undefined> => {
+    if (!web5Agent) {
+      throw new Error("Agent not initialized");
+    }
+
+    setIsInitializing(true);
+    try {
+      if (await web5Agent.firstLaunch()) {
+        const recoveryPhrase = await web5Agent.initialize({ password, dwnEndpoints: [ dwnEndpoint ] });
+        await web5Agent.start({ password });
+        await web5Agent.sync.registerIdentity({ did: web5Agent.agentDid.uri })
+        await web5Agent.sync.sync('pull');
+        setInitialized(true);
+        return recoveryPhrase;
+      }
+    } catch (error) {
+      setIsInitializing(false);
+      throw error;
+    } finally {
+      setIsInitializing(false);
+    }
+  }, [ web5Agent ]);
 
   const handleAgentSetup = async (password: string) => {
    if (!initialized && password) {
@@ -169,7 +168,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   }
 
-  if (!initialized || !web5Agent) {
+  if (!initialized || !web5Agent || !unlocked) {
     return (
       <AppProvider>
         <Container maxWidth="sm">
@@ -215,13 +214,9 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <AgentContext.Provider
       value={{
-        recover,
+        unlocked,
         initialized,
-        initialize,
-        unlock,
         agent: web5Agent,
-        isInitializing,
-        isConnecting,
       }}
     >
       {children}
