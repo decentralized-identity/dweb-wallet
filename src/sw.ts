@@ -18,7 +18,10 @@ self.addEventListener("message", (event) => {
 self.__WB_DISABLE_DEV_LOGS = true;
 
 // self.__WB_MANIFEST is the default injection point
-precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute([
+  { url: 'index.html', revision: null },
+  ...self.__WB_MANIFEST,
+]);
 
 // clean old assets
 cleanupOutdatedCaches();

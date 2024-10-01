@@ -23,7 +23,7 @@ export default defineConfig({
                 enabled: true,
             },
             registerType: 'prompt',
-            includeAssets: ['favicon.ico', 'logo.png'],
+            includeAssets: ['favicon.ico', 'logo.png', 'index.html'],
             strategies: 'injectManifest',
             srcDir: 'src',
             filename: "sw.ts",

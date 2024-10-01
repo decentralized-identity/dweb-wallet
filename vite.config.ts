@@ -22,39 +22,41 @@ export default defineConfig({
     VitePWA({
       devOptions: {
         enabled: true,
+        navigateFallback: 'index.html',
       },
       registerType: 'prompt',
-      includeAssets: ['favicon.ico', 'logo.png'],
+      includeAssets: ['favicon.ico', 'logo.png', 'index.html'],
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: "sw.ts",
       injectRegister: false,
-  
-        pwaAssets: {
-          disabled: false,
-          config: true,
-        },
-  
-        manifest: {
-          name: 'DWebWallet',
-          short_name: 'DWebWallet',
-          description: 'Decentralized identity manager',
-          theme_color: '#E03A3E',
-        },
-  
-        injectManifest: {
-          globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-          globIgnores: [
-            'assets/icons/**'
-          ],
-          maximumFileSizeToCacheInBytes: 1024 * 1024 * 5,
-        },
-  
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,svg,png,svg,ico}'],
-          cleanupOutdatedCaches: true,
-          clientsClaim: true
-        },
-      })
-    ]
+      pwaAssets: {
+        disabled: false,
+        config: true,
+      },
+      manifest: {
+        name: 'DWebWallet',
+        short_name: 'DWebWallet',
+        description: 'Decentralized identity manager',
+        theme_color: '#E03A3E',
+      },
+      injectManifest: {
+        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        globIgnores: [
+          'assets/icons/**'
+        ],
+        maximumFileSizeToCacheInBytes: 1024 * 1024 * 5,
+      },
+      workbox: {
+        navigateFallback: 'index.html',
+        globPatterns: ['**/*.{js,css,html,svg,png,svg,ico}'],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        runtimeCaching: [{
+          urlPattern: ({ request }) => request.mode === 'navigate',
+          handler: 'NetworkFirst',
+        }]
+      },
+    })
+  ]
 });

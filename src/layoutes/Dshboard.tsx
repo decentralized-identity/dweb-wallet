@@ -16,8 +16,7 @@ const Dashboard:React.FC = () => {
     kind: 'page',
     title: 'Identities',
     icon: <PeopleOutline />,
-    segment: 'identity',
-    pattern: 'identity{/:didUri}*'
+    pattern: '{identity/:didUri}*'
   }, {
     kind: 'page',
     title: 'Find DIDs',
@@ -54,13 +53,12 @@ const Dashboard:React.FC = () => {
       <DashboardLayout>
         <Routes>
           <Route index element={<IdentitiesListPage />} />
-          <Route path="/identity" element={<IdentitiesListPage />} />
           <Route path="/search" element={<SearchIdentitiesPage />} />
           <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
           <Route path="/identity/edit/:didUri" element={<AddIdentityPage edit />} />
-          <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
           <Route path="/identities/create" element={<AddIdentityPage />} />
           <Route path="/identities/import" element={<div>Coming Soon</div>} />
+          <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
           <Route path="/dweb-connect" element={<DWebConnect />} />
         </Routes>
       </DashboardLayout>
