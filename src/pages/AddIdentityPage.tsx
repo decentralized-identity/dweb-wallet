@@ -7,13 +7,13 @@ import {
   Avatar,
   Typography,
   CircularProgress,
-  Divider,
   IconButton,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2'; // Updated import for Grid2
 import { PlusIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Identity } from '@/lib/types';
+import { PageContainer } from '@toolpad/core';
 
 const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const { didUri } = useParams();
@@ -23,7 +23,6 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
-
 
   const [formData, setFormData] = useState({
     persona: '',
@@ -66,7 +65,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
       selectIdentity(didUri);
     }
 
-  }, [ isEdit, selectedIdentity, didUri, identities ])
+  }, [ isEdit, selectedIdentity, didUri, identities, dwnEndpoints, loadedIdentity, selectIdentity ]);
 
 
   const submitDisabled = useMemo(() => {
@@ -79,7 +78,7 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
     }
 
     return formData.persona === '' || formData.displayName === '' || formData.dwnEndpoints.length === 0;
-  }, [ isEdit, formData ]);
+  }, [ isEdit, formData, selectedIdentity ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,182 +154,181 @@ const AddIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
     }
   }
 
+  const title = selectedIdentity ? `Edit ${selectedIdentity.persona} Identity` : 'Add a New Identity';
+  const breadCrumbs = selectedIdentity ?  [] : []
+
   return (
-    <Box sx={{ bgcolor: 'background.default' }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {isEdit ? `Edit ${selectedIdentity.persona} Identity` : 'Add a New Identity'}
-        </Typography>
-        <Divider sx={{ mb: 4 }} />
-        <form onSubmit={handleSubmit}>
-          {loading ? (
-            <Box display="flex" justifyContent="center" alignItems="center" height={400}>
-              <CircularProgress />
-            </Box>
-          ) : (
-            <Grid container spacing={3}>
-              {!edit && <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  fullWidth
-                  label="Persona"
-                  name="persona"
-                  value={formData.persona}
-                  onChange={handleInputChange}
-                  placeholder="Social, Professional, Gaming, etc."
-                  required
+    <PageContainer title={title} breadCrumbs={breadCrumbs}>
+      <form onSubmit={handleSubmit}>
+        {loading ? (
+          <Box display="flex" justifyContent="center" alignItems="center" height={400}>
+            <CircularProgress />
+          </Box>
+        ) : (
+          <Grid container spacing={3}>
+            {!edit && <Grid size={{ xs: 12, sm: 8 }}>
+              <TextField
+                fullWidth
+                label="Persona"
+                name="persona"
+                value={formData.persona}
+                onChange={handleInputChange}
+                placeholder="Social, Professional, Gaming, etc."
+                required
+              />
+            </Grid>}
+            <Grid size={{ xs: 12, sm: 8 }} sx={{ display: 'flex', alignItems: 'center' }}>
+              <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
+                <Avatar
+                  src={avatarPreview || undefined}
+                  sx={{ width: 60, height: 60 }}
                 />
-              </Grid>}
-              <Grid size={{ xs: 12, sm: 8 }} sx={{ display: 'flex', alignItems: 'center' }}>
-                <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
-                  <Avatar
-                    src={avatarPreview || undefined}
-                    sx={{ width: 60, height: 60 }}
+                <IconButton
+                  component="label"
+                  sx={{
+                    position: 'absolute',
+                    right: 10,
+                    bottom: 10,
+                    opacity: 0.5,
+                    backgroundColor: 'background.paper',
+                    '&:hover': { backgroundColor: 'background.default' },
+                  }}
+                >
+                  <PlusIcon />
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    width={20}
+                    name="avatar"
                   />
-                  <IconButton
-                    component="label"
+                </IconButton>
+              </Box>
+              <TextField
+                fullWidth
+                label="Display Name"
+                name="displayName"
+                value={formData.displayName}
+                onChange={handleInputChange}
+                placeholder="Display Name"
+                required
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 8 }}>
+              <TextField
+                fullWidth
+                label="Tagline"
+                name="tagline"
+                value={formData.tagline}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 8 }}>
+              <TextField
+                fullWidth
+                label="Bio"
+                name="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                multiline
+                rows={4}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 8 }}>
+              {formData.dwnEndpoints.map((dwnEndpoint, index) => (
+                <Box key={dwnEndpoint} display="flex" alignItems="center">
+                  <TextField
+                    key={dwnEndpoint}
+                    fullWidth
+                  label="DWN Endpoint"
+                  name="dwnEndpoint"
+                  value={dwnEndpoint}
+                  onChange={handleInputChange}
+                    required
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => formData.dwnEndpoints.splice(index, 1)}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Button
+                variant="outlined"
+                onClick={() => formData.dwnEndpoints.push('https://dwn.tbddev.org/latest')}
+              >
+                Add Endpoint
+              </Button>
+            </Grid>
+            {bannerPreview && (
+              <Grid size={12}>
+                <Box display="flex" flexDirection="column" alignItems="left">
+                  <Typography variant="subtitle2">Banner Preview:</Typography>
+                  <Box
                     sx={{
-                      position: 'absolute',
-                      right: 10,
-                      bottom: 10,
-                      opacity: 0.5,
-                      backgroundColor: 'background.paper',
-                      '&:hover': { backgroundColor: 'background.default' },
+                      width: '100%',
+                      maxWidth: 680,
+                      height: 100,
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      border: '1px solid',
+                      borderColor: 'divider',
                     }}
                   >
-                    <PlusIcon />
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      width={20}
-                      name="avatar"
+                    <img 
+                      src={bannerPreview} 
+                      alt="Banner preview" 
+                      style={{ width: '100%', height: 'auto', maxHeight: 100, objectFit: 'cover' }} 
                     />
-                  </IconButton>
-                </Box>
-                <TextField
-                  fullWidth
-                  label="Display Name"
-                  name="displayName"
-                  value={formData.displayName}
-                  onChange={handleInputChange}
-                  placeholder="Display Name"
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  fullWidth
-                  label="Tagline"
-                  name="tagline"
-                  value={formData.tagline}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  fullWidth
-                  label="Bio"
-                  name="bio"
-                  value={formData.bio}
-                  onChange={handleInputChange}
-                  multiline
-                  rows={4}
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                {formData.dwnEndpoints.map((dwnEndpoint, index) => (
-                  <Box key={dwnEndpoint} display="flex" alignItems="center">
-                    <TextField
-                      key={dwnEndpoint}
-                      fullWidth
-                    label="DWN Endpoint"
-                    name="dwnEndpoint"
-                    value={dwnEndpoint}
-                    onChange={handleInputChange}
-                      required
-                    />
-                    <Button
-                      variant="outlined"
-                      onClick={() => formData.dwnEndpoints.splice(index, 1)}
-                    >
-                      Remove
-                    </Button>
                   </Box>
-                ))}
+                </Box>
+              </Grid>
+            )}
+            <Grid size={{ xs: 12, sm: 8 }}>
+              {<Box display="flex" alignItems="center">
                 <Button
                   variant="outlined"
-                  onClick={() => formData.dwnEndpoints.push('https://dwn.tbddev.org/latest')}
+                  component="label"
+                  onClick={handleClearBanner}
                 >
-                  Add Endpoint
+                  {bannerPreview ? 'Clear Banner' : 'Upload Banner'}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    name="banner"
+                  />
                 </Button>
-              </Grid>
-              {bannerPreview && (
-                <Grid size={12}>
-                  <Box display="flex" flexDirection="column" alignItems="left">
-                    <Typography variant="subtitle2">Banner Preview:</Typography>
-                    <Box
-                      sx={{
-                        width: '100%',
-                        maxWidth: 680,
-                        height: 100,
-                        borderRadius: 2,
-                        overflow: 'hidden',
-                        border: '1px solid',
-                        borderColor: 'divider',
-                      }}
-                    >
-                      <img 
-                        src={bannerPreview} 
-                        alt="Banner preview" 
-                        style={{ width: '100%', height: 'auto', maxHeight: 100, objectFit: 'cover' }} 
-                      />
-                    </Box>
-                  </Box>
-                </Grid>
-              )}
-              <Grid size={{ xs: 12, sm: 8 }}>
-                {<Box display="flex" alignItems="center">
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    onClick={handleClearBanner}
-                  >
-                    {bannerPreview ? 'Clear Banner' : 'Upload Banner'}
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      name="banner"
-                    />
-                  </Button>
-                </Box>}
-              </Grid>
-              <Box mt={4}>
-                <Button
-                  type="submit"
-                  disabled={loading || submitDisabled}
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                >
-                  {isEdit ? 'Update Identity' : 'Add Identity'}
-                </Button>
-                {isEdit && (
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    sx={{ ml: 2 }}
-                    onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </Box>
+              </Box>}
             </Grid>
-          )}
-        </form>
-    </Box>
+            <Box mt={4}>
+              <Button
+                type="submit"
+                disabled={loading || submitDisabled}
+                variant="contained"
+                color="primary"
+                size="large"
+              >
+                {isEdit ? 'Update Identity' : 'Add Identity'}
+              </Button>
+              {isEdit && (
+                <Button
+                  variant="outlined"
+                  size="large"
+                  sx={{ ml: 2 }}
+                  onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
+                >
+                  Cancel
+                </Button>
+              )}
+            </Box>
+          </Grid>
+        )}
+      </form>
+    </PageContainer>
   );
 };
 

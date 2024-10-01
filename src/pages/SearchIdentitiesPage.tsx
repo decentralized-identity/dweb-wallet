@@ -1,6 +1,5 @@
 import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
 import { TextField } from '@mui/material';
-import Grid from '@mui/material/Grid2';
 import { Did } from '@web5/dids';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -73,17 +72,15 @@ const SearchIdentitiesPage: React.FC = () => {
   }
 
   return (<PageContainer title={undefined} breadCrumbs={breadCrumbs}>
-    <Grid size={{ xs: 12, sm: 8 }} sx={{ mb: 5 }}>
-      <TextField
-        fullWidth
-        label="Search for a DID"
-        placeholder="did:web:example.com"
-        name="did"
-        value={didInput}
-        onChange={handleInputChange}
-      />
-    </Grid>
-    {did && <PublicIdentityCard did={did} social={social} heroUrl={heroUrl} avatarUrl={avatarUrl} />}
+    <TextField
+      fullWidth
+      label="Search for a DID"
+      placeholder="did:web:example.com"
+      name="did"
+      value={didInput}
+      onChange={handleInputChange}
+    />
+  {did && <PublicIdentityCard did={did} social={social} heroUrl={heroUrl} avatarUrl={avatarUrl} />}
   </PageContainer>)
 }
 

@@ -1,14 +1,14 @@
+import React  from 'react';
 import IdentityCard from '@/components/identity/IdentityCard';
 import { useIdentities } from '@/contexts/Context';
-import { Container } from '@mui/material';
-import React  from 'react';
+import { PageContainer } from '@toolpad/core';
 import { useNavigate } from 'react-router-dom';
 
 const IdentitiesListPage: React.FC = () => {
   const { identities } = useIdentities();
   const navigate = useNavigate();
 
-  return (<Container>
+  return (<PageContainer breadCrumbs={[]}>
     {identities.map((identity) => (
       <IdentityCard
         key={identity.didUri}
@@ -17,7 +17,7 @@ const IdentitiesListPage: React.FC = () => {
         compact={true}
       />
     ))}
-  </Container>)
+  </PageContainer>)
 }
 
 

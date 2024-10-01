@@ -12,7 +12,8 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  ClickAwayListener
+  ClickAwayListener,
+  CircularProgress
 } from '@mui/material';
 import {
   Edit, Delete, GetApp, ContentCopy, QrCode2,
@@ -51,8 +52,6 @@ const IdentityDetails: React.FC = () => {
     }
   }, [selectedIdentity, loadProtocols, listProtocols]);
 
-  if (!selectedIdentity) return null;
-
   const social = useMemo(() => {
     if (selectedIdentity) {
       return selectedIdentity.profile.social;
@@ -82,6 +81,8 @@ const IdentityDetails: React.FC = () => {
   }
 
   const handleCopyDid = () => {
+    if (!selectedIdentity) return;
+
     navigator.clipboard.writeText(selectedIdentity.didUri);
     setCopyTooltipText("Copied!");
     setCopyTooltipOpen(true);
@@ -96,9 +97,17 @@ const IdentityDetails: React.FC = () => {
     setCopyTooltipText("Copy DID");
   };
 
+  if (!selectedIdentity) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="100%">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ pb: 4 }}>
-      <Box sx={{ maxWidth: 1200, margin: '0 auto', px: 3 }}>
+      <Box sx={{ maxWidth: 1200, margin: '0 auto' }}>
         <Paper elevation={3} sx={{ mt: 3, mb: 4 }}>
           <Box sx={{ position: 'relative', height: 300 }}>
             <Box
@@ -180,7 +189,7 @@ const IdentityDetails: React.FC = () => {
         </Paper>
       </Box>
 
-      <Box sx={{ maxWidth: 1200, margin: '0 auto', px: 3 }}>
+      <Box sx={{ maxWidth: 1200, margin: '0 auto' }}>
         <Grid container spacing={3}>
           {/* Permissions section */}
           <Grid size={12}>
@@ -281,7 +290,7 @@ const IdentityDetails: React.FC = () => {
         </Dialog>
       )}
 
-      {showQrCode && 
+      {showQrCode && (
         <Dialog open={showQrCode} onClose={() => setShowQrCode(false)} >
           <DialogTitle sx={{ textAlign: 'center' }}>Scan QR Code</DialogTitle>
           <DialogContent>
@@ -307,7 +316,7 @@ const IdentityDetails: React.FC = () => {
             <Button onClick={() => setShowQrCode(false)} sx={{ mt: 2, display: 'block', margin: '0 auto' }}>Close</Button>
           </DialogContent>
         </Dialog>
-      }
+      )}
     </Box>
   );
 };
