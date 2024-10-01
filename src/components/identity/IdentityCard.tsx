@@ -6,7 +6,7 @@ import { Identity } from '@/lib/types';
 
 interface IdentityCardProps {
   identity: Identity;
-  selected: boolean;
+  selected?: boolean;
   compact?: boolean;
   onClick: () => void;
 }
@@ -31,7 +31,7 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
   background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
 }));
 
-const IdentityCard: React.FC<IdentityCardProps> = ({ identity, selected, onClick, compact = false }) => {
+const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected = false, compact = false }) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const theme = useTheme();
 

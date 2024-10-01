@@ -6,6 +6,7 @@ import { TextField, Button, CircularProgress, Typography, Box, Container, Paper 
 import Grid from '@mui/material/Grid2';
 import LockIcon from '@mui/icons-material/Lock';
 import PinInput from '../components/PinInput';
+import { AppProvider } from "@toolpad/core";
 
 interface Web5ContextProps {
   initialized: boolean;
@@ -155,21 +156,24 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
 
   if (isInitializing || isConnecting) {
     return (
-      <Container maxWidth="sm">
-        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh">
-          <CircularProgress size={48} color="primary" />
-          <Typography variant="h6" mt={2}>
-            {isInitializing ? "Initializing..." : "Connecting..."}
-          </Typography>
-        </Box>
-      </Container>
+      <AppProvider>
+        <Container maxWidth="sm">
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh">
+            <CircularProgress size={48} color="primary" />
+            <Typography variant="h6" mt={2}>
+              {isInitializing ? "Initializing..." : "Connecting..."}
+            </Typography>
+          </Box>
+        </Container>
+      </AppProvider>
     );
   }
 
   if (!initialized || !web5Agent) {
     return (
-      <Container maxWidth="sm">
-        <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh">
+      <AppProvider>
+        <Container maxWidth="sm">
+          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh">
           <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 400, textAlign: 'center' }}>
             <LockIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
             <Typography variant="h4" gutterBottom>
@@ -203,7 +207,8 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
             </form>
           </Paper>
         </Box>
-      </Container>
+        </Container>
+      </AppProvider>
     );
   }
 
