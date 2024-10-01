@@ -1,47 +1,54 @@
+import Grid from '@mui/material/Grid2';
 import React from 'react';
-import { TextField, Grid } from '@mui/material';
+import { TextField } from '@mui/material';
 import { useState } from 'react';
 
 interface PinInputProps {
-  pinLength: number;
-  onPinChange: (pin: string[]) => void;
+  initialPin: string[];
+  onPinChange: (updatedPin: string[]) => void;
 }
 
-const PinInput: React.FC<PinInputProps> = ({ pinLength, onPinChange }) => {
-  const [pin, setPin] = useState(Array(pinLength).fill(''));
+const PinInput: React.FC<PinInputProps> = ({ initialPin, onPinChange }) => {
+  const [pin, setPin] = useState(initialPin);
 
-  const handlePinInput = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onDigitInputChange = (digitIndex: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+
+    // Allow only numbers
+    if (!/^\d*$/.test(value)) return;
+
     const newPin = [...pin];
-    newPin[index] = event.target.value;
+    newPin[digitIndex] = value;
     setPin(newPin);
 
     // Move focus to the next input
-    if (event.target.value && index < 3) {
-      const nextInput = document.getElementById(`pin-${index + 1}`);
+    if (value && digitIndex < initialPin.length - 1) {
+      const nextInput = document.getElementById(`pin-${digitIndex + 1}`);
       nextInput?.focus();
     }
 
     onPinChange(newPin);
   };
 
-  const handleKeyDown = (index: number) => (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Backspace" && !pin[index] && index > 0) {
-      const prevInput = document.getElementById(`pin-${index - 1}`);
+  const onDigitInputKeyDown = (digitIndex: number) => (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Backspace" && !pin[digitIndex] && digitIndex > 0) {
+      const prevInput = document.getElementById(`pin-${digitIndex - 1}`);
       prevInput?.focus();
     }
   };
 
   return (
     <Grid container spacing={2} justifyContent="center">
-      {pin.map((digit, index) => (
-        <Grid key={index}>
+      {pin.map((digit, digitIndex) => (
+        <Grid key={digitIndex}>
           <TextField
-            id={`pin-${index}`}
+            id={`pin-${digitIndex}`}
             variant="outlined"
             value={digit}
-            onChange={handlePinInput(index)}
-            onKeyDown={handleKeyDown(index)}
+            onChange={onDigitInputChange(digitIndex)}
+            onKeyDown={onDigitInputKeyDown(digitIndex)}
             sx={{ width: 60, height: 60 }}
+            inputProps={{ maxLength: 1, inputMode: 'numeric' }} // Ensures only 1 digit
           />
         </Grid>
       ))}

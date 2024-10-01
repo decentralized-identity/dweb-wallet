@@ -179,8 +179,10 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
               Enter your 4-digit PIN to { initialized ? "unlock" : "setup" }
             </Typography>
             <form onSubmit={handleUnlock}>
-              <PinInput pinLength={4} onPinChange={(updatedPin) => setPin(updatedPin)} />
-              {!initialized && <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+
+              <PinInput initialPin={pin} onPinChange={(updatedPin) => setPin(updatedPin)} />
+
+              {!initialized && <Grid container spacing={2} justifyContent="center" sx={{ my: 4 }}>
                 <TextField
                   label="DWN Endpoint"
                   value={dwnEndpoint}
