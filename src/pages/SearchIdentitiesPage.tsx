@@ -50,7 +50,7 @@ const SearchIdentitiesPage: React.FC = () => {
     return did ? `/search/${did}` : '/search';
   }, [ did ]);
 
-  const breadCrumbs = did ? [{ title: 'Find DIDs', path: '/search' }, { title, path }]: [];
+  const breadCrumbs = did ? [{ title: 'Find DIDs', path: '/search' }, { title, path }]: [{ title: 'Find DIDs', path: '/search' }, { title, path }];
 
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();

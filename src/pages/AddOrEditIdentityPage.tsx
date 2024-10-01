@@ -180,7 +180,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
           </Box>
         ) : (
           <Grid container spacing={3}>
-            {!edit && <Grid size={{ xs: 12, sm: 8 }}>
+            {!edit && <Grid size={12}>
               <TextField
                 fullWidth
                 label="Persona"
@@ -191,7 +191,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                 required
               />
             </Grid>}
-            <Grid size={{ xs: 12, sm: 8 }} sx={{ display: 'flex', alignItems: 'center' }}>
+            <Grid size={12} sx={{ display: 'flex', alignItems: 'center' }}>
               <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
                 <Avatar
                   src={avatarPreview || undefined}
@@ -229,62 +229,13 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                 required
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 8 }}>
-              <TextField
-                fullWidth
-                label="Tagline"
-                name="tagline"
-                value={formData.tagline}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 8 }}>
-              <TextField
-                fullWidth
-                label="Bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                multiline
-                rows={4}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 8 }}>
-              {formData.dwnEndpoints.map((dwnEndpoint, index) => (
-                <Box key={dwnEndpoint} display="flex" alignItems="center">
-                  <TextField
-                    key={dwnEndpoint}
-                    fullWidth
-                  label="DWN Endpoint"
-                  name="dwnEndpoint"
-                  value={dwnEndpoint}
-                  onChange={handleInputChange}
-                    required
-                  />
-                  <Button
-                    variant="outlined"
-                    onClick={() => formData.dwnEndpoints.splice(index, 1)}
-                  >
-                    Remove
-                  </Button>
-                </Box>
-              ))}
-              <Button
-                variant="outlined"
-                onClick={() => formData.dwnEndpoints.push('https://dwn.tbddev.org/latest')}
-              >
-                Add Endpoint
-              </Button>
-            </Grid>
             {bannerPreview && (
-              <Grid size={12}>
+              <Grid size={12} >
                 <Box display="flex" flexDirection="column" alignItems="left">
                   <Typography variant="subtitle2">Banner Preview:</Typography>
                   <Box
                     sx={{
                       width: '100%',
-                      maxWidth: 680,
-                      height: 100,
                       borderRadius: 2,
                       overflow: 'hidden',
                       border: '1px solid',
@@ -294,13 +245,13 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                     <img 
                       src={bannerPreview} 
                       alt="Banner preview" 
-                      style={{ width: '100%', height: 'auto', maxHeight: 100, objectFit: 'cover' }} 
+                      style={{ width: '100%', height: 'auto', maxHeight: 200, objectFit: 'cover' }} 
                     />
                   </Box>
                 </Box>
               </Grid>
             )}
-            <Grid size={{ xs: 12, sm: 8 }}>
+            <Grid size={12}>
               {<Box display="flex" alignItems="center">
                 <Button
                   variant="outlined"
@@ -317,6 +268,54 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                   />
                 </Button>
               </Box>}
+            </Grid>
+            <Grid size={12}>
+              <TextField
+                fullWidth
+                label="Tagline"
+                name="tagline"
+                value={formData.tagline}
+                onChange={handleInputChange}
+              />
+            </Grid>
+            <Grid size={12}>
+              <TextField
+                fullWidth
+                label="Bio"
+                name="bio"
+                value={formData.bio}
+                onChange={handleInputChange}
+                multiline
+                rows={4}
+              />
+            </Grid>
+            <Grid size={12}>
+              {formData.dwnEndpoints.map((dwnEndpoint, index) => (
+                <Box sx={{ mb: 2 }} key={dwnEndpoint} display="flex" alignItems="center">
+                  <TextField
+                    key={dwnEndpoint}
+                    fullWidth
+                  label="DWN Endpoint"
+                  name="dwnEndpoint"
+                  value={dwnEndpoint}
+                  onChange={handleInputChange}
+                    required
+                  />
+                  <Button
+                    variant="outlined"
+                    sx={{ ml: 2 }}
+                    onClick={() => formData.dwnEndpoints.splice(index, 1)}
+                  >
+                    Remove
+                  </Button>
+                </Box>
+              ))}
+              <Button
+                variant="outlined"
+                onClick={() => formData.dwnEndpoints.push('https://dwn.tbddev.org/latest')}
+              >
+                Add Endpoint
+              </Button>
             </Grid>
             <Box mt={4}>
               <Button
