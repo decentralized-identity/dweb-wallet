@@ -5,6 +5,7 @@ import { useBackupSeed } from "./Context";
 import { TextField, Button, CircularProgress, Typography, Box, Container, Paper } from "@mui/material";
 import Grid from '@mui/material/Grid2';
 import LockIcon from '@mui/icons-material/Lock';
+import PinInput from '../components/PinInput';
 
 interface Web5ContextProps {
   initialized: boolean;
@@ -146,18 +147,6 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const handlePinChange = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newPin = [...pin];
-    newPin[index] = event.target.value;
-    setPin(newPin);
-
-    // Move focus to the next input
-    if (event.target.value && index < 3) {
-      const nextInput = document.getElementById(`pin-${index + 1}`);
-      nextInput?.focus();
-    }
-  };
-
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
     const pinString = pin.join('');
@@ -190,20 +179,10 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
               Enter your 4-digit PIN to { initialized ? "unlock" : "setup" }
             </Typography>
             <form onSubmit={handleUnlock}>
-              <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
-                {pin.map((digit, index) => (
-                  <Grid key={index}>
-                    <TextField
-                      id={`pin-${index}`}
-                      variant="outlined"
-                      value={digit}
-                      onChange={handlePinChange(index)}
-                      sx={{ width: 60, height: 60 }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-              {!initialized && <Grid container spacing={2} justifyContent="center" sx={{ mb: 4 }}>
+
+              <PinInput initialPin={pin} onPinChange={(updatedPin) => setPin(updatedPin)} />
+
+              {!initialized && <Grid container spacing={2} justifyContent="center" sx={{ my: 4 }}>
                 <TextField
                   label="DWN Endpoint"
                   value={dwnEndpoint}
