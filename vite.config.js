@@ -50,6 +50,7 @@ export default defineConfig({
                 cleanupOutdatedCaches: true,
                 clientsClaim: true
             },
+            manifestFilename: 'manifest.json',
         })
     ]
 });
