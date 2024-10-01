@@ -2,29 +2,39 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 import path from 'path';
 import react from '@vitejs/plugin-react';
-/**@ts-expect-error */
+import svgr from 'vite-plugin-svgr';
 import nodePolyfills from 'vite-plugin-node-stdlib-browser';
 // https://vitejs.dev/config/
 export default defineConfig({
+    resolve: {
+        alias: {
+            "@": path.resolve(__dirname, "./src"),
+        },
+    },
     define: {
         global: "globalThis",
     },
     plugins: [
+        svgr(),
         react(),
         nodePolyfills(),
         VitePWA({
+            devOptions: {
+                enabled: true,
+            },
+            registerType: 'prompt',
+            includeAssets: ['favicon.ico', 'logo.png'],
             strategies: 'injectManifest',
-            srcDir: "src",
+            srcDir: 'src',
             filename: "sw.ts",
-            registerType: "prompt",
-            injectRegister: "auto",
+            injectRegister: false,
             pwaAssets: {
                 disabled: false,
                 config: true,
             },
             manifest: {
-                name: 'nSecure Wallet',
-                short_name: 'nSecure',
+                name: 'DWebWallet',
+                short_name: 'DWebWallet',
                 description: 'Decentralized identity manager',
                 theme_color: '#E03A3E',
             },
@@ -40,17 +50,6 @@ export default defineConfig({
                 cleanupOutdatedCaches: true,
                 clientsClaim: true
             },
-            devOptions: {
-                enabled: true,
-                navigateFallback: 'index.html',
-                suppressWarnings: true,
-                type: 'module',
-            }
         })
-    ],
-    resolve: {
-        alias: {
-            "@": path.resolve(__dirname, "./src"),
-        },
-    },
+    ]
 });

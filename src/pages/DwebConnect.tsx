@@ -50,7 +50,7 @@ const PermissionRequest: React.FC<{ permissions: ConnectPermissionRequest[] }> =
 };
 
 const DWebConnect: React.FC = () => {
-  const { agent, initialized } = useAgent();
+  const { agent } = useAgent();
   const [ isCreatingDelegate, setIsCreatingDelegate ] = useState<boolean>(false);
   const [ returningGrants, setReturningGrants ] = useState<boolean>(false);
 
@@ -89,7 +89,7 @@ const DWebConnect: React.FC = () => {
 
   const handleAgentSetup = async () => {
 
-    if (!origin || !did || !initialized || !agent) {
+    if (!origin || !did || !agent) {
       toastError('Not ready');
       throw new Error('Not ready');
     }

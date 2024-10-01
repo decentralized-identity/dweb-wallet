@@ -1,14 +1,10 @@
-import { Route, Routes } from 'react-router-dom';
 import { AgentProvider } from '@/contexts/AgentContext';
 import { IdentitiesProvider } from '@/contexts/IdentitiesContext';
 import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
 
 import { activatePolyfills } from '@web5/browser';
-import Desktop from './layoutes/Desktop';
-import AddIdentity from './pages/AddIdentityPage';
-import DWebConnect from './pages/DwebConnect';
 import { useEffect } from 'react';
-import IdentityDetailsPage from './pages/IdentityDetailsPage';
+import Dashboard from './layoutes/Dshboard';
 
 activatePolyfills();
 
@@ -46,15 +42,7 @@ function App() {
     <BackupSeedProvider>
       <AgentProvider>
         <IdentitiesProvider>
-          <Routes>
-            <Route path="/" element={<Desktop />}>
-              <Route index element={<div />} />
-              <Route path="identity/:didUri" element={<IdentityDetailsPage />} />
-              <Route path="identity/create" element={<AddIdentity />} />
-              <Route path="identity/edit/:didUri" element={<AddIdentity edit />} />
-            </Route>
-            <Route path="/dweb-connect" element={<DWebConnect />} />
-          </Routes>
+          <Dashboard />
         </IdentitiesProvider>
       </AgentProvider>
     </BackupSeedProvider>
