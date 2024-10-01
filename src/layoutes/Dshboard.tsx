@@ -57,9 +57,9 @@ const Dashboard:React.FC = () => {
           <Route path="/identity" element={<IdentitiesListPage />} />
           <Route path="/search" element={<SearchIdentitiesPage />} />
           <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
+          <Route path="/identity/edit/:didUri" element={<AddIdentityPage edit />} />
           <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
           <Route path="/identities/create" element={<AddIdentityPage />} />
-          <Route path="/identitites/edit/:didUri" element={<AddIdentityPage edit />} />
           <Route path="/identities/import" element={<div>Coming Soon</div>} />
           <Route path="/dweb-connect" element={<DWebConnect />} />
         </Routes>
