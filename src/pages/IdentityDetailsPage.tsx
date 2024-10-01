@@ -111,13 +111,13 @@ const IdentityDetailsPage: React.FC = () => {
   }, [ selectedIdentity ]);
 
   const breadCrumbs = useMemo(() => {
-    return selectedIdentity ? [{ title: 'Identities', path: '/identity' }, { title: selectedIdentity.persona, path: `/identity/${didUri}` }] : [];
+    return selectedIdentity ? [{ title: 'Identities', path: '/identities' }, { title: selectedIdentity.persona, path: `/identity/${didUri}` }] : [];
   }, [ selectedIdentity, didUri ]);
 
   return <PageContainer title={title} breadcrumbs={breadCrumbs}>
     {selectedIdentity && (<Box sx={{ pb: 4 }}>
       <Box sx={{ maxWidth: 1200, margin: '0 auto' }}>
-        <Paper elevation={3} sx={{ mt: 3, mb: 4 }}>
+        <Paper elevation={3} sx={{ mb: 4 }}>
           <Box sx={{ position: 'relative', height: 300 }}>
             <Box
               component="img"
