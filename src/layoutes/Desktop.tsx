@@ -6,7 +6,6 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import SidebarSpeedDial from '@/components/SidebarSpeedDial';
 import { CameraAlt, PersonAddAlt1 } from '@mui/icons-material';
 import { Download } from 'lucide-react';
-import { PortableIdentity } from '@web5/agent';
 import { Identity } from '@/lib/types';
 
 const drawerWidth = 400; // Wider drawer for identity cards
@@ -58,22 +57,7 @@ const Desktop: React.FC = () => {
       window.removeEventListener('dragleave', handleDragLeave);
       window.removeEventListener('dragenter', handleDragEnter);
     };
-  }, [ ]);
-
-  useEffect(() => {
-    const loadIdentities = async () => {
-      if (isDragging) return;
-      const uniqueIdentities = new Map<string, PortableIdentity>();
-      const identities = await Promise.all(droppedFiles.map(async f => JSON.parse(await f.text()) as PortableIdentity));
-      identities.forEach(i => uniqueIdentities.set(i.portableDid.uri, i));
-      await importIdentity(window.location.origin, ...Array.from(uniqueIdentities.values())); 
-      setDroppedFiles([]);
-    }
-
-    if (droppedFiles.length > 0) {
-      loadIdentities();
-    }
-  }, [ droppedFiles, importIdentity ]);
+  }, [ handleDragEnter, handleDragLeave, handleDrop ]);
 
   const handleIdentityClick = (identity: Identity) => {
     selectIdentity(identity.didUri);
