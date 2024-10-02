@@ -14,6 +14,7 @@ import { PlusIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Identity } from '@/lib/types';
 import { PageContainer } from '@toolpad/core';
+import ListInput from '@/components/ListInput';
 
 const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const { didUri } = useParams();
@@ -289,34 +290,15 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                 rows={4}
               />
             </Grid>
-            <Grid size={12}>
-              {formData.dwnEndpoints.map((dwnEndpoint, index) => (
-                <Box sx={{ mb: 2 }} key={dwnEndpoint} display="flex" alignItems="center">
-                  <TextField
-                    key={dwnEndpoint}
-                    fullWidth
-                  label="DWN Endpoint"
-                  name="dwnEndpoint"
-                  value={dwnEndpoint}
-                  onChange={handleInputChange}
-                    required
-                  />
-                  <Button
-                    variant="outlined"
-                    sx={{ ml: 2 }}
-                    onClick={() => formData.dwnEndpoints.splice(index, 1)}
-                  >
-                    Remove
-                  </Button>
-                </Box>
-              ))}
-              <Button
-                variant="outlined"
-                onClick={() => formData.dwnEndpoints.push('https://dwn.tbddev.org/latest')}
-              >
-                Add Endpoint
-              </Button>
-            </Grid>
+            {!isEdit && <ListInput
+              label={"DWN Endpoint"}
+              value={formData.dwnEndpoints}
+              defaultValue={'https://dwn.tbddev.org/latest'}
+              placeholder='https://dwn.tbddev.org/latest'
+              onChange={(value) => {
+                setFormData({ ...formData, dwnEndpoints: value });
+              }}
+            />}
             <Box mt={4}>
               <Button
                 type="submit"

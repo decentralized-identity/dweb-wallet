@@ -56,6 +56,10 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
   });
 
   const unlock = useCallback(async (password: string) => {
+    if (isConnecting) {
+      return;
+    }
+
     if (!web5Agent) {
       throw new Error("Agent not initialized");
     }
@@ -67,10 +71,8 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsConnecting(true);
     try {
         await web5Agent.start({ password });
-        await web5Agent.sync.sync('pull');
+        setWeb5Agent(web5Agent);
         localStorage.setItem('password', password);
-        setUnlocked(true);
-
         // After 2 minutes of inactivity, remove the password from local storage
         let inactivityTimer = setTimeout(() => {
           localStorage.removeItem('password');
@@ -94,17 +96,16 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
         window.addEventListener('keypress', () => {
           inactivityTimer = resetTimer();
         });
-
+        setUnlocked(true);
     } catch (error) {
       setIsConnecting(false);
       throw error;
     } finally {
       setIsConnecting(false);
     }
-  }, [ web5Agent, unlocked ]);
+  }, [ web5Agent, unlocked, isConnecting ]);
 
   useEffect(() => {
-
     if (web5Agent && initialized && !unlocked) {
       const password = localStorage.getItem('password');
       if (password) {
@@ -126,6 +127,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
         await web5Agent.sync.registerIdentity({ did: web5Agent.agentDid.uri })
         await web5Agent.sync.sync('pull');
         setInitialized(true);
+        setUnlocked(true);
         return recoveryPhrase;
       }
     } catch (error) {

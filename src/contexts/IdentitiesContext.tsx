@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useEffect, useState } from "react";
 import { BearerIdentity, getDwnServiceEndpointUrls, PortableIdentity, Web5Agent } from "@web5/agent";
 
 import Web5Helper from "@/lib/Web5Helper";
@@ -90,29 +90,31 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     setSelectedIdentity(identity);
   }
 
-  const loadIdentities = async () => {
+  const loadIdentities = useCallback(async () => {
     if (!agent) return;
     if (loadingIdentities) return;
     setLoadingIdentities(true);
 
-    const identities = await agent?.identity.list() || [];
-    const parsedIdentities = await Promise.all(identities.map(loadProfileFromBearerIdentity(agent)));
-    setIdentities(parsedIdentities);
-    setLoadingIdentities(false);
-  }
+    try {
+      const identities = await agent.identity.list() || [];
+      const parsedIdentities = await Promise.all(identities.map(loadProfileFromBearerIdentity(agent)));
+      setIdentities(parsedIdentities);
+    } finally {
+      setLoadingIdentities(false);
+    }
+  }, [ agent, loadingIdentities ]);
 
-  const loadSelectedIdentity = async () => {
+  const loadSelectedIdentity = useCallback(async () => {
     if (!selectedIdentity) return;
     const wallets = await getWallets(selectedIdentity.didUri);
     setWalletsState(wallets);
     const dwnEndpoints = await getDwnEndpoints(selectedIdentity.didUri);
     setDwnEndpointsState(dwnEndpoints);
-  }
+  }, [ selectedIdentity ]);
 
   const getWallets = async (didUri: string) => {
     if (!agent) return [];
     const web5Helper = Web5Helper(didUri, agent);
-
     const record = await web5Helper.getRecord(profileDefinition.protocol, 'connect');
     if (!record) {
       return [];
@@ -332,14 +334,16 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   useEffect(() => {
-    loadIdentities();
-  });
+    if (agent) {
+      loadIdentities();
+    }
+  }, [agent]);
 
   useEffect(() => {
     if (selectedIdentity && agent) {
       loadSelectedIdentity();
     }
-  }, [ selectedIdentity ]);
+  }, [ selectedIdentity, agent, loadSelectedIdentity ]);
 
   return (
     <IdentitiesContext.Provider
