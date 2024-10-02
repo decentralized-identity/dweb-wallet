@@ -21,6 +21,7 @@ export default defineConfig({
         VitePWA({
             devOptions: {
                 enabled: true,
+                navigateFallback: 'index.html',
             },
             registerType: 'prompt',
             includeAssets: ['favicon.ico', 'logo.png', 'index.html'],
@@ -46,11 +47,18 @@ export default defineConfig({
                 maximumFileSizeToCacheInBytes: 1024 * 1024 * 5,
             },
             workbox: {
+                navigateFallback: 'index.html',
                 globPatterns: ['**/*.{js,css,html,svg,png,svg,ico}'],
                 cleanupOutdatedCaches: true,
-                clientsClaim: true
+                clientsClaim: true,
+                runtimeCaching: [{
+                        urlPattern: function (_a) {
+                            var request = _a.request;
+                            return request.mode === 'navigate';
+                        },
+                        handler: 'NetworkFirst',
+                    }]
             },
-            manifestFilename: 'manifest.json',
         })
     ]
 });

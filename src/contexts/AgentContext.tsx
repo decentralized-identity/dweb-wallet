@@ -10,15 +10,20 @@ import { Web5UserAgent } from "@web5/user-agent";
 
 import { useBackupSeed } from "./Context";
 
+/** The amount of time of inactivity before the wallet is locked */
+const LOCK_TIMEOUT = 10 * 60 * 1000;
+
 interface Web5ContextProps {
-  unlocked: boolean;
-  initialized: boolean;
   agent?: Web5UserAgent;
+  initialized: boolean;
+  unlocked: boolean;
+  lock: () => Promise<void>;
 }
 
 export const AgentContext = createContext<Web5ContextProps>({
   unlocked: false,
   initialized: false,
+  lock: async () => {},
 });
 
 export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
@@ -31,11 +36,12 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
   const [initialized, setInitialized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(false);
 
-  const [unlocked, setUnlocked] = useState(false);
-
   const [isConnecting, setIsConnecting] = useState(false);
   const [dwnEndpoint, setDwnEndpoint] = useState('https://dwn.tbddev.org/latest');
+
+  const [unlocked, setUnlocked] = useState(false);
   const [pin, setPin] = useState(['', '', '', '']);
+  const [invalidPin, setInvalidPin] = useState(false);
 
   useEffect(() => {
     let loading = false;
@@ -55,6 +61,22 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
 
   });
 
+  useEffect(() => {
+    if (!unlocked && pin.length === 4 && pin.every(digit => digit !== '')) {
+      const pinString = pin.join('');
+      handleAgentSetup(pinString);
+    }
+
+  }, [ pin ]);
+
+  const lock = useCallback(async () => {
+    if (web5Agent) {
+      localStorage.removeItem('password');
+      await web5Agent.vault.lock();
+      setUnlocked(false);
+    }
+  }, [ web5Agent ]);
+
   const unlock = useCallback(async (password: string) => {
     if (isConnecting) {
       return;
@@ -71,20 +93,23 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsConnecting(true);
     try {
         await web5Agent.start({ password });
-        setWeb5Agent(web5Agent);
         localStorage.setItem('password', password);
-        // After 2 minutes of inactivity, remove the password from local storage
+        setWeb5Agent(web5Agent);
+        setUnlocked(true);
+
+
+        // After 10 minutes of inactivity, remove the password from local storage
+        // TODO: make this configurable?
         let inactivityTimer = setTimeout(() => {
-          localStorage.removeItem('password');
-        }, 2 * 60 * 1000);
+          lock();
+        }, LOCK_TIMEOUT);
 
         // Reset the timer on user activity
         const resetTimer = () => {
           clearTimeout(inactivityTimer);
           const newTimer = setTimeout(() => {
-            localStorage.removeItem('password');
-            setUnlocked(false);
-          }, 2 * 60 * 1000);
+            lock();
+          }, LOCK_TIMEOUT);
           return newTimer;
         };
 
@@ -96,7 +121,6 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
         window.addEventListener('keypress', () => {
           inactivityTimer = resetTimer();
         });
-        setUnlocked(true);
     } catch (error) {
       setIsConnecting(false);
       throw error;
@@ -138,16 +162,31 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, [ web5Agent ]);
 
-  const handleAgentSetup = async (password: string) => {
+  const handleAgentSetup = useCallback(async (password: string) => {
    if (!initialized && password) {
       const recoveryPhrase = await initialize(password, dwnEndpoint);
       if (recoveryPhrase) {
         setBackupSeed(recoveryPhrase);
       }
     } else if (initialized && password) {
-      await unlock(password);
+
+      try {
+        await unlock(password);
+        setInvalidPin(false);
+      } catch (error) {
+        setInvalidPin(true);
+
+        setTimeout(() => {
+          // remove the error message after 1.5 seconds
+          setInvalidPin(false);
+        }, 1500);
+
+      } finally {
+        // reset the password and auto submit regardless of the result
+        setPin(['', '', '', '']);
+      }
     }
-  };
+  }, [ initialized, dwnEndpoint ]);
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,40 +213,61 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
     return (
       <AppProvider>
         <Container maxWidth="sm">
-          <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh">
-          <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 400, textAlign: 'center' }}>
-            <LockIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
-            <Typography variant="h4" gutterBottom>
-              { initialized ? "Unlock Agent" : "Setup Agent" }
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 4 }}>
-              Enter your 4-digit PIN to { initialized ? "unlock" : "setup" }
-            </Typography>
-            <form onSubmit={handleUnlock}>
+          <Box
+            display="flex"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            minHeight="100vh"
+            sx={{
+              animation: invalidPin ? 'shake 0.2s' : 'none',
+              '@keyframes shake': {
+                '0%': { transform: 'translateX(0)' },
+                '25%': { transform: 'translateX(-5px)' },
+                '50%': { transform: 'translateX(5px)' },
+                '75%': { transform: 'translateX(-5px)' },
+                '100%': { transform: 'translateX(0)' },
+              },
+            }}
+          >
+            <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 400, textAlign: 'center' }}>
+              <LockIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
+              <Typography variant="h4" gutterBottom>
+                { initialized ? "Unlock Agent" : "Setup Agent" }
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 4 }}>
+                Enter your 4-digit PIN to { initialized ? "unlock" : "setup" }
+              </Typography>
+              <form autoComplete="off" onSubmit={handleUnlock}>
+                <PinInput initialPin={pin} onPinChange={(updatedPin) => setPin(updatedPin)} />
 
-              <PinInput initialPin={pin} onPinChange={(updatedPin) => setPin(updatedPin)} />
+                <Box sx={{ display: 'block' }} m={2}>
+                  <Typography variant="body2" color="error" minHeight={"1.5em"}>
+                    {invalidPin && 'Invalid PIN. Please try again.'}
+                  </Typography>
+                </Box>
 
-              {!initialized && <Grid container spacing={2} justifyContent="center" sx={{ my: 4 }}>
-                <TextField
-                  label="DWN Endpoint"
-                  value={dwnEndpoint}
-                  onChange={(e) => setDwnEndpoint(e.target.value)}
+                {!initialized && <Grid container spacing={2} justifyContent="center" sx={{ my: 4 }}>
+                  <TextField
+                    label="DWN Endpoint"
+                    value={dwnEndpoint}
+                    onChange={(e) => setDwnEndpoint(e.target.value)}
+                    fullWidth
+                  />
+                </Grid>}
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
                   fullWidth
-                />
-              </Grid>}
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                size="large"
-                disabled={pin.some(digit => digit === '')}
-              >
-                { initialized ? "Unlock" : "Setup" }
-              </Button>
-            </form>
-          </Paper>
-        </Box>
+                  size="large"
+                  disabled={pin.some(digit => digit === '')}
+                >
+                  { initialized ? "Unlock" : "Setup" }
+                </Button>
+              </form>
+            </Paper>
+          </Box>
         </Container>
       </AppProvider>
     );
@@ -216,6 +276,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <AgentContext.Provider
       value={{
+        lock,
         unlocked,
         initialized,
         agent: web5Agent,
