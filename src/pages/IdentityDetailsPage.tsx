@@ -83,7 +83,16 @@ const IdentityDetailsPage: React.FC = () => {
 
   const handleBackup = async () => {
     if (selectedIdentity) {
-      await exportIdentity(selectedIdentity.didUri);
+      const identity = await exportIdentity(selectedIdentity.didUri);
+
+      const blob = new Blob([JSON.stringify(identity)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${selectedIdentity.didUri}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
       setBackupDialogOpen(false);
     }
   }
@@ -144,6 +153,25 @@ const IdentityDetailsPage: React.FC = () => {
             <IconButton onClick={handleMenuOpen} sx={{ color: 'common.white' }}>
               <MoreVert />
             </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+            >
+              <MenuItem onClick={() => { handleMenuClose(); navigate(`/identity/edit/${selectedIdentity.didUri}`); }}>
+                <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
+                <ListItemText>Edit Identity</ListItemText>
+              </MenuItem>
+              <MenuItem onClick={() => setBackupDialogOpen(true)}>
+                <ListItemIcon><GetApp fontSize="small" /></ListItemIcon>
+                <ListItemText>Backup Identity</ListItemText>
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={() => setConfirmDelete(true)} sx={{ color: theme.palette.error.main }}>
+                <ListItemIcon><Delete fontSize="small" sx={{ color: theme.palette.error.main }} /></ListItemIcon>
+                <ListItemText>Delete Identity</ListItemText>
+              </MenuItem>
+            </Menu>
           </Box>
         </Box>
         <Box sx={{ p: 3 }}>
@@ -251,26 +279,6 @@ const IdentityDetailsPage: React.FC = () => {
           </Grid>
         </Grid>
       </Box>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-      >
-        <MenuItem onClick={() => { handleMenuClose(); navigate(`/identity/edit/${selectedIdentity.didUri}`); }}>
-          <ListItemIcon><Edit fontSize="small" /></ListItemIcon>
-          <ListItemText>Edit Identity</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={() => setBackupDialogOpen(true)}>
-          <ListItemIcon><GetApp fontSize="small" /></ListItemIcon>
-          <ListItemText>Backup Identity</ListItemText>
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={() => setConfirmDelete(true)} sx={{ color: theme.palette.error.main }}>
-          <ListItemIcon><Delete fontSize="small" sx={{ color: theme.palette.error.main }} /></ListItemIcon>
-          <ListItemText>Delete Identity</ListItemText>
-        </MenuItem>
-      </Menu>
 
       {confirmDelete && (
         <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)}>
