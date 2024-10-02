@@ -46,6 +46,7 @@ export default defineConfig({
                 ],
                 maximumFileSizeToCacheInBytes: 1024 * 1024 * 5,
             },
+            manifestFilename: 'manifest.json',
             workbox: {
                 navigateFallback: 'index.html',
                 globPatterns: ['**/*.{js,css,html,svg,png,svg,ico}'],
