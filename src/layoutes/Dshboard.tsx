@@ -1,12 +1,14 @@
+import { useAgent } from "@/contexts/Context";
 import AddOrEditIdentityPage from "@/pages/AddOrEditIdentityPage";
 import DWebConnect from "@/pages/DwebConnect";
 import IdentitiesListPage from "@/pages/IdentitiesListPage";
 import IdentityDetailsPage from "@/pages/IdentityDetailsPage";
 import SearchIdentitiesPage from "@/pages/SearchIdentitiesPage";
 import { PeopleOutline, PersonAddAlt, SearchOutlined } from "@mui/icons-material";
-import { Box } from "@mui/material";
-import { AppProvider, DashboardLayout, Navigation } from "@toolpad/core"
-import { Download } from "lucide-react";
+import { Box, Container, Typography } from "@mui/material";
+import { AppProvider, DashboardLayout, Navigation, } from "@toolpad/core"
+import { Download, LockIcon } from "lucide-react";
+import { useEffect } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom"
 
 const Dashboard:React.FC = () => {
@@ -35,6 +37,13 @@ const Dashboard:React.FC = () => {
     title: 'Import Identitites',
     icon: <Download />,
     segment: 'identities/import',
+  }, {
+    kind: 'divider'
+  },{
+    kind: 'page',
+    title: 'Log Out',
+    icon: <LockIcon />,
+    segment: 'logout'
   }]
 
   return (
@@ -60,10 +69,35 @@ const Dashboard:React.FC = () => {
           <Route path="/identities/import" element={<div>Coming Soon</div>} />
           <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
           <Route path="/dweb-connect" element={<DWebConnect />} />
+          <Route path="/logout" element={<LogoutPage />} />
         </Routes>
       </DashboardLayout>
     </AppProvider>
   )
+}
+
+/**
+ * Could not see a sane way to hijack the click of a menu item instead of it pointing to a page.
+ * So, I created a logout page that will log the user out and redirect to the home page.
+ *
+ * We can likely customize the `Account` API for the MUI DashboardLayout to display wallet account information
+ * as well as managing locking, seed backup, etc.
+ * https://mui.com/toolpad/core/api/account/
+ */
+const LogoutPage = () => {
+  const { lock } = useAgent();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    lock();
+    return () => {
+      navigate('/');
+    }
+  });
+
+  return (<Container sx={{ display: 'flex', flexDirection: 'col', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
+    <Typography sx={{ mb: '50%' }} variant="h4">Logging Out...</Typography>
+  </Container>)
 }
 
 export default Dashboard;

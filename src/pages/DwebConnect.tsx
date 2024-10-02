@@ -7,7 +7,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Typography, Button, CircularProgress, Divider, List, ListItem, ListItemIcon, ListItemText, Chip, AppBar, Toolbar } from '@mui/material';
 import { Lock, Public, SyncAlt } from '@mui/icons-material';
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
-import { topBarHeight } from '@/layoutes/Desktop';
 
 const PermissionRequest: React.FC<{ permissions: ConnectPermissionRequest[] }> = ({ permissions }) => {
   const formatScopes = (scopes: DwnPermissionScope[]) => {
@@ -160,7 +159,7 @@ const DWebConnect: React.FC = () => {
         </Toolbar>
       </AppBar>
       {!connecting && origin && did && permissions.length > 0 && (
-        <Box sx={{ mt: `${topBarHeight}px`, p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <img
               src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=128`}

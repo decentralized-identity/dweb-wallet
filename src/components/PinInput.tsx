@@ -1,5 +1,5 @@
 import Grid from '@mui/material/Grid2';
-import React from 'react';
+import React, { createRef, useEffect } from 'react';
 import { TextField } from '@mui/material';
 import { useState } from 'react';
 
@@ -10,6 +10,11 @@ interface PinInputProps {
 
 const PinInput: React.FC<PinInputProps> = ({ initialPin, onPinChange }) => {
   const [pin, setPin] = useState(initialPin);
+  const firstInputRef = createRef<HTMLInputElement>();
+
+  useEffect(() => {
+    firstInputRef.current?.focus();
+  }, []);
 
   const onDigitInputChange = (digitIndex: number) => (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -47,8 +52,20 @@ const PinInput: React.FC<PinInputProps> = ({ initialPin, onPinChange }) => {
             value={digit}
             onChange={onDigitInputChange(digitIndex)}
             onKeyDown={onDigitInputKeyDown(digitIndex)}
-            sx={{ width: 60, height: 60 }}
-            inputProps={{ maxLength: 1, inputMode: 'numeric' }} // Ensures only 1 digit
+            sx={{
+              width: 60,
+              height: 60,
+              '& .MuiInputBase-input': {
+                textAlign: 'center', // Center the text
+              },
+            }}
+            inputRef={digitIndex === 0 ? firstInputRef : undefined}
+            slotProps={{
+              htmlInput: {
+                inputMode: 'numeric',
+                maxLength: 1, // ensures only 1 digit
+              }
+            }}
           />
         </Grid>
       ))}

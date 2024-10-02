@@ -1,2 +1,42 @@
 # dweb-wallet
 Management app for decentralized identities and datastore interactions
+
+### Features
+- [x] DID Lookup
+- [x] Pin Unlock
+  - [ ] Update Pin
+- [x] List Identities
+- [x] Create Identity
+  - [x] Persona
+  - [x] Display Name
+  - [x] Tagline
+  - [x] Bio
+  - [x] Hero
+  - [x] Avatar
+  - [x] DWN Endpoints
+- [x] Delete Identity
+- [x] Update Identity
+  - [ ] Persona
+  - [x] Display Name
+  - [x] Tagline
+  - [x] Bio
+  - [x] Hero
+  - [x] Avatar
+  - [ ] DWN Endpoints
+  - [ ] Wallets
+- [ ] Backup Identity
+- [ ] Restore Identity
+- [x] Identity Details
+  - [x] Persona
+  - [x] Display Name
+  - [x] Tagline
+  - [x] Bio
+  - [x] Hero
+  - [x] Avatar
+  - [x] DWN Endpoints
+  - [x] Wallets
+  - [ ] Protocols
+  - [ ] Permissions
+- [ ] Wallet Connect
+  - [ ] OIDC Flow
+  - [ ] Web Connect Flow
