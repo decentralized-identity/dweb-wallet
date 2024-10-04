@@ -22,13 +22,14 @@ export default defineConfig({
             devOptions: {
                 enabled: true,
                 navigateFallback: 'index.html',
+                type: 'module'
             },
             registerType: 'prompt',
+            injectRegister: 'auto',
             includeAssets: ['favicon.ico', 'logo.png', 'index.html'],
             strategies: 'injectManifest',
             srcDir: 'src',
             filename: "sw.ts",
-            injectRegister: false,
             pwaAssets: {
                 disabled: false,
                 config: true,
