@@ -51,7 +51,7 @@ interface IdentityContextProps {
   updateIdentity: (params: UpdateIdentityParams) => Promise<void>;
   deleteIdentity: (didUri: string) => Promise<void>;
   exportIdentity: (didUri: string) => Promise<PortableIdentity>;
-  importIdentity: (walletHost: string, ...identities: PortableIdentity[]) => Promise<void>;
+  importIdentity: (walletHost: string, ...identities: PortableIdentity[]) => Promise<string[]>;
 
   /** Identity specific */
   selectedIdentity: Identity | undefined;
@@ -178,6 +178,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
       localStorage.setItem('identities', JSON.stringify([ identity.did.uri ]));
     }
 
+    await agent.sync.sync('pull');
+
     /** Configure profile protocol */
     const web5Helper = Web5Helper(identity.did.uri, agent);
     await web5Helper.configureProtocol(profileDefinition);
@@ -274,42 +276,44 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   const importIdentity = async (walletHost: string, ...identities: PortableIdentity[]) => {
-    if (agent) {
-      await Promise.all(identities.map(async identity => {
-        try {
-          const exists = await agent.identity.get({ didUri: identity.portableDid.uri });
-          if (exists) {
-            throw new Error("Identity already exists");
-          }
-
-          const importedIdentity = await agent.identity.import({ portableIdentity: identity });
-          await agent.identity.manage({ portableIdentity: await importedIdentity.export() });
-          await agent.sync.registerIdentity({ did: importedIdentity.did.uri });
-
-          const localStorageIdentities = localStorage.getItem('identities');
-          if (localStorageIdentities) {
-            const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
-            parsedIdentities.push(importedIdentity.did.uri);
-            localStorage.setItem('identities', JSON.stringify(parsedIdentities));
-          } else {
-            localStorage.setItem('identities', JSON.stringify([ importedIdentity.did.uri ]));
-          }
-
-          const web5Helper = Web5Helper(importedIdentity.did.uri, agent);
-          await web5Helper.configureProtocol(profileDefinition);
-
-          const wallets = await getWallets(importedIdentity.did.uri);
-          if (wallets.length === 0 || !wallets.includes(walletHost)) {
-            wallets.push(walletHost);
-            await setIdentityWallets(importedIdentity.did.uri, wallets);
-          }
-        } catch(error:any) {
-          console.error('could not import identity', identity.portableDid.uri, error);
-        }
-      }));
-
-      await loadIdentities();
+    if (!agent)  {
+      return [];
     }
+
+    return (await Promise.all(identities.map(async identity => {
+      try {
+        const exists = await agent.identity.get({ didUri: identity.portableDid.uri });
+        if (exists) {
+          throw new Error("Identity already exists");
+        }
+
+        const importedIdentity = await agent.identity.import({ portableIdentity: identity });
+        await agent.identity.manage({ portableIdentity: await importedIdentity.export() });
+        await agent.sync.registerIdentity({ did: importedIdentity.did.uri });
+
+        const localStorageIdentities = localStorage.getItem('identities');
+        if (localStorageIdentities) {
+          const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
+          parsedIdentities.push(importedIdentity.did.uri);
+          localStorage.setItem('identities', JSON.stringify(parsedIdentities));
+        } else {
+          localStorage.setItem('identities', JSON.stringify([ importedIdentity.did.uri ]));
+        }
+
+        const web5Helper = Web5Helper(importedIdentity.did.uri, agent);
+        await web5Helper.configureProtocol(profileDefinition);
+
+        const wallets = await getWallets(importedIdentity.did.uri);
+        if (wallets.length === 0 || !wallets.includes(walletHost)) {
+          wallets.push(walletHost);
+          await setIdentityWallets(importedIdentity.did.uri, wallets);
+        }
+
+        return importedIdentity.did.uri;
+      } catch(error:any) {
+        console.error('could not import identity', identity.portableDid.uri, error);
+      }
+    }))).filter(id => id !== undefined) as string[];
   }
 
   const exportIdentity = async (didUri: string) => {

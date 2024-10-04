@@ -1,3 +1,4 @@
+import DragOver from "@/components/DragOver";
 import { useAgent } from "@/contexts/Context";
 import AddOrEditIdentityPage from "@/pages/AddOrEditIdentityPage";
 import DWebConnect from "@/pages/DwebConnect";
@@ -8,7 +9,7 @@ import { PeopleOutline, PersonAddAlt, SearchOutlined } from "@mui/icons-material
 import { Box, Container, Typography } from "@mui/material";
 import { AppProvider, DashboardLayout, Navigation, } from "@toolpad/core"
 import { Download, LockIcon } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router-dom"
 
 const Dashboard:React.FC = () => {
@@ -59,19 +60,21 @@ const Dashboard:React.FC = () => {
       }}
       navigation={navigation}
     >
-      <DashboardLayout>
-        <Routes>
-          <Route index element={<IdentitiesListPage />} />
-          <Route path="/search" element={<SearchIdentitiesPage />} />
-          <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
-          <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
-          <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
-          <Route path="/identities/import" element={<div>Coming Soon</div>} />
-          <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
-          <Route path="/dweb-connect" element={<DWebConnect />} />
-          <Route path="/logout" element={<LogoutPage />} />
-        </Routes>
-      </DashboardLayout>
+      <DragOver>
+        <DashboardLayout>
+          <Routes>
+            <Route index element={<IdentitiesListPage />} />
+            <Route path="/search" element={<SearchIdentitiesPage />} />
+            <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
+            <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
+            <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
+            <Route path="/identities/import" element={<div>Coming Soon</div>} />
+            <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
+            <Route path="/dweb-connect" element={<DWebConnect />} />
+            <Route path="/logout" element={<LogoutPage />} />
+          </Routes>
+        </DashboardLayout>
+      </DragOver>
     </AppProvider>
   )
 }
