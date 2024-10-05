@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, useTheme, alpha } from '@mui/material';
+import { Card, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, alpha } from '@mui/material';
 import { truncateDid } from '@/lib/utils';
 import { CopyIcon, CheckCircle } from 'lucide-react';
 import { Identity } from '@/lib/types';
@@ -11,29 +11,17 @@ interface IdentityCardProps {
   onClick: () => void;
 }
 
-const StyledCard = styled(Card)(({ theme }) => ({
-  position: 'relative',
-  transition: theme.transitions.create(['background-color', 'box-shadow', 'transform'], {
-    duration: theme.transitions.duration.shorter,
-  }),
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[4],
-  },
-}));
-
 const BannerOverlay = styled(Box)(({ theme }) => ({
   position: 'absolute',
   top: 0,
   left: 0,
   right: 0,
   bottom: 0,
-  background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
+  // background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
 }));
 
 const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected = false, compact = false }) => {
   const [tooltipOpen, setTooltipOpen] = useState(false);
-  const theme = useTheme();
 
   const social = identity.profile.social;
 
@@ -49,7 +37,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected
   };
 
   return (
-    <StyledCard 
+    <Card
       onClick={onClick}
       raised={selected}
       sx={{ 
@@ -63,7 +51,6 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected
         maxWidth: compact ? 'none' : 550,
         overflow: 'hidden',
         borderRadius: 2,
-        margin: theme.spacing(1), // Added margin
       }}
     >
       {!compact && (
@@ -122,8 +109,6 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected
               left: 16,
               width: 64,
               height: 64,
-              border: `3px solid ${theme.palette.background.paper}`,
-              boxShadow: theme.shadows[3],
             }}
           >
             {social?.displayName?.charAt(0).toUpperCase() || 'U'}
@@ -131,12 +116,10 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected
           {selected && (
             <CheckCircle 
               size={24}
-              color={theme.palette.primary.main}
               style={{
                 position: 'absolute',
                 top: 16,
                 right: 16,
-                background: theme.palette.background.paper,
                 borderRadius: '50%',
               }}
             />
@@ -170,10 +153,10 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected
               {truncateDid(identity.didUri, 20)}
             </Typography>
           </Box>
-          {selected && <CheckCircle size={20} color={theme.palette.primary.main} style={{ marginLeft: 8 }} />}
+          {selected && <CheckCircle size={20} style={{ marginLeft: 8 }} />}
         </Box>
       )}
-    </StyledCard>
+    </Card>
   );
 };
 

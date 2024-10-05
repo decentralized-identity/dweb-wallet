@@ -67,21 +67,35 @@ const Dashboard:React.FC = () => {
       navigation={navigation}
     >
       <DragOverIdentitiesProvider>
-        <DashboardLayout>
           <NotificationsProvider>
             <Routes>
-              <Route index element={<IdentitiesListPage />} />
-              <Route path="/search" element={<SearchIdentitiesPage />} />
-              <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
-              <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
-              <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
-              <Route path="/identities/import" element={<ImportIdentityPage />} />
-              <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
+              <Route index element={<DashboardLayout>
+                <IdentitiesListPage />
+              </DashboardLayout>} />
+              <Route path="/search" element={<DashboardLayout>
+                <SearchIdentitiesPage />
+              </DashboardLayout>} />
+              <Route path= "/search/:didUri" element={<DashboardLayout>
+                <SearchIdentitiesPage />
+              </DashboardLayout>} />
+              <Route path="/identity/edit/:didUri" element={<DashboardLayout>
+                <AddOrEditIdentityPage edit />
+              </DashboardLayout>} />
+              <Route path="/identities/create" element={<DashboardLayout>
+                <AddOrEditIdentityPage />
+              </DashboardLayout>} />
+              <Route path="/identities/import" element={<DashboardLayout>
+                <ImportIdentityPage />
+              </DashboardLayout>} />
+              <Route path="/identity/:didUri" element={<DashboardLayout>
+                <IdentityDetailsPage />
+              </DashboardLayout>} />
+              <Route path="/logout" element={<DashboardLayout>
+                <LogoutPage />
+              </DashboardLayout>} />
               <Route path="/dweb-connect" element={<DWebConnect />} />
-              <Route path="/logout" element={<LogoutPage />} />
             </Routes>
           </NotificationsProvider>
-        </DashboardLayout>
       </DragOverIdentitiesProvider>
     </AppProvider>
   )

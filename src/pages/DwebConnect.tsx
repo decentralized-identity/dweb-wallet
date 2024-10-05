@@ -1,52 +1,13 @@
 import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
 import { useAgent } from '@/contexts/Context';
 import { toastError } from '@/lib/utils';
-import { ConnectPermissionRequest, DwnInterface, DwnPermissionScope, DwnProtocolDefinition, Oidc, Web5Agent } from '@web5/agent';
+import { ConnectPermissionRequest, DwnInterface, DwnProtocolDefinition, Oidc, Web5Agent } from '@web5/agent';
 import { DidJwk } from '@web5/dids';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Button, CircularProgress, Divider, List, ListItem, ListItemIcon, ListItemText, Chip, AppBar, Toolbar } from '@mui/material';
-import { Lock, Public, SyncAlt } from '@mui/icons-material';
+import { Box, Typography, Button, CircularProgress, AppBar, Toolbar } from '@mui/material';
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
+import PermissionRequest from '@/components/PermissionsRequest';
 
-const PermissionRequest: React.FC<{ permissions: ConnectPermissionRequest[] }> = ({ permissions }) => {
-  const formatScopes = (scopes: DwnPermissionScope[]) => {
-    const sync = scopes.some(scope => scope.interface === 'Messages' && scope.method === 'Read') &&
-                 scopes.some(scope => scope.interface === 'Messages' && scope.method === 'Query');
-
-    const records = scopes.filter(scope => scope.interface === 'Records').map(scope => scope.method);
-
-    return { sync, records };
-  };
-
-  return (
-    <List disablePadding>
-      {permissions.map((permission, index) => {
-        const { sync, records } = formatScopes(permission.permissionScopes);
-        return (
-          <React.Fragment key={permission.protocolDefinition.protocol}>
-            <ListItem>
-              <ListItemIcon>
-                {permission.protocolDefinition.published ? <Public /> : <Lock />}
-              </ListItemIcon>
-              <ListItemText 
-                primary={permission.protocolDefinition.protocol}
-                secondary={
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mt: 0.5 }}>
-                    {records.map((method) => (
-                      <Chip key={method} label={method} size="small" />
-                    ))}
-                    {sync && <Chip icon={<SyncAlt />} label="Sync" size="small" />}
-                  </Box>
-                }
-              />
-            </ListItem>
-            {index < permissions.length - 1 && <Divider variant="inset" component="li" />}
-          </React.Fragment>
-        );
-      })}
-    </List>
-  );
-};
 
 const DWebConnect: React.FC = () => {
   const { agent } = useAgent();
@@ -62,7 +23,6 @@ const DWebConnect: React.FC = () => {
   }, [ isCreatingDelegate, returningGrants ]);
 
   useEffect(() => {
-
     const authRequest = async (e: MessageEvent) => {
       const { type, did, permissions } = e.data;
       if (type === 'dweb-connect-authorization-request') {
@@ -76,11 +36,10 @@ const DWebConnect: React.FC = () => {
       }
     }
 
-    window.addEventListener('message', authRequest);
+    addEventListener('message', authRequest);
     window.opener?.postMessage({ type: 'dweb-connect-loaded' }, '*');
-
     return () => {
-      window.removeEventListener('message', authRequest);
+      removeEventListener('message', authRequest);
     };
   }, []);
 
@@ -151,7 +110,7 @@ const DWebConnect: React.FC = () => {
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
       {/* Top Bar */}
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+      <AppBar position="fixed">
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
             Digital Identity Wallet
@@ -159,22 +118,20 @@ const DWebConnect: React.FC = () => {
         </Toolbar>
       </AppBar>
       {!connecting && origin && did && permissions.length > 0 && (
-        <Box sx={{ p: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        <Box sx={{ mt: 10, mb: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <img
               src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=128`}
-              style={{ width: 64, height: 64 }}
+              style={{ width: 45, height: 45 }}
             />
           </Box>
           <Typography variant="h5" color="text.secondary">{origin}</Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, mt: 1 }}>
+          <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
             is requesting permissions from
           </Typography>
-          <PublicIdentityCard did={did} />
+          <PublicIdentityCard did={did} compact={true} />
           <Typography variant="subtitle1" gutterBottom>Requested Permissions:</Typography>
-          <Box sx={{ flexGrow: 1, overflow: 'auto' }}>
-            <PermissionRequest permissions={permissions} />
-          </Box>
+          <PermissionRequest permissions={permissions} />
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2, gap: 2 }}>
             <Button 
               variant="contained" 
