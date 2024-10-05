@@ -2,8 +2,8 @@ import { useContext } from "react";
 import { AgentContext } from "./AgentContext";
 import { IdentitiesContext } from "./IdentitiesContext";
 import { ProtocolsContext } from "./ProtocolsContext";
-import { ThemeContext } from "./ThemeContext";
 import { BackupSeedContext } from "./BackupSeedContext";
+import { DragOverIdentitiesContext } from "./DragOverIdentities";
 
 export const useAgent = () => {
   const context = useContext(AgentContext);
@@ -75,16 +75,6 @@ export const useProtocols= () => {
   };
 };
 
-export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  const { theme, toggleTheme } = context;
-
-  return { theme, toggleTheme };
-};
-
 export const useBackupSeed = () => {
   const context = useContext(BackupSeedContext);
   if (!context) {
@@ -94,4 +84,15 @@ export const useBackupSeed = () => {
   const { backupSeed, setBackupSeed, removeBackupSeed, showSeedScreen, toggleSeedScreen } = context;
 
   return { backupSeed, setBackupSeed, removeBackupSeed, showSeedScreen, toggleSeedScreen };
-}
+};
+
+export const useDragIdentities = () => {
+  const context = useContext(DragOverIdentitiesContext);
+  if (!context) {
+    throw new Error("useDragIdentities must be used within a DragOverIdentitiesProvider");
+  }
+
+  const { processFile, identities, setIdentities } = context;
+
+  return { processFile, identities, setIdentities };
+};

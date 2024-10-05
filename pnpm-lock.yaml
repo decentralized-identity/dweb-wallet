@@ -33,29 +33,26 @@ importers:
         specifier: ^0.7.0
         version: 0.7.0(@emotion/react@11.13.3(@types/react@18.3.4)(react@18.3.1))(@emotion/styled@11.13.0(@emotion/react@11.13.3(@types/react@18.3.4)(react@18.3.1))(@types/react@18.3.4)(react@18.3.1))(@mui/icons-material@6.1.1(@mui/material@6.1.1(@emotion/react@11.13.3(@types/react@18.3.4)(react@18.3.1))(@emotion/styled@11.13.0(@emotion/react@11.13.3(@types/react@18.3.4)(react@18.3.1))(@types/react@18.3.4)(react@18.3.1))(@types/react@18.3.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/react@18.3.4)(react@18.3.1))(@mui/material@6.1.1(@emotion/react@11.13.3(@types/react@18.3.4)(react@18.3.1))(@emotion/styled@11.13.0(@emotion/react@11.13.3(@types/react@18.3.4)(react@18.3.1))(@types/react@18.3.4)(react@18.3.1))(@types/react@18.3.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(@types/node@22.5.0)(@types/react@18.3.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(terser@5.33.0)(vite@5.4.2(@types/node@22.5.0)(terser@5.33.0))
       '@web5/agent':
-        specifier: 0.0.0-next-3cfc21d-20240920195338
-        version: 0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)
+        specifier: 0.0.0-next-bfa0417-20241004234456
+        version: 0.0.0-next-bfa0417-20241004234456(ws@8.18.0)
       '@web5/api':
-        specifier: 0.0.0-next-3cfc21d-20240920195338
-        version: 0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)
+        specifier: 0.0.0-next-bfa0417-20241004234456
+        version: 0.0.0-next-bfa0417-20241004234456(ws@8.18.0)
       '@web5/browser':
-        specifier: 0.0.0-next-3cfc21d-20240920195338
-        version: 0.0.0-next-3cfc21d-20240920195338
+        specifier: 0.0.2-alpha-20241001-56a783d
+        version: 0.0.2-alpha-20241001-56a783d
       '@web5/common':
-        specifier: ^1.0.2
-        version: 1.0.2
+        specifier: 0.0.0-next-bfa0417-20241004234456
+        version: 0.0.0-next-bfa0417-20241004234456
       '@web5/crypto':
         specifier: ^1.0.4
         version: 1.0.4
       '@web5/dids':
         specifier: ^1.1.4
         version: 1.1.4
-      '@web5/identity-agent':
-        specifier: ^0.6.3
-        version: 0.6.3(ws@8.18.0)
       '@web5/user-agent':
-        specifier: 0.0.0-next-3cfc21d-20240920195338
-        version: 0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)
+        specifier: 0.0.0-next-bfa0417-20241004234456
+        version: 0.0.0-next-bfa0417-20241004234456(ws@8.18.0)
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.0
@@ -1312,9 +1309,6 @@ packages:
   '@noble/ciphers@0.3.0':
     resolution: {integrity: sha512-ldbrnOjmNRwFdXcTM6uXDcxpMIFrbzAWNnpBPp4oTJTFF0XByGD6vf45WrehZGXRQTRVV+Zm8YP+EgEf+e4cWA==}
 
-  '@noble/ciphers@0.4.1':
-    resolution: {integrity: sha512-QCOA9cgf3Rc33owG0AYBB9wszz+Ul2kramWN8tXG44Gyciud/tbkEqvxRF/IpqQaBpRBNi9f4jdNxqB2CQCIXg==}
-
   '@noble/ciphers@0.5.3':
     resolution: {integrity: sha512-B0+6IIHiqEs3BPMT0hcRmHvEj2QHOLu+uwt+tqDDeVd0oyVzh7BPrDcPjRnV1PV/5LaknXJJQvOuRGR0zQJz+w==}
 
@@ -1857,20 +1851,20 @@ packages:
   '@vitest/utils@2.1.1':
     resolution: {integrity: sha512-Y6Q9TsI+qJ2CC0ZKj6VBb+T8UPz593N113nnUykqwANqhgf3QkZeHFlusgKLTqrnVHbj/XDKZcDHol+dxVT+rQ==}
 
-  '@web5/agent@0.0.0-next-3cfc21d-20240920195338':
-    resolution: {integrity: sha512-DSkRcon3+ju3u9ivVjgKdhC9y9oEO/m7BOD9tKjuywMPvlTKsMAgOFm3aGadSOBhZaUb1HGdqPaqwVYw/KnxNA==}
+  '@web5/agent@0.0.0-next-bfa0417-20241004234456':
+    resolution: {integrity: sha512-KjIMS759xMAhCWeROBfiIl67EUecwtjVHJDWmupqhffYP/MMHBbVcD6ngQbcnu29S9zSw/F8qiAIuR01KgFh6Q==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/agent@0.7.3':
-    resolution: {integrity: sha512-IrpvQM9Lra8pFgDcZe2J/WGPBcvG6cYR6uSh/u9pvCxY+LmCB6+ULquPnfwvthazHNSJS/ZddhwQ/DM4cA2PZA==}
+  '@web5/api@0.0.0-next-bfa0417-20241004234456':
+    resolution: {integrity: sha512-ipSumY6P2S6Zkfi/3po6EDiZ9tHT4+qvn4T64rRUmCvA7j1jSH+L4sC5aULofk03Tgdc2kn2jUQDKsPXy4JZeQ==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/api@0.0.0-next-3cfc21d-20240920195338':
-    resolution: {integrity: sha512-DU7gsrzyrjD8xvbptita/3w6qtVvfficnZQCd+tdQu2I3zOOPID4/7jXhdj6aQiPL6fmsmtTN/i9U/zLeEapsA==}
-    engines: {node: '>=18.0.0'}
+  '@web5/browser@0.0.2-alpha-20241001-56a783d':
+    resolution: {integrity: sha512-/L/8Dhrc1TF9KPpjlOJYwOAMGOMC10SyXKAjma1l+MWPYdT2j1YBpFDJ3b176TCGrUJYhSPyX9BwiC03Nwd2PA==}
 
-  '@web5/browser@0.0.0-next-3cfc21d-20240920195338':
-    resolution: {integrity: sha512-gSVrsQTm/i2780vlB1iCk3w6USPCdSpaovys+N3wwB3oAxv2+KHQxBd3Wn4nENM8S4K65mlYyd/Y0p/pqcgGsA==}
+  '@web5/common@0.0.0-next-bfa0417-20241004234456':
+    resolution: {integrity: sha512-DrVv7Q9u8ijCRuR+z22ifYqi4pgIlWGqZxQypSjPrlvu67qXX0/3kqd9SbztThbqXLv5NJDhWO8B/KiBeWsFOA==}
+    engines: {node: '>=18.0.0'}
 
   '@web5/common@1.0.0':
     resolution: {integrity: sha512-3JHF6X5o0h+3oAVQeBC4XpMoZeEYZYdEmQdgpOfKv/rnSru2yHQSAM+0wbIvEFcSCmelBT3u7rUAcpJjelLB0w==}
@@ -1884,36 +1878,44 @@ packages:
     resolution: {integrity: sha512-SerGdrxZF47yidvhrRa8sGLEOunIlDHppxrtWYCuKMVgtQKgheEmaS4+xchGAc/mZggJX4LlwJbRuniIiSaXrw==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/crypto@0.0.0-next-3cfc21d-20240920195338':
-    resolution: {integrity: sha512-jnBU6tB/9NTPqdlhNEFOWFftGNOgUJ/E0EX8m6ekM438PLmYO+wDU4kSTdq97sqnPMq+PMwEc4LpC3e8sB93Qg==}
+  '@web5/common@1.0.2-alpha-20241001-56a783d':
+    resolution: {integrity: sha512-/cxKhW+AnHbdD877prrFuPh86SXdAyln7UVPVcRVRf4cIHP+JJjXUlih5GQvg5QKVAL7XaAqBkm1VFG+isvAZQ==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/crypto@1.0.0':
-    resolution: {integrity: sha512-z1CsgycTqiXEsS6pPlJDDLGAeGsgzfdBeWvyxLXTgh08Q8ACULmEGRXjSsgWHFn6DO6MpWFn55h/hF4wZZRxvA==}
+  '@web5/crypto@0.0.0-next-bfa0417-20241004234456':
+    resolution: {integrity: sha512-QqYwi8GBl85bFw/Wxd/ibVd4kXTWgftTaVrdmkW/kZ81xV5eOl2Yo2GwM18WxbK47eX6RRxK50+yxpY2+jDPTg==}
     engines: {node: '>=18.0.0'}
 
   '@web5/crypto@1.0.4':
     resolution: {integrity: sha512-XjYkwQG28zo6UXusl5djca9/Qv74H259fjofrUY87qeb1Y/lPrgtpVTSNaqdLu4RB1gwyzFZwOGRaphWNjK1Ug==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/dids@0.0.0-next-3cfc21d-20240920195338':
-    resolution: {integrity: sha512-z+492AmJBviZ6SvUNtz4hgZyq3ikgmyVBXn1Ym6lMWxFOHHwv3e/gILzhhPXXW6JZu5kNYe1f5RiWs8M/ZRqhQ==}
+  '@web5/crypto@1.0.5':
+    resolution: {integrity: sha512-btVYrv6G29VQgdLVtqH4IbaH6DvvEA2UWgF3y0AMv/wAmT4EKSdwVUHhEWt16gtpN05UT5qEYmnKLZUOxk1zzw==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/dids@1.1.0':
-    resolution: {integrity: sha512-d9pKf/DW+ziUiV5g3McC71utyAhQyT1tYGPbQSYWt2ji6FHGNC6tffHMfLXXK/W+vbwV3eNTn06JqTXRaYhxBA==}
+  '@web5/crypto@1.0.5-alpha-20241001-56a783d':
+    resolution: {integrity: sha512-kI2EiXfa+58Jqvv3hG7nW/5AW4YWO+iW/UBnk87nfRFDyekR/n51CKn4Vo55DIxcgK+qJNBhdmNOg6r7gHKZHw==}
+    engines: {node: '>=18.0.0'}
+
+  '@web5/dids@0.0.0-next-bfa0417-20241004234456':
+    resolution: {integrity: sha512-X9nTX9pDI4wTZIAgVh6Nnx2RWW7+Sg2kS2lb22Kkp9LsA6Xa1/mxN6JENfH+klv6SdyY3TBGJqjyFb1hH7UxLw==}
     engines: {node: '>=18.0.0'}
 
   '@web5/dids@1.1.4':
     resolution: {integrity: sha512-RdRWRMrZlcbnLkMO14ObWsL//efmSl/Mzvmbodbi3kMXvCaoLYgYyz5AkdrpskdjolWLkgOjjdMw+bX5uxp0mQ==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/identity-agent@0.6.3':
-    resolution: {integrity: sha512-RQkinrUYovh3vgzB7Wdm2Wgp/eYjjHDnIsA7NoBo1v57YeCSq8KtAl+mO8daSgmqi3/fFFbbjh+ZoOJAu3Wc4A==}
+  '@web5/dids@1.1.5':
+    resolution: {integrity: sha512-vGRWeSZkNX7Whz2fZelpnhYmuQ3FMxgkdCP08lSpfN9mz9Tk0TbVlZx3vD6Lh8oUyHi/v//0nhr/NdzGqb8jgQ==}
     engines: {node: '>=18.0.0'}
 
-  '@web5/user-agent@0.0.0-next-3cfc21d-20240920195338':
-    resolution: {integrity: sha512-YfSF9g6w2dwezhWtQm6tjuHDvVZYbZeiMZarwEtfstM6glV3gNCtYoVnc00rRwU8X6iilfKmp3lcwEJLqG+tJQ==}
+  '@web5/dids@1.1.5-alpha-20241001-56a783d':
+    resolution: {integrity: sha512-sljVvxSe362te0UYwnwipZKnHo399O6mnzkAneOvLhQBGshzvkxnlMWoSShWh6isTlrveXi4J0xGQX1ga5Jeiw==}
+    engines: {node: '>=18.0.0'}
+
+  '@web5/user-agent@0.0.0-next-bfa0417-20241004234456':
+    resolution: {integrity: sha512-2g4x+VHoi1PxjW+0d8L2D6MJY4Yv2H9kjnhKt0Fx6qHjWeEoXRPLoDGklvez9rDZjmX/R78LKQy13tMQ9OzF5w==}
     engines: {node: '>=18.0.0'}
 
   abort-controller@3.0.0:
@@ -5732,8 +5734,6 @@ snapshots:
 
   '@noble/ciphers@0.3.0': {}
 
-  '@noble/ciphers@0.4.1': {}
-
   '@noble/ciphers@0.5.3': {}
 
   '@noble/curves@1.3.0':
@@ -6062,7 +6062,7 @@ snapshots:
       '@noble/curves': 1.4.2
       '@noble/ed25519': 2.0.0
       '@noble/secp256k1': 2.0.0
-      '@web5/dids': 1.1.4
+      '@web5/dids': 1.1.5
       abstract-level: 1.0.3
       ajv: 8.12.0
       blockstore-core: 4.2.0
@@ -6342,14 +6342,14 @@ snapshots:
       loupe: 3.1.1
       tinyrainbow: 1.2.0
 
-  '@web5/agent@0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)':
+  '@web5/agent@0.0.0-next-bfa0417-20241004234456(ws@8.18.0)':
     dependencies:
       '@noble/ciphers': 0.5.3
       '@scure/bip39': 1.2.2
       '@tbd54566975/dwn-sdk-js': 0.4.7
-      '@web5/common': 1.0.2
-      '@web5/crypto': 0.0.0-next-3cfc21d-20240920195338
-      '@web5/dids': 0.0.0-next-3cfc21d-20240920195338
+      '@web5/common': 0.0.0-next-bfa0417-20241004234456
+      '@web5/crypto': 0.0.0-next-bfa0417-20241004234456
+      '@web5/dids': 0.0.0-next-bfa0417-20241004234456
       abstract-level: 1.0.4
       ed25519-keygen: 0.4.11
       isomorphic-ws: 5.0.0(ws@8.18.0)
@@ -6362,41 +6362,28 @@ snapshots:
       - supports-color
       - ws
 
-  '@web5/agent@0.7.3(ws@8.18.0)':
+  '@web5/api@0.0.0-next-bfa0417-20241004234456(ws@8.18.0)':
     dependencies:
-      '@noble/ciphers': 0.5.3
-      '@scure/bip39': 1.2.2
-      '@tbd54566975/dwn-sdk-js': 0.4.7
-      '@web5/common': 1.0.0
-      '@web5/crypto': 1.0.4
-      '@web5/dids': 1.1.4
-      abstract-level: 1.0.4
-      ed25519-keygen: 0.4.11
-      isomorphic-ws: 5.0.0(ws@8.18.0)
-      level: 8.0.0
-      ms: 2.1.3
-      readable-web-to-node-stream: 3.0.2
-      ulidx: 2.1.0
+      '@web5/agent': 0.0.0-next-bfa0417-20241004234456(ws@8.18.0)
+      '@web5/common': 0.0.0-next-bfa0417-20241004234456
+      '@web5/crypto': 0.0.0-next-bfa0417-20241004234456
+      '@web5/dids': 0.0.0-next-bfa0417-20241004234456
+      '@web5/user-agent': 0.0.0-next-bfa0417-20241004234456(ws@8.18.0)
     transitivePeerDependencies:
       - encoding
       - supports-color
       - ws
 
-  '@web5/api@0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)':
+  '@web5/browser@0.0.2-alpha-20241001-56a783d':
     dependencies:
-      '@web5/agent': 0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)
-      '@web5/common': 1.0.2
-      '@web5/crypto': 0.0.0-next-3cfc21d-20240920195338
-      '@web5/dids': 0.0.0-next-3cfc21d-20240920195338
-      '@web5/user-agent': 0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-      - ws
+      '@web5/dids': 1.1.5-alpha-20241001-56a783d
 
-  '@web5/browser@0.0.0-next-3cfc21d-20240920195338':
+  '@web5/common@0.0.0-next-bfa0417-20241004234456':
     dependencies:
-      '@web5/dids': 0.0.0-next-3cfc21d-20240920195338
+      '@isaacs/ttlcache': 1.4.1
+      level: 8.0.1
+      multiformats: 13.1.0
+      readable-stream: 4.5.2
 
   '@web5/common@1.0.0':
     dependencies:
@@ -6419,19 +6406,19 @@ snapshots:
       multiformats: 13.1.0
       readable-stream: 4.5.2
 
-  '@web5/crypto@0.0.0-next-3cfc21d-20240920195338':
+  '@web5/common@1.0.2-alpha-20241001-56a783d':
+    dependencies:
+      '@isaacs/ttlcache': 1.4.1
+      level: 8.0.1
+      multiformats: 13.1.0
+      readable-stream: 4.5.2
+
+  '@web5/crypto@0.0.0-next-bfa0417-20241004234456':
     dependencies:
       '@noble/ciphers': 0.5.3
       '@noble/curves': 1.3.0
       '@noble/hashes': 1.4.0
-      '@web5/common': 1.0.2
-
-  '@web5/crypto@1.0.0':
-    dependencies:
-      '@noble/ciphers': 0.4.1
-      '@noble/curves': 1.3.0
-      '@noble/hashes': 1.3.3
-      '@web5/common': 1.0.0
+      '@web5/common': 0.0.0-next-bfa0417-20241004234456
 
   '@web5/crypto@1.0.4':
     dependencies:
@@ -6440,24 +6427,26 @@ snapshots:
       '@noble/hashes': 1.4.0
       '@web5/common': 1.0.1
 
-  '@web5/dids@0.0.0-next-3cfc21d-20240920195338':
+  '@web5/crypto@1.0.5':
     dependencies:
-      '@decentralized-identity/ion-sdk': 1.0.4
-      '@dnsquery/dns-packet': 6.1.1
+      '@noble/ciphers': 0.5.3
+      '@noble/curves': 1.3.0
+      '@noble/hashes': 1.4.0
       '@web5/common': 1.0.2
-      '@web5/crypto': 0.0.0-next-3cfc21d-20240920195338
-      abstract-level: 1.0.4
-      bencode: 4.0.0
-      buffer: 6.0.3
-      level: 8.0.1
-      ms: 2.1.3
 
-  '@web5/dids@1.1.0':
+  '@web5/crypto@1.0.5-alpha-20241001-56a783d':
+    dependencies:
+      '@noble/ciphers': 0.5.3
+      '@noble/curves': 1.3.0
+      '@noble/hashes': 1.4.0
+      '@web5/common': 1.0.2-alpha-20241001-56a783d
+
+  '@web5/dids@0.0.0-next-bfa0417-20241004234456':
     dependencies:
       '@decentralized-identity/ion-sdk': 1.0.4
       '@dnsquery/dns-packet': 6.1.1
-      '@web5/common': 1.0.0
-      '@web5/crypto': 1.0.0
+      '@web5/common': 0.0.0-next-bfa0417-20241004234456
+      '@web5/crypto': 0.0.0-next-bfa0417-20241004234456
       abstract-level: 1.0.4
       bencode: 4.0.0
       buffer: 6.0.3
@@ -6476,23 +6465,36 @@ snapshots:
       level: 8.0.1
       ms: 2.1.3
 
-  '@web5/identity-agent@0.6.3(ws@8.18.0)':
+  '@web5/dids@1.1.5':
     dependencies:
-      '@web5/agent': 0.7.3(ws@8.18.0)
-      '@web5/common': 1.0.0
-      '@web5/crypto': 1.0.4
-      '@web5/dids': 1.1.0
-    transitivePeerDependencies:
-      - encoding
-      - supports-color
-      - ws
-
-  '@web5/user-agent@0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)':
-    dependencies:
-      '@web5/agent': 0.0.0-next-3cfc21d-20240920195338(ws@8.18.0)
+      '@decentralized-identity/ion-sdk': 1.0.4
+      '@dnsquery/dns-packet': 6.1.1
       '@web5/common': 1.0.2
-      '@web5/crypto': 0.0.0-next-3cfc21d-20240920195338
-      '@web5/dids': 0.0.0-next-3cfc21d-20240920195338
+      '@web5/crypto': 1.0.5
+      abstract-level: 1.0.4
+      bencode: 4.0.0
+      buffer: 6.0.3
+      level: 8.0.1
+      ms: 2.1.3
+
+  '@web5/dids@1.1.5-alpha-20241001-56a783d':
+    dependencies:
+      '@decentralized-identity/ion-sdk': 1.0.4
+      '@dnsquery/dns-packet': 6.1.1
+      '@web5/common': 1.0.2-alpha-20241001-56a783d
+      '@web5/crypto': 1.0.5-alpha-20241001-56a783d
+      abstract-level: 1.0.4
+      bencode: 4.0.0
+      buffer: 6.0.3
+      level: 8.0.1
+      ms: 2.1.3
+
+  '@web5/user-agent@0.0.0-next-bfa0417-20241004234456(ws@8.18.0)':
+    dependencies:
+      '@web5/agent': 0.0.0-next-bfa0417-20241004234456(ws@8.18.0)
+      '@web5/common': 0.0.0-next-bfa0417-20241004234456
+      '@web5/crypto': 0.0.0-next-bfa0417-20241004234456
+      '@web5/dids': 0.0.0-next-bfa0417-20241004234456
     transitivePeerDependencies:
       - encoding
       - supports-color

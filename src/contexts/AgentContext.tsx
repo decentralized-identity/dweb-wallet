@@ -50,7 +50,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
       loadAgent();
     }
 
-  });
+  }, [web5Agent]);
 
   const lock = useCallback(async () => {
     if (web5Agent) {
@@ -94,6 +94,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({
         localStorage.setItem('password', password);
         setWeb5Agent(web5Agent);
         setUnlocked(true);
+        web5Agent.sync.startSync({ interval: '15s' });
 
         // After 10 minutes of inactivity, remove the password from local storage
         // TODO: make this configurable?

@@ -1,18 +1,29 @@
 import { useAgent } from "@/contexts/Context";
+import { DragOverIdentitiesProvider } from "@/contexts/DragOverIdentities";
 import AddOrEditIdentityPage from "@/pages/AddOrEditIdentityPage";
 import DWebConnect from "@/pages/DwebConnect";
 import IdentitiesListPage from "@/pages/IdentitiesListPage";
 import IdentityDetailsPage from "@/pages/IdentityDetailsPage";
+import ImportIdentityPage from "@/pages/ImportIdentityPage";
 import SearchIdentitiesPage from "@/pages/SearchIdentitiesPage";
 import { PeopleOutline, PersonAddAlt, SearchOutlined } from "@mui/icons-material";
 import { Box, Container, Typography } from "@mui/material";
-import { AppProvider, DashboardLayout, Navigation, } from "@toolpad/core"
+import { AppProvider, DashboardLayout, Navigation, NotificationsProvider, } from "@toolpad/core"
 import { Download, LockIcon } from "lucide-react";
-import { useEffect } from "react";
-import { Route, Routes, useNavigate } from "react-router-dom"
+import { useEffect, useMemo } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router-dom"
 
 const Dashboard:React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const router = useMemo(() => {
+    return {
+      navigate: (path: string | URL) => navigate(path),
+      pathname: location.pathname,
+      searchParams: new URLSearchParams(location.search),
+    }
+  }, [ location, navigate ]);
 
   const navigation:Navigation =[{
     kind: 'page',
@@ -52,26 +63,26 @@ const Dashboard:React.FC = () => {
         title: 'Dweb Wallet',
         logo: <Box sx={{ mr: 2 }}><img src="/logo.png" alt="Dweb Wallet" /></Box>
       }}
-      router={{
-        navigate: (path) => navigate(path),
-        pathname: window.location.pathname,
-        searchParams: new URLSearchParams(window.location.search),
-      }}
+      router={router}
       navigation={navigation}
     >
-      <DashboardLayout>
-        <Routes>
-          <Route index element={<IdentitiesListPage />} />
-          <Route path="/search" element={<SearchIdentitiesPage />} />
-          <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
-          <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
-          <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
-          <Route path="/identities/import" element={<div>Coming Soon</div>} />
-          <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
-          <Route path="/dweb-connect" element={<DWebConnect />} />
-          <Route path="/logout" element={<LogoutPage />} />
-        </Routes>
-      </DashboardLayout>
+      <DragOverIdentitiesProvider>
+        <DashboardLayout>
+          <NotificationsProvider>
+            <Routes>
+              <Route index element={<IdentitiesListPage />} />
+              <Route path="/search" element={<SearchIdentitiesPage />} />
+              <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
+              <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
+              <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
+              <Route path="/identities/import" element={<ImportIdentityPage />} />
+              <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
+              <Route path="/dweb-connect" element={<DWebConnect />} />
+              <Route path="/logout" element={<LogoutPage />} />
+            </Routes>
+          </NotificationsProvider>
+        </DashboardLayout>
+      </DragOverIdentitiesProvider>
     </AppProvider>
   )
 }

@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
-import { Typography, Avatar, Box, styled, useTheme, alpha, Tooltip, ClickAwayListener, Paper, Divider, IconButton, List, Dialog, DialogTitle, DialogContent, Button} from '@mui/material';
+import React, { ReactNode, useEffect, useState } from 'react';
+import { Typography, Avatar, Box, styled, useTheme, alpha, Tooltip, ClickAwayListener, Paper, Divider, IconButton, List, Dialog, DialogTitle, DialogContent, Button, SxProps} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { SocialData } from '@/lib/types';
 import { ContentCopy, Person2Outlined, QrCode2 } from '@mui/icons-material';
 import { QRCodeCanvas } from 'qrcode.react';
+import { truncateDid } from '@/lib/utils';
+import { Convert } from '@web5/common';
+import { profileDefinition } from '@/lib/ProfileProtocol';
 
 interface Props {
   did: string;
+  compact?: boolean;
   social?: SocialData
-  heroUrl?: string;
-  avatarUrl?: string;
+  slot?: ReactNode;
+  sx?: SxProps;
 }
 
 const BannerOverlay = styled(Box)(({ theme }) => ({
@@ -21,10 +25,31 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
   background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
 }));
 
-const PublicIdentityCard: React.FC<Props> = ({ did, social, heroUrl, avatarUrl }) => {
+const PublicIdentityCard: React.FC<Props> = ({ did, social, compact, slot, sx }) => {
   const theme = useTheme();
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
+  const [loadedSocial, setLoadedSocial] = useState<SocialData | undefined>(social);
+
+  useEffect(() => {
+    const loadSocial = async () => {
+      const social = await fetch(`https://dweb/${did}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/social`);
+      if (social.ok) {
+        setLoadedSocial(await social.json() as SocialData);
+      }
+    }
+
+    if (!loadedSocial) {
+      loadSocial();
+    }
+  }, [ loadedSocial]);
+
+  const avatarUrl = `https://dweb/${did}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/avatar`;
+  const heroUrl = `https://dweb/${did}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/hero`;
+
+  if (compact) {
+    return <CompactCard did={did} social={loadedSocial} avatarUrl={avatarUrl} slot={slot} sx={sx} />
+  }
 
   const handleCopyDid = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -38,7 +63,7 @@ const PublicIdentityCard: React.FC<Props> = ({ did, social, heroUrl, avatarUrl }
   };
 
   return (
-    <Box sx={{ pb: 4 }}>
+    <Box sx={{ pb: 4, ...sx }}>
       <Box sx={{ maxWidth: 1200, margin: '0 auto', px: 3 }}>
         <Paper elevation={3} sx={{ mt: 3, mb: 4 }}>
           <Box sx={{ position: 'relative', height: 300 }}>
@@ -159,6 +184,47 @@ const PublicIdentityCard: React.FC<Props> = ({ did, social, heroUrl, avatarUrl }
       }
     </Box>
   );
+}
+
+interface CompactCardProps {
+  did: string;
+  social?: SocialData;
+  avatarUrl: string;
+  sx?: SxProps;
+  slot?: ReactNode;
+}
+
+const CompactCard: React.FC<CompactCardProps> = ({ slot, sx, did, social, avatarUrl }) => {
+
+  return <Box sx={{ 
+    display: 'flex',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+    px: 2,
+    ...sx
+  }}>
+    <Avatar 
+      src={avatarUrl} 
+      alt={social?.displayName || 'user'}
+      sx={{ 
+        width: 48, 
+        height: 48, 
+        mr: 2,
+      }}
+    >
+      {social?.displayName?.charAt(0).toUpperCase() || 'U'}
+    </Avatar>
+    <Box sx={{ flexGrow: 1, overflow: 'hidden' }}>
+      <Typography variant="subtitle1" noWrap>
+        {social?.displayName || ''}
+      </Typography>
+      <Typography variant="caption" noWrap sx={{ color: 'text.secondary' }}>
+        {did}
+      </Typography>
+    </Box>
+    {slot}
+  </Box>
 }
 
 export default PublicIdentityCard;

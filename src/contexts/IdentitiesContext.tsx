@@ -51,7 +51,7 @@ interface IdentityContextProps {
   updateIdentity: (params: UpdateIdentityParams) => Promise<void>;
   deleteIdentity: (didUri: string) => Promise<void>;
   exportIdentity: (didUri: string) => Promise<PortableIdentity>;
-  importIdentity: (walletHost: string, ...identities: PortableIdentity[]) => Promise<void>;
+  importIdentity: (walletHost: string, identity: PortableIdentity) => Promise<void>;
 
   /** Identity specific */
   selectedIdentity: Identity | undefined;
@@ -164,7 +164,6 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
       metadata: { name: persona }
     });
 
-    await agent.identity.manage({ portableIdentity: await identity.export() });
     await agent.sync.registerIdentity({ did: identity.did.uri, options: { protocols: [
       profileDefinition.protocol,
     ]} });
@@ -177,6 +176,8 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     } else {
       localStorage.setItem('identities', JSON.stringify([ identity.did.uri ]));
     }
+
+    await agent.sync.sync('pull');
 
     /** Configure profile protocol */
     const web5Helper = Web5Helper(identity.did.uri, agent);
@@ -259,56 +260,66 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   const deleteIdentity = async (didUri: string) => {
-    if (agent) {
-      await agent.identity.delete({ tenant: agent.agentDid.uri, didUri });
+    if (!agent) throw new Error("Agent not found");
 
-      try {
-        await agent.did.delete({ didUri, tenant: agent.agentDid.uri });
-      } catch(error) {
-        /** Newer versions of `@web5/agent` should not throw an error here */
-        console.error('could not delete identity', error);
-      }
+    const identity = await agent.identity.get({ didUri });
+    if (!identity) throw new Error("Identity not found");
 
-      setIdentities(identities.filter(identity => identity.didUri !== didUri));
+    const localStorageIdentities = localStorage.getItem('identities');
+    if (localStorageIdentities) {
+      const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
+      localStorage.setItem('identities', JSON.stringify(parsedIdentities.filter((identity: string) => identity !== didUri)));
     }
+
+    try {
+      await agent.sync.unregisterIdentity(didUri);
+    } catch(error) {
+      console.error('could not unregister identity', error);
+    }
+
+    await agent.identity.delete({ didUri });
+
+
+    try {
+      // await agent.did.delete({ didUri, tenant: agent.agentDid.uri });
+      await agent.did.delete({ didUri, tenant: agent.agentDid.uri });
+    } catch(error) {
+      /** Newer versions of `@web5/agent` should not throw an error here */
+      console.error('could not delete did', error);
+    }
+
+    setIdentities(identities.filter(identity => identity.didUri !== didUri));
   }
 
-  const importIdentity = async (walletHost: string, ...identities: PortableIdentity[]) => {
-    if (agent) {
-      await Promise.all(identities.map(async identity => {
-        try {
-          const exists = await agent.identity.get({ didUri: identity.portableDid.uri });
-          if (exists) {
-            throw new Error("Identity already exists");
-          }
+  const importIdentity = async (walletHost: string, identity: PortableIdentity) => {
+    if (!agent)  {
+      throw new Error("Agent Not Found");
+    }
 
-          const importedIdentity = await agent.identity.import({ portableIdentity: identity });
-          await agent.identity.manage({ portableIdentity: await importedIdentity.export() });
-          await agent.sync.registerIdentity({ did: importedIdentity.did.uri });
+    const exists = await agent.identity.get({ didUri: identity.portableDid.uri });
+    if (exists) {
+      throw new Error("Identity already exists");
+    }
 
-          const localStorageIdentities = localStorage.getItem('identities');
-          if (localStorageIdentities) {
-            const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
-            parsedIdentities.push(importedIdentity.did.uri);
-            localStorage.setItem('identities', JSON.stringify(parsedIdentities));
-          } else {
-            localStorage.setItem('identities', JSON.stringify([ importedIdentity.did.uri ]));
-          }
+    const importedIdentity = await agent.identity.import({ portableIdentity: identity });
+    await agent.sync.registerIdentity({ did: importedIdentity.did.uri });
 
-          const web5Helper = Web5Helper(importedIdentity.did.uri, agent);
-          await web5Helper.configureProtocol(profileDefinition);
+    const localStorageIdentities = localStorage.getItem('identities');
+    if (localStorageIdentities) {
+      const parsedIdentities = JSON.parse(localStorageIdentities) as string[];
+      parsedIdentities.push(importedIdentity.did.uri);
+      localStorage.setItem('identities', JSON.stringify(parsedIdentities));
+    } else {
+      localStorage.setItem('identities', JSON.stringify([ importedIdentity.did.uri ]));
+    }
 
-          const wallets = await getWallets(importedIdentity.did.uri);
-          if (wallets.length === 0 || !wallets.includes(walletHost)) {
-            wallets.push(walletHost);
-            await setIdentityWallets(importedIdentity.did.uri, wallets);
-          }
-        } catch(error:any) {
-          console.error('could not import identity', identity.portableDid.uri, error);
-        }
-      }));
+    const web5Helper = Web5Helper(importedIdentity.did.uri, agent);
+    await web5Helper.configureProtocol(profileDefinition);
 
-      await loadIdentities();
+    const wallets = await getWallets(importedIdentity.did.uri);
+    if (wallets.length === 0 || !wallets.includes(walletHost)) {
+      wallets.push(walletHost);
+      await setIdentityWallets(importedIdentity.did.uri, wallets);
     }
   }
 

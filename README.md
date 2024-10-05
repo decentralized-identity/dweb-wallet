@@ -24,8 +24,8 @@ Management app for decentralized identities and datastore interactions
   - [x] Avatar
   - [ ] DWN Endpoints
   - [ ] Wallets
-- [ ] Backup Identity
-- [ ] Restore Identity
+- [x] Backup Identity
+- [x] Restore Identity
 - [x] Identity Details
   - [x] Persona
   - [x] Display Name
