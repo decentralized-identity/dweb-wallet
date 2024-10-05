@@ -1,10 +1,9 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { Typography, Avatar, Box, styled, useTheme, alpha, Tooltip, ClickAwayListener, Paper, Divider, IconButton, List, Dialog, DialogTitle, DialogContent, Button, SxProps} from '@mui/material';
+import { Typography, Avatar, Box, styled, alpha, Tooltip, ClickAwayListener, Paper, Divider, IconButton, List, Dialog, DialogTitle, DialogContent, Button, SxProps} from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { SocialData } from '@/lib/types';
 import { ContentCopy, Person2Outlined, QrCode2 } from '@mui/icons-material';
 import { QRCodeCanvas } from 'qrcode.react';
-import { truncateDid } from '@/lib/utils';
 import { Convert } from '@web5/common';
 import { profileDefinition } from '@/lib/ProfileProtocol';
 
@@ -22,11 +21,10 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
   left: 0,
   right: 0,
   bottom: 0,
-  background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
+  // background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
 }));
 
 const PublicIdentityCard: React.FC<Props> = ({ did, social, compact, slot, sx }) => {
-  const theme = useTheme();
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
   const [loadedSocial, setLoadedSocial] = useState<SocialData | undefined>(social);
@@ -78,7 +76,7 @@ const PublicIdentityCard: React.FC<Props> = ({ did, social, compact, slot, sx })
               <Avatar
                 src={avatarUrl}
                 alt={social?.displayName || 'user'}
-                sx={{ width: 120, height: 120, border: `4px solid ${theme.palette.background.paper}`, mr: 2 }}
+                sx={{ width: 120, height: 120, border: `4px solid`, mr: 2 }}
             >
               {social?.displayName?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
@@ -200,7 +198,6 @@ const CompactCard: React.FC<CompactCardProps> = ({ slot, sx, did, social, avatar
     display: 'flex',
     alignItems: 'center',
     width: '100%',
-    height: '100%',
     px: 2,
     ...sx
   }}>

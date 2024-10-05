@@ -12,7 +12,6 @@ import {
   DialogActions,
   Button,
   ClickAwayListener,
-  useTheme,
 } from '@mui/material';
 import {
   Edit, Delete, GetApp, ContentCopy, QrCode2,
@@ -26,7 +25,6 @@ import { useParams } from "react-router-dom";
 const IdentityDetailsPage: React.FC = () => {
   const { didUri } = useParams();
   const navigate = useNavigate();
-  const theme = useTheme();
   const { selectedIdentity, wallets, dwnEndpoints, selectIdentity, deleteIdentity, exportIdentity } = useIdentities();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -43,7 +41,7 @@ const IdentityDetailsPage: React.FC = () => {
     left: 0,
     right: 0,
     bottom: 0,
-    background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
+    // background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
   }));
 
   useEffect(() => {
@@ -139,7 +137,7 @@ const IdentityDetailsPage: React.FC = () => {
               <Avatar
                 src={selectedIdentity.profile.avatarUrl}
                 alt={social?.displayName || 'user'}
-                sx={{ width: 120, height: 120, border: `4px solid ${theme.palette.background.paper}`, mr: 2 }}
+                sx={{ width: 120, height: 120, border: `4px solid`, mr: 2 }}
             >
               {social?.displayName?.charAt(0).toUpperCase() || 'U'}
             </Avatar>
@@ -167,8 +165,8 @@ const IdentityDetailsPage: React.FC = () => {
                 <ListItemText>Backup Identity</ListItemText>
               </MenuItem>
               <Divider />
-              <MenuItem onClick={() => setConfirmDelete(true)} sx={{ color: theme.palette.error.main }}>
-                <ListItemIcon><Delete fontSize="small" sx={{ color: theme.palette.error.main }} /></ListItemIcon>
+              <MenuItem onClick={() => setConfirmDelete(true)}>
+                <ListItemIcon><Delete fontSize="small" /></ListItemIcon>
                 <ListItemText>Delete Identity</ListItemText>
               </MenuItem>
             </Menu>
@@ -286,7 +284,7 @@ const IdentityDetailsPage: React.FC = () => {
           <DialogContent>Are you sure you want to delete this identity?</DialogContent>
           <DialogActions>
             <Button onClick={() => setConfirmDelete(false)}>Cancel</Button>
-            <Button onClick={handleDelete} sx={{ color: theme.palette.error.main }}>Delete</Button>
+            <Button onClick={handleDelete}>Delete</Button>
           </DialogActions>
         </Dialog>
       )}
@@ -302,7 +300,7 @@ const IdentityDetailsPage: React.FC = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={handleBackup}>Download File</Button>
-            <Button onClick={() => setBackupDialogOpen(false)} sx={{ color: theme.palette.error.main }}>Cancel</Button>
+            <Button onClick={() => setBackupDialogOpen(false)}>Cancel</Button>
           </DialogActions>
         </Dialog>
       )}
