@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState }  from 'react';
+import React, { useCallback, useMemo, useRef, useState }  from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PortableIdentity } from '@web5/agent';
 
 import { PageContainer } from '@toolpad/core';
-import { Box, Button, LinearProgress } from '@mui/material';
+import { Box, Button, CircularProgress } from '@mui/material';
 
 import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
 import { useAgent, useDragIdentities, useIdentities } from '@/contexts/Context';
@@ -37,12 +37,19 @@ const ImportIdentityPage: React.FC = () => {
   }, [ identities ]);
 
   const identitySlot = useCallback((didUri: string) => {
-    if (status.has(didUri)) {
-      return status.get(didUri) ? <CheckCircle /> : <HighlightOff />;
+    const didStatus = status.get(didUri);
+    switch (didStatus) {
+      case 'success':
+        return <CheckCircle />;
+      case 'error':
+        return <HighlightOff />;
+      default:
+        if (importing) {
+          return <CircularProgress />;
+        }
+      return removeButton(didUri);
     }
-
-    return importing ? <LinearProgress /> : removeButton(didUri);
-  }, [ identities, status, importing, doneImporting ]);
+  }, [ status, importing ]);
 
   const importPortableIdentity = useCallback(async (identity: PortableIdentity) => {
     try {
