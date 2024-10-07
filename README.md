@@ -35,7 +35,7 @@ Management app for decentralized identities and datastore interactions
   - [x] Avatar
   - [x] DWN Endpoints
   - [x] Wallets
-  - [ ] Protocols
+  - [x] Protocols
   - [ ] Permissions
 - [x] Wallet Connect
   - [x] OIDC Flow
