@@ -36,7 +36,7 @@ const IdentityDetailsPage: React.FC = () => {
   const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
   const [copyTooltipText, setCopyTooltipText] = useState("Copy DID");
 
-  const BannerOverlay = styled(Box)(({ theme }) => ({
+  const BannerOverlay = styled(Box)(({ }) => ({
     position: 'absolute',
     top: 0,
     left: 0,

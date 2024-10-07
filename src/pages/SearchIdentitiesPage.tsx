@@ -32,9 +32,6 @@ const SearchIdentitiesPage: React.FC = () => {
 
   }, [ did, social ]);
 
-  const heroUrl = `https://dweb/${did}/read/protocols/${profileProtocolB64}/hero`;
-  const avatarUrl = `https://dweb/${did}/read/protocols/${profileProtocolB64}/avatar`;
-
   useEffect(() => {
     if (didUri) {
       setDid(didUri);

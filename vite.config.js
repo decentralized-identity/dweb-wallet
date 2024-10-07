@@ -2,7 +2,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 import path from 'path';
 import react from '@vitejs/plugin-react';
-import svgr from 'vite-plugin-svgr';
+// @ts-ignore - vite-plugin-node-stdlib-browser does not have types
 import nodePolyfills from 'vite-plugin-node-stdlib-browser';
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,52 +15,33 @@ export default defineConfig({
         global: "globalThis",
     },
     plugins: [
-        svgr(),
-        react(),
         nodePolyfills(),
+        react(),
         VitePWA({
-            devOptions: {
-                enabled: true,
-                navigateFallback: 'index.html',
-                type: 'module'
-            },
-            registerType: 'prompt',
-            injectRegister: 'auto',
-            includeAssets: ['favicon.ico', 'logo.png', 'index.html'],
-            strategies: 'injectManifest',
-            srcDir: 'src',
+            strategies: "injectManifest",
+            srcDir: "src",
             filename: "sw.ts",
+            registerType: "prompt",
+            injectRegister: "auto",
             pwaAssets: {
                 disabled: false,
                 config: true,
             },
             manifest: {
-                name: 'DWebWallet',
-                short_name: 'DWebWallet',
-                description: 'Decentralized identity manager',
-                theme_color: '#E03A3E',
+                name: "DWA Starter",
+                short_name: "DWA",
+                description: "A Decentralized Web Application template",
+                theme_color: "#ffec19",
             },
             injectManifest: {
-                globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-                globIgnores: [
-                    'assets/icons/**'
-                ],
-                maximumFileSizeToCacheInBytes: 1024 * 1024 * 5,
+                globPatterns: ["**/*.{js,css,html,json,svg,png,ico}"],
             },
-            manifestFilename: 'manifest.json',
-            workbox: {
-                navigateFallback: 'index.html',
-                globPatterns: ['**/*.{js,css,html,svg,png,svg,ico}'],
-                cleanupOutdatedCaches: true,
-                clientsClaim: true,
-                runtimeCaching: [{
-                        urlPattern: function (_a) {
-                            var request = _a.request;
-                            return request.mode === 'navigate';
-                        },
-                        handler: 'NetworkFirst',
-                    }]
+            devOptions: {
+                enabled: true,
+                navigateFallback: "index.html",
+                suppressWarnings: false,
+                type: "module",
             },
-        })
+        }),
     ]
 });
