@@ -4,7 +4,7 @@ import { QRCodeCanvas} from 'qrcode.react';
 import Grid from '@mui/material/Grid2';
 import {
   Box, Typography, Avatar, Paper, Divider, IconButton,
-  alpha, styled, List, ListItem, ListItemText,
+  styled, List, ListItem, ListItemText,
   ListItemIcon, Menu, MenuItem, Tooltip,
   Dialog,
   DialogTitle,
@@ -15,22 +15,22 @@ import {
 } from '@mui/material';
 import {
   Edit, Delete, GetApp, ContentCopy, QrCode2,
-  Lock, Public, Language, MoreVert,
+  Lock, Language, MoreVert,
   Person2Outlined,
 } from '@mui/icons-material';
 import { PageContainer } from "@toolpad/core";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
+import ProtocolItem from '@/components/ProtocolItem';
 
 const IdentityDetailsPage: React.FC = () => {
   const { didUri } = useParams();
   const navigate = useNavigate();
-  const { selectedIdentity, wallets, dwnEndpoints, selectIdentity, deleteIdentity, exportIdentity } = useIdentities();
+  const { selectedIdentity, protocols, wallets, dwnEndpoints, selectIdentity, deleteIdentity, exportIdentity } = useIdentities();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [backupDialogOpen, setBackupDialogOpen] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
-  const [ protocols ] = useState<any[]>([]);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [copyTooltipOpen, setCopyTooltipOpen] = useState(false);
   const [copyTooltipText, setCopyTooltipText] = useState("Copy DID");
@@ -249,14 +249,7 @@ const IdentityDetailsPage: React.FC = () => {
               <Typography variant="h6" gutterBottom>Protocols</Typography>
               <Divider sx={{ mb: 2 }} />
               <List>
-                {protocols.map((protocol, index) => (
-                  <ListItem key={index}>
-                    <ListItemIcon>
-                      {protocol.published ? <Public fontSize="small" /> : <Lock fontSize="small" />}
-                    </ListItemIcon>
-                    <ListItemText primary={protocol.protocol} secondary={protocol.published ? 'Published' : 'Private'} />
-                  </ListItem>
-                ))}
+                {protocols.map((definition) => <ProtocolItem key={definition.protocol} definition={definition} /> )}
               </List>
             </Paper>
           </Grid>

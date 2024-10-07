@@ -104,6 +104,16 @@ const Web5Helper = (didUri: string, agent: Web5Agent) => {
       }
 
       return protocol!;
+    },
+    listProtocols: async () => {
+      const { status, protocols } = await web5.dwn.protocols.query({
+        message: {}
+      });
+      if (status.code !== 200) {
+        throw new Error('Web5Helper: Failed to list protocols');
+      }
+
+      return protocols.map(protocol => protocol.definition);
     }
   }
 }

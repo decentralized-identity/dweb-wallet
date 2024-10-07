@@ -1,11 +1,13 @@
 import React, { ReactNode, useEffect, useState } from 'react';
-import { Typography, Avatar, Box, styled, alpha, Tooltip, ClickAwayListener, Paper, Divider, IconButton, List, Dialog, DialogTitle, DialogContent, Button, SxProps} from '@mui/material';
+import { Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, Paper, Divider, IconButton, List, Dialog, DialogTitle, DialogContent, Button, SxProps } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { SocialData } from '@/lib/types';
 import { ContentCopy, Person2Outlined, QrCode2 } from '@mui/icons-material';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Convert } from '@web5/common';
 import { profileDefinition } from '@/lib/ProfileProtocol';
+import { DwnProtocolDefinition } from '@web5/agent';
+import ProtocolItem from '../ProtocolItem';
 
 interface Props {
   did: string;
@@ -21,26 +23,46 @@ const BannerOverlay = styled(Box)(({ theme }) => ({
   left: 0,
   right: 0,
   bottom: 0,
-  // background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
 }));
 
 const PublicIdentityCard: React.FC<Props> = ({ did, social, compact, slot, sx }) => {
+  const [loading, setLoading] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
   const [showQrCode, setShowQrCode] = useState(false);
   const [loadedSocial, setLoadedSocial] = useState<SocialData | undefined>(social);
+  const [protocols, setProtocols] = useState<DwnProtocolDefinition[]>([]);
 
   useEffect(() => {
-    const loadSocial = async () => {
-      const social = await fetch(`https://dweb/${did}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/social`);
-      if (social.ok) {
-        setLoadedSocial(await social.json() as SocialData);
+    const loadIdentity = async () => {
+      setLoading(true);
+      try {
+        const social = await fetch(`https://dweb/${did}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/social`);
+        if (social.ok) {
+          setLoadedSocial(await social.json() as SocialData);
+        }
+      } catch (error) {
+        console.error('Failed to load identity social', error);
       }
+
+      try {
+        const protocols = await fetch(`https://dweb/${did}/query/protocols`);
+        if (protocols.ok) {
+          const protocolsResponse = await protocols.json() as { descriptor: { definition: DwnProtocolDefinition } }[];
+          setProtocols(protocolsResponse.map(p => p.descriptor.definition));
+        }
+      } catch (error) {
+        console.error('Failed to load identity protocols', error);
+      }
+
+      setLoaded(true);
+      setLoading(false);
     }
 
-    if (!loadedSocial) {
-      loadSocial();
+    if (!loading && !loaded) {
+      loadIdentity();
     }
-  }, [ loadedSocial]);
+  }, [ loaded, loading ]);
 
   const avatarUrl = `https://dweb/${did}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/avatar`;
   const heroUrl = `https://dweb/${did}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/hero`;
@@ -134,19 +156,12 @@ const PublicIdentityCard: React.FC<Props> = ({ did, social, compact, slot, sx })
       <Box sx={{ maxWidth: 1200, margin: '0 auto', px: 3 }}>
         <Grid container spacing={3}>
           {/* Protocols section */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={12}>
             <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
               <Typography variant="h6" gutterBottom>Protocols</Typography>
               <Divider sx={{ mb: 2 }} />
               <List>
-                {/* {protocols.map((protocol, index) => (
-                  <ListItem key={index}>
-                    <ListItemIcon>
-                      {protocol.published ? <Public fontSize="small" /> : <Lock fontSize="small" />}
-                    </ListItemIcon>
-                    <ListItemText primary={protocol.protocol} secondary={protocol.published ? 'Published' : 'Private'} />
-                  </ListItem>
-                ))} */}
+                {protocols.map((definition) => <ProtocolItem key={definition.protocol} definition={definition} /> )}
               </List>
             </Paper>
           </Grid>
