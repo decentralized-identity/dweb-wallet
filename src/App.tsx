@@ -4,8 +4,9 @@ import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
 
 import { activatePolyfills } from '@web5/browser';
 import { useEffect } from 'react';
-import Dashboard from './layoutes/Dshboard';
+// import Dashboard from './layoutes/Dshboard';
 import { ProtocolsProvider } from './contexts/ProtocolsContext';
+import TailwindLayout from './layoutes/TailwindDashboard';
 
 activatePolyfills();
 
@@ -44,7 +45,8 @@ function App() {
       <AgentProvider>
         <ProtocolsProvider>
           <IdentitiesProvider>
-            <Dashboard />
+            <TailwindLayout />
+            {/* <Dashboard /> */}
           </IdentitiesProvider>
         </ProtocolsProvider>
       </AgentProvider>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener, alpha } from '@mui/material';
+import { Card, Typography, Avatar, Box, styled, Tooltip, ClickAwayListener } from '@mui/material';
 import { truncateDid } from '@/lib/utils';
 import { CopyIcon, CheckCircle } from 'lucide-react';
 import { Identity } from '@/lib/types';
@@ -11,7 +11,7 @@ interface IdentityCardProps {
   onClick: () => void;
 }
 
-const BannerOverlay = styled(Box)(({ theme }) => ({
+const BannerOverlay = styled(Box)(({ }) => ({
   position: 'absolute',
   top: 0,
   left: 0,
