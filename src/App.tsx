@@ -5,6 +5,7 @@ import { BackupSeedProvider } from '@/contexts/BackupSeedContext';
 import { activatePolyfills } from '@web5/browser';
 import { useEffect } from 'react';
 import Dashboard from './layoutes/Dshboard';
+import { ProtocolsProvider } from './contexts/ProtocolsContext';
 
 activatePolyfills();
 
@@ -41,9 +42,11 @@ function App() {
   return (
     <BackupSeedProvider>
       <AgentProvider>
-        <IdentitiesProvider>
-          <Dashboard />
-        </IdentitiesProvider>
+        <ProtocolsProvider>
+          <IdentitiesProvider>
+            <Dashboard />
+          </IdentitiesProvider>
+        </ProtocolsProvider>
       </AgentProvider>
     </BackupSeedProvider>
   );
