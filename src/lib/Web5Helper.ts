@@ -114,6 +114,28 @@ const Web5Helper = (didUri: string, agent: Web5Agent) => {
       }
 
       return protocols.map(protocol => protocol.definition);
+    },
+    listPermissions: async () => {
+      try {
+        const permissions = await web5.dwn.permissions.queryGrants();
+        return permissions;
+      } catch (_error) {
+        console.log('Web5Helper: Failed to list permissions', _error);
+      }
+      return [];
+    },
+    getProtocolDefinition: async (protocol: string) => {
+      const { status, protocols } = await web5.dwn.protocols.query({
+        message: {
+          filter: {
+            protocol
+          }
+        }
+      });
+
+      if (status.code === 200 && protocols && protocols.length > 0) {
+        return protocols[0].definition;
+      }
     }
   }
 }

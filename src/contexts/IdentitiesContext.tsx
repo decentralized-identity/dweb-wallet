@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import { BearerIdentity, DwnProtocolDefinition, getDwnServiceEndpointUrls, PortableIdentity, Web5Agent } from "@web5/agent";
+import { BearerIdentity, DwnPermissionGrant, DwnProtocolDefinition, getDwnServiceEndpointUrls, PortableIdentity, Web5Agent } from "@web5/agent";
 
 import Web5Helper from "@/lib/Web5Helper";
 import ProfileProtocol, { profileDefinition } from "@/lib/ProfileProtocol";
@@ -7,6 +7,7 @@ import ProfileProtocol, { profileDefinition } from "@/lib/ProfileProtocol";
 import { useAgent } from "./Context";
 import { Identity } from "@/lib/types";
 import { Convert } from "@web5/common";
+import { PermissionGrant, Record } from "@web5/api";
 
 const loadProfileFromBearerIdentity = (agent: Web5Agent) => async (identity: BearerIdentity): Promise<Identity> => {
   const profileProtocol = ProfileProtocol(identity.did.uri, agent);
@@ -56,6 +57,7 @@ interface IdentityContextProps {
   /** Identity specific */
   selectedIdentity: Identity | undefined;
   protocols: DwnProtocolDefinition[];
+  permissions: DwnPermissionGrant[];
   wallets: string[];
   dwnEndpoints: string[];
   selectIdentity: (didUri: string | undefined) => void;
@@ -73,6 +75,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   const [ identities, setIdentities ] = useState<Identity[]>([]);
   const [ selectedIdentity, setSelectedIdentity ] = useState<Identity | undefined>();
   const [ protocols, setProtocols ] = useState<DwnProtocolDefinition[]>([]);
+  const [ permissions, setPermissions ] = useState<PermissionGrant[]>([]);
   const [ wallets, setWalletsState ] = useState<string[]>([]);
   const [ dwnEndpoints, setDwnEndpointsState ] = useState<string[]>([]);
 
@@ -107,40 +110,31 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [ agent, loadingIdentities ]);
 
   const loadSelectedIdentity = useCallback(async () => {
-    if (!selectedIdentity) return;
+    if (!selectedIdentity || !agent) {
+      return;
+    };
 
-    const protocols = await getProtocols(selectedIdentity.didUri);
-    setProtocols(protocols);
-    const wallets = await getWallets(selectedIdentity.didUri);
-    setWalletsState(wallets);
-    const dwnEndpoints = await getDwnEndpoints(selectedIdentity.didUri);
-    setDwnEndpointsState(dwnEndpoints);
+    const web5Helper = Web5Helper(selectedIdentity.didUri, agent);
+
+    const permissionsPromise = web5Helper.listPermissions();
+    const protocolsPromise = web5Helper.listProtocols();
+    const walletsPromise = web5Helper.getRecord(profileDefinition.protocol, 'connect').then(getWallets);
+    const dwnEndpointsPromise = getDwnServiceEndpointUrls(selectedIdentity.didUri, agent.did);
+
+    setPermissions(await permissionsPromise);
+    setProtocols(await protocolsPromise);
+    setWalletsState(await walletsPromise);
+    setDwnEndpointsState(await dwnEndpointsPromise);
 
   }, [ selectedIdentity ]);
 
-  const getWallets = async (didUri: string) => {
-    if (!agent) return [];
-    const web5Helper = Web5Helper(didUri, agent);
-    const record = await web5Helper.getRecord(profileDefinition.protocol, 'connect');
+  const getWallets = async (record?: Record) => {
     if (!record) {
       return [];
     } else {
       const { webWallets } = await record.data.json() as { webWallets: string[] };
       return webWallets;
     }
-  }
-
-  const setWallets = async (wallets: string[]) => {
-    if (!agent) return;
-    if (!selectedIdentity) return;
-    await setIdentityWallets(selectedIdentity.didUri, wallets);
-  }
-
-  const getProtocols = async (didUri: string) => {
-    if (!agent) return [];
-
-    const web5Helper = Web5Helper(didUri, agent);
-    return web5Helper.listProtocols();
   }
 
   const createIdentity = async ({ persona, dwnEndpoints, walletHost, displayName, tagline, bio, avatar, hero }: CreateIdentityParams) => {
@@ -329,7 +323,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     const web5Helper = Web5Helper(importedIdentity.did.uri, agent);
     await web5Helper.configureProtocol(profileDefinition);
 
-    const wallets = await getWallets(importedIdentity.did.uri);
+    const wallets = await web5Helper.getRecord(profileDefinition.protocol, 'connect').then(getWallets);
     if (wallets.length === 0 || !wallets.includes(walletHost)) {
       wallets.push(walletHost);
       await setIdentityWallets(importedIdentity.did.uri, wallets);
@@ -346,10 +340,11 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     return portableIdentity;
   };
 
-  const getDwnEndpoints = async (didUri: string) => {
-    if (!agent) return [];
-    
-    return getDwnServiceEndpointUrls(didUri, agent.did);
+
+  const setWallets = async (wallets: string[]) => {
+    if (!agent) return;
+    if (!selectedIdentity) return;
+    await setIdentityWallets(selectedIdentity.didUri, wallets);
   }
 
   /* TODO: Implement in `@web5/agent` */
@@ -367,7 +362,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     if (selectedIdentity && agent) {
       loadSelectedIdentity();
     }
-  }, [ selectedIdentity, agent, loadSelectedIdentity ]);
+  }, [ selectedIdentity, agent ]);
 
   return (
     <IdentitiesContext.Provider
@@ -375,6 +370,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
         identities,
         wallets,
         protocols,
+        permissions,
         dwnEndpoints,
         selectedIdentity,
         loadIdentities,

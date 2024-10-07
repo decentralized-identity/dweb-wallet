@@ -15,18 +15,19 @@ import {
 } from '@mui/material';
 import {
   Edit, Delete, GetApp, ContentCopy, QrCode2,
-  Lock, Language, MoreVert,
+  Language, MoreVert,
   Person2Outlined,
 } from '@mui/icons-material';
 import { PageContainer } from "@toolpad/core";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import ProtocolItem from '@/components/ProtocolItem';
+import PermissionsList from '@/components/PermissionsList';
 
 const IdentityDetailsPage: React.FC = () => {
   const { didUri } = useParams();
   const navigate = useNavigate();
-  const { selectedIdentity, protocols, wallets, dwnEndpoints, selectIdentity, deleteIdentity, exportIdentity } = useIdentities();
+  const { selectedIdentity, protocols, permissions, wallets, dwnEndpoints, selectIdentity, deleteIdentity, exportIdentity } = useIdentities();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [backupDialogOpen, setBackupDialogOpen] = useState(false);
@@ -41,7 +42,6 @@ const IdentityDetailsPage: React.FC = () => {
     left: 0,
     right: 0,
     bottom: 0,
-    // background: `linear-gradient(to bottom, ${alpha(theme.palette.common.black, 0)} 0%, ${alpha(theme.palette.common.black, 0.7)} 100%)`,
   }));
 
   useEffect(() => {
@@ -50,19 +50,6 @@ const IdentityDetailsPage: React.FC = () => {
     }
   }, [didUri, selectedIdentity, selectIdentity]);
 
-  // useEffect(() => {
-  //   if (selectedIdentity && protocols.length === 0) {
-  //     loadProtocols(selectedIdentity.didUri).then(() => {
-  //       setProtocols(listProtocols(selectedIdentity.didUri));
-  //     });
-  //   }
-  // }, [protocols, selectedIdentity, loadProtocols, listProtocols]);
-
-  const social = useMemo(() => {
-    if (selectedIdentity) {
-      return selectedIdentity.profile.social;
-    }
-  }, [selectedIdentity]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -111,6 +98,12 @@ const IdentityDetailsPage: React.FC = () => {
     setCopyTooltipOpen(false);
     setCopyTooltipText("Copy DID");
   };
+
+  const social = useMemo(() => {
+    if (selectedIdentity) {
+      return selectedIdentity.profile.social;
+    }
+  }, [selectedIdentity]);
 
   const title = useMemo(() => {
     return selectedIdentity?.profile.social?.displayName
@@ -226,23 +219,6 @@ const IdentityDetailsPage: React.FC = () => {
 
       <Box sx={{ maxWidth: 1200, margin: '0 auto' }}>
         <Grid container spacing={3}>
-          {/* Permissions section */}
-          <Grid size={12}>
-            <Paper elevation={1} sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>Permissions</Typography>
-              <Divider sx={{ mb: 2 }} />
-              {/* {selectedIdentity.permissions && selectedIdentity.permissions.length > 0 ? (
-                <Box>
-                  {selectedIdentity.permissions.map((permission, index) => (
-                    <Chip key={index} label={permission} sx={{ mr: 1, mb: 1 }} />
-                  ))}
-                </Box>
-              ) : (
-                <Typography variant="body2">No permissions assigned yet.</Typography>
-              )} */}
-            </Paper>
-          </Grid>
-
           {/* Protocols section */}
           <Grid size={{ xs: 12, md: 6 }}>
             <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
@@ -266,6 +242,18 @@ const IdentityDetailsPage: React.FC = () => {
                   </ListItem>
                 ))}
               </List>
+            </Paper>
+          </Grid>
+
+          {/* Permissions section */}
+          <Grid size={12}>
+            <Paper elevation={1} sx={{ p: 3 }}>
+              <Typography variant="h6" gutterBottom>Permissions</Typography>
+              <Divider sx={{ mb: 2 }} />
+              <PermissionsList
+                permissions={permissions}
+                protocols={protocols}
+              />
             </Paper>
           </Grid>
         </Grid>
