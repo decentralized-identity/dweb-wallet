@@ -1,12 +1,10 @@
-import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
 import { useAgent } from '@/contexts/Context';
 import { toastError } from '@/lib/utils';
 import { ConnectPermissionRequest, DwnInterface, DwnProtocolDefinition, Oidc, Web5Agent } from '@web5/agent';
 import { DidJwk } from '@web5/dids';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Box, Typography, Button, CircularProgress, AppBar, Toolbar } from '@mui/material';
-import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
-import PermissionRequest from '@/components/PermissionsRequest';
+import { Box, Typography, CircularProgress, AppBar, Toolbar } from '@mui/material';
+import ConnectRequest from '@/components/ConnectRequest';
 
 
 const DWebConnect: React.FC = () => {
@@ -44,10 +42,9 @@ const DWebConnect: React.FC = () => {
   }, []);
 
 
+  const handleAgentSetup = async (did: string) => {
 
-  const handleAgentSetup = async () => {
-
-    if (!origin || !did || !agent) {
+    if (!origin || !agent) {
       toastError('Not ready');
       throw new Error('Not ready');
     }
@@ -117,43 +114,14 @@ const DWebConnect: React.FC = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-      {!connecting && origin && did && permissions.length > 0 && (
-        <Box sx={{ mt: 10, mb: 2, flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <img
-              src={`https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=${origin}&size=128`}
-              style={{ width: 45, height: 45 }}
-            />
-          </Box>
-          <Typography variant="h5" color="text.secondary">{origin}</Typography>
-          <Typography variant="subtitle2" color="text.secondary" sx={{ mt: 1 }}>
-            is requesting permissions from
-          </Typography>
-          <PublicIdentityCard did={did} compact={true} />
-          <Typography variant="subtitle1" gutterBottom>Requested Permissions:</Typography>
-          <PermissionRequest permissions={permissions} />
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2, mb: 2, gap: 2 }}>
-            <Button 
-              variant="contained" 
-              color="error"
-              startIcon={<CloseIcon />}
-              onClick={handleDeny}
-              sx={{ minWidth: 120 }}
-            >
-              Deny
-            </Button>
-            <Button 
-              variant="contained" 
-              color="success"
-              startIcon={<CheckIcon />}
-              onClick={handleAgentSetup}
-              sx={{ minWidth: 120 }}
-            >
-              Approve
-            </Button>
-          </Box>
-        </Box>
-      )}
+      {!connecting && origin && did && permissions.length > 0 && <ConnectRequest
+        sx={{ mt: 10 }}
+        permissions={permissions}
+        did={did}
+        origin={origin}
+        handleApprove={handleAgentSetup}
+        handleDeny={handleDeny}
+      />}
       {connecting && (
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <CircularProgress size={48} sx={{ mb: 2 }} />

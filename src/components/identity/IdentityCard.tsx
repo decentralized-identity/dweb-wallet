@@ -41,6 +41,7 @@ const IdentityCard: React.FC<IdentityCardProps> = ({ identity, onClick, selected
       onClick={onClick}
       raised={selected}
       sx={{ 
+        mb: 1,
         cursor: 'pointer',
         bgcolor: selected ? 'action.selected' : 'background.paper',
         display: 'flex',

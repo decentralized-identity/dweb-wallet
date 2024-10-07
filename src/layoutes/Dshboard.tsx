@@ -1,12 +1,13 @@
 import { useAgent } from "@/contexts/Context";
 import { DragOverIdentitiesProvider } from "@/contexts/DragOverIdentities";
 import AddOrEditIdentityPage from "@/pages/AddOrEditIdentityPage";
+import AppConnect from "@/pages/AppConnect";
 import DWebConnect from "@/pages/DwebConnect";
 import IdentitiesListPage from "@/pages/IdentitiesListPage";
 import IdentityDetailsPage from "@/pages/IdentityDetailsPage";
 import ImportIdentityPage from "@/pages/ImportIdentityPage";
 import SearchIdentitiesPage from "@/pages/SearchIdentitiesPage";
-import { PeopleOutline, PersonAddAlt, SearchOutlined } from "@mui/icons-material";
+import { CameraAltOutlined, PeopleOutline, PersonAddAlt, SearchOutlined } from "@mui/icons-material";
 import { Box, Container, Typography } from "@mui/material";
 import { AppProvider, DashboardLayout, Navigation, NotificationsProvider, } from "@toolpad/core"
 import { Download, LockIcon } from "lucide-react";
@@ -48,6 +49,11 @@ const Dashboard:React.FC = () => {
     title: 'Import Identitites',
     icon: <Download />,
     segment: 'identities/import',
+  }, {
+    kind: 'page',
+    title: 'App Connect',
+    icon: <CameraAltOutlined />,
+    segment: 'app-connect',
   }, {
     kind: 'divider'
   },{
@@ -92,6 +98,9 @@ const Dashboard:React.FC = () => {
               </DashboardLayout>} />
               <Route path="/logout" element={<DashboardLayout>
                 <LogoutPage />
+              </DashboardLayout>} />
+              <Route path="/app-connect" element={<DashboardLayout>
+                <AppConnect />
               </DashboardLayout>} />
               <Route path="/dweb-connect" element={<DWebConnect />} />
             </Routes>

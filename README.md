@@ -37,6 +37,6 @@ Management app for decentralized identities and datastore interactions
   - [x] Wallets
   - [ ] Protocols
   - [ ] Permissions
-- [ ] Wallet Connect
-  - [ ] OIDC Flow
+- [x] Wallet Connect
+  - [x] OIDC Flow
   - [x] Web Connect Flow
