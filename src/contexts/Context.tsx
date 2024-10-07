@@ -36,6 +36,7 @@ export const useIdentities = () => {
     exportIdentity,
     dwnEndpoints,
     protocols,
+    permissions,
     wallets,
     importIdentity,
     setWallets,
@@ -52,6 +53,7 @@ export const useIdentities = () => {
     importIdentity,
     selectedIdentity,
     protocols,
+    permissions,
     wallets,
     dwnEndpoints,
     selectIdentity,
@@ -67,13 +69,11 @@ export const useProtocols= () => {
   }
 
   const {
-    listProtocols,
-    loadProtocols,
+    getDefinition
   } = context;
 
   return {
-    listProtocols,
-    loadProtocols,
+    getDefinition
   };
 };
 
