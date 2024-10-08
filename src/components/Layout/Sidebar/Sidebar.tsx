@@ -1,30 +1,27 @@
-import React, { useMemo, useState } from 'react';
+import React from 'react';
 
 import SidebarHeader from './SidebarHeader';
-import SidebarItem from './SidebarItem';
+import SidebarItem, { SidebarItemProps } from './SidebarItem';
+import { useLocation } from 'react-router-dom';
 
 const Sidebar: React.FC<{
   header: React.ReactNode;
   icon?: React.ReactNode;
-  items: {
-    onClick: (e: React.MouseEvent<HTMLElement>) => void;
-    icon: React.ReactNode;
-    children: React.ReactNode
-  }[]
+  items: SidebarItemProps[];
 }> = ({ icon, header, items }) => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  const sidebarClass = useMemo(() => {
-    return sidebarOpen ? `w-64` : `w-16`;
-  }, [ sidebarOpen ]);
+  const location = useLocation();
 
   return (
-    <div className={`${sidebarClass} fixed inset-y-0 left-0 z-30 overflow-y-auto transition duration-300 ease-in-out transform bg-gray-900 md:translate-x-0 md:static md:inset-0`}>
-      <SidebarHeader icon={icon} onClick={() => setSidebarOpen(!sidebarOpen)} open={sidebarOpen}>
-        {header}
-      </SidebarHeader>
-      <nav className="mt-10">
-        {items.map(item => <SidebarItem open={sidebarOpen} icon={item.icon} onClick={item.onClick}>{item.children}</SidebarItem>)}
+    <div className={`hidden h-full md:block bg-gray-900`}>
+      <nav className="flex flex-col h-full">
+        <SidebarHeader icon={icon}>
+          {header}
+        </SidebarHeader>
+        {items.map((item, index) => (
+          <SidebarItem key={index} bottom={item.bottom} active={item.pattern ? !!location.pathname.match(item.pattern) : false} icon={item.icon} onClick={item.onClick}>
+            {item.children}
+          </SidebarItem>
+        ))}
       </nav>
     </div>
   )
