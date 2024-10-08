@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
 
   const agentDid = useMemo(() => agent?.agentDid.uri, [agent]);
   return (
-    <div className="bg-gray-300 py-2 justify-center flex">
+    <div className="bg-gray-300 py-2 justify-center hidden md:flex">
       <span className="text-center text-sm text-gray-500">{agentDid}</span>
     </div>
   )

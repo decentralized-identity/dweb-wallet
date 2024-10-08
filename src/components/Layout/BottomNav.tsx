@@ -1,14 +1,30 @@
+import React from 'react';
 import { MenuItemProps } from "./Sidebar/SidebarItem";
+import { useLocation } from 'react-router-dom';
 
 const BottomNav: React.FC<{ menuItems: MenuItemProps[] }> = ({ menuItems }) => {
+  const location = useLocation();
+
+  const iconClass = (pattern?: RegExp) => pattern && location.pathname.match(pattern) ? 'cursor-default text-slate-100 bg-gray-800' : 'cursor-pointer group-hover:text-slate-200 text-gray-400';
+  const hoverClass = (pattern?: RegExp) => pattern && location.pathname.match(pattern) ? 'w-10 bg-slate-200' : 'w-5 group-hover:bg-slate-200';
+
+  const getChildText = (children: React.ReactNode): string => {
+    if (typeof children === 'string') return children;
+    if (React.isValidElement(children)) return getChildText(children.props.children);
+    if (Array.isArray(children)) return children.map(getChildText).join('');
+    return '';
+  }
+
   return (
     <div className="sticky top-0 block bg-gray-900 md:hidden">
       <div className="flex">
         {menuItems.filter(item => item.onClick !== undefined).map((item, index) => (
-          <div className="flex-1 group" key={index}>
-            <span onClick={item.onClick} className="cursor-pointer flex items-center justify-center text-center mx-auto px-4 pt-4 w-full text-gray-400 group-hover:text-slate-200">
-              <i className="size-10 mb-1 flex flex-col items-center">{item.icon}</i>
-              <span className="absolute block w-5 bottom-0 mx-auto h-1 group-hover:bg-slate-200 rounded-full"></span>
+          <div title={getChildText(item.children)} className="flex-1 group" key={index}>
+            <span onClick={item.onClick} className={`${iconClass(item.pattern)} flex flex-col pb-4 items-center mx-auto px-4 pt-4 w-full`}>
+              <div className="size-10">
+                {item.icon}
+              </div>
+              <span className={`${hoverClass(item.pattern)} absolute block bottom-0 mx-auto h-1 rounded-full`}></span>
             </span>
           </div>
         ))}
@@ -18,40 +34,3 @@ const BottomNav: React.FC<{ menuItems: MenuItemProps[] }> = ({ menuItems }) => {
 }
 
 export default BottomNav;
-
-{/* <div class="px-7 bg-white shadow-lg rounded-2xl mb-5">
-<div class="flex">
-    <div class="flex-1 group">
-        <a href="#" class="flex items-end justify-center text-center mx-auto px-4 pt-2 w-full text-gray-400 group-hover:text-indigo-500 border-b-2 border-transparent group-hover:border-indigo-500">
-            <span class="block px-1 pt-1 pb-2">
-                <i class="far fa-home text-2xl pt-1 mb-1 block"></i>
-                <span class="block text-xs pb-1">Home</span>
-            </span>
-        </a>
-    </div>
-    <div class="flex-1 group">
-        <a href="#" class="flex items-end justify-center text-center mx-auto px-4 pt-2 w-full text-gray-400 group-hover:text-indigo-500 border-b-2 border-transparent group-hover:border-indigo-500">
-            <span class="block px-1 pt-1 pb-2">
-                <i class="far fa-compass text-2xl pt-1 mb-1 block"></i>
-                <span class="block text-xs pb-1">Explore</span>
-            </span>
-        </a>
-    </div>
-    <div class="flex-1 group">
-        <a href="#" class="flex items-end justify-center text-center mx-auto px-4 pt-2 w-full text-gray-400 group-hover:text-indigo-500 border-b-2 border-transparent group-hover:border-indigo-500">
-            <span class="block px-1 pt-1 pb-2">
-                <i class="far fa-search text-2xl pt-1 mb-1 block"></i>
-                <span class="block text-xs pb-1">Search</span>
-            </span>
-        </a>
-    </div>
-    <div class="flex-1 group">
-        <a href="#" class="flex items-end justify-center text-center mx-auto px-4 pt-2 w-full text-gray-400 group-hover:text-indigo-500 border-b-2 border-transparent group-hover:border-indigo-500">
-            <span class="block px-1 pt-1 pb-2">
-                <i class="far fa-cog text-2xl pt-1 mb-1 block"></i>
-                <span class="block text-xs pb-1">Settings</span>
-            </span>
-        </a>
-    </div>
-</div>
-</div> */}
