@@ -1,6 +1,6 @@
 const Content: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div>
+    <div className="h-full">
       {children}
     </div>
   )

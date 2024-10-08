@@ -16,6 +16,7 @@ import IdentitiesListPage from './pages/IdentitiesListPage';
 import AppConnect from './pages/AppConnect';
 import DWebConnect from './pages/DwebConnect';
 import TailwindLayout from './layoutes/TailwindDashboard';
+import IdentityProfilePage from './pages/IdentityProfilePage';
 
 activatePolyfills();
 
@@ -54,21 +55,21 @@ function App() {
       <AgentProvider>
         <ProtocolsProvider>
           <IdentitiesProvider>
-          <DragOverIdentitiesProvider>
-            <Routes>
-              <Route element={<TailwindLayout />}>
-                <Route index element={<IdentitiesListPage />} />
-                <Route path="/search" element={<SearchIdentitiesPage />} />
-                <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
-                <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
-                <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
-                <Route path="/identities/import" element={<ImportIdentityPage />} />
-                <Route path="/identity/:didUri" element={<IdentityDetailsPage />} />
-                <Route path="/app-connect" element={<AppConnect />} />
-              </Route>
-              <Route path="/dweb-connect" element={<DWebConnect />} />
-            </Routes>
-      </DragOverIdentitiesProvider>
+            <DragOverIdentitiesProvider>
+              <Routes>
+                <Route element={<TailwindLayout />}>
+                  <Route index element={<IdentitiesListPage />} />
+                  <Route path="/search" element={<SearchIdentitiesPage />} />
+                  <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
+                  <Route path="/identity/edit/:didUri" element={<AddOrEditIdentityPage edit />} />
+                  <Route path="/identities/create" element={<AddOrEditIdentityPage />} />
+                  <Route path="/identities/import" element={<ImportIdentityPage />} />
+                  <Route path="/identity/:didUri" element={<IdentityProfilePage />} />
+                  <Route path="/app-connect" element={<AppConnect />} />
+                </Route>
+                <Route path="/dweb-connect" element={<DWebConnect />} />
+              </Routes>
+            </DragOverIdentitiesProvider>
           </IdentitiesProvider>
         </ProtocolsProvider>
       </AgentProvider>

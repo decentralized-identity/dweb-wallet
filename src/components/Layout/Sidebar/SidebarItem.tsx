@@ -1,4 +1,4 @@
-export interface SidebarItemProps {
+export interface MenuItemProps {
   onClick?: (e: React.MouseEvent<HTMLElement>) => void;
   icon?: React.ReactNode;
   children: React.ReactNode;
@@ -7,7 +7,7 @@ export interface SidebarItemProps {
   bottom?: boolean;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ icon, onClick, children, active = false, bottom = false }) => {
+const SidebarItem: React.FC<MenuItemProps> = ({ icon, onClick, children, active = false, bottom = false }) => {
   const activeClass = active ?
     `text-gray-100 bg-gray-700 bg-opacity-25` :
     `text-gray-500 hover:bg-gray-700 hover:bg-opacity-25 hover:text-gray-100`;

@@ -1,13 +1,13 @@
 import React from 'react';
 
 import SidebarHeader from './SidebarHeader';
-import SidebarItem, { SidebarItemProps } from './SidebarItem';
+import SidebarItem, { MenuItemProps } from './SidebarItem';
 import { useLocation } from 'react-router-dom';
 
 const Sidebar: React.FC<{
   header: React.ReactNode;
   icon?: React.ReactNode;
-  items: SidebarItemProps[];
+  items: MenuItemProps[];
 }> = ({ icon, header, items }) => {
   const location = useLocation();
 
