@@ -52,10 +52,10 @@ const PermissionsList: React.FC<{ protocols: DwnProtocolDefinition[], permission
     return Array.from(granteeGrants.keys()).slice(0, limit);
   }, [ grantees, limit ]);
 
-  return (
-    <div className="divide-y-2 divide-dotted divide-slate-300 p-6">
-      <div className="text-xl text-left pl-4 pb-3">
-        App Permissions {grantees.length > 0  && <span className="bg-slate-200 rounded-full p-2 text-xs">{grantees.length}</span>}
+  return (<div className="mt-10 flex flex-wrap justify-center w-full w-9/12 mx-auto text-center">
+    <div className="w-full px-4 divide-y-2 divide-dotted divide-slate-300 mb-10">
+      <div className="text-xl text-left pl-4">
+        App Permissions
       </div>
       <div className="pl-3">
         <div className="mt-5">
@@ -101,7 +101,7 @@ const PermissionsList: React.FC<{ protocols: DwnProtocolDefinition[], permission
         </div>}
       </div>
     </div>
-  );
+  </div>);
 }
 
 export default PermissionsList;
