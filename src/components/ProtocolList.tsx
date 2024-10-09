@@ -28,7 +28,7 @@ const ProtocolItem: React.FC<{
 const ProtocolList: React.FC<{ definitions: DwnProtocolDefinition[] }> = ({ definitions }) => {
 
   return <div className="divide-y-2 divide-dotted divide-slate-300 p-4">
-      <div className="text-xl text-left pl-4 mt-5">
+      <div className="text-xl text-left pl-4">
         Configured Protocols
       </div>
       <div>

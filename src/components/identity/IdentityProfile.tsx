@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import DialogBox from '../Layout/Dialog';
 import { QRCodeCanvas } from 'qrcode.react';
 import ProtocolList from '../ProtocolList';
+import WalletsList from '../WalletsList';
 
 export function generateGradient(byteString: string, inverse:boolean = false) {
   if (byteString.length < 32) {
@@ -36,8 +37,9 @@ export function generateGradient(byteString: string, inverse:boolean = false) {
 const IdentityProfile: React.FC<{
   identity: Identity,
   protocols: DwnProtocolDefinition[],
-  permissions: DwnPermissionGrant[]
-}> = ({ identity, protocols, permissions }) => {
+  permissions: DwnPermissionGrant[],
+  wallets: string[]
+}> = ({ identity, protocols, permissions, wallets }) => {
   const navigate = useNavigate();
   const [ showQR, setShowQR ] = useState(false);
 
@@ -207,11 +209,13 @@ const IdentityProfile: React.FC<{
             </div>
           </div>
         </div>
-        <div className="flex flex-col break-words bg-white w-full mb-6 shadow-xl lg:w-6/12 ">
-          <ProtocolList definitions={protocols} />
-        </div>
-        <div className="flex flex-col break-words bg-white w-full mb-6 shadow-xl lg:w-6/12 ">
-          <ProtocolList definitions={protocols} />
+        <div className="flex flex-col lg:flex-row w-full mb-6 gap-6">
+          <div className="flex flex-col break-words bg-white w-full lg:w-6/12 shadow-xl">
+            <ProtocolList definitions={protocols} />
+          </div>
+          <div className="flex flex-col break-words bg-white w-full lg:w-6/12 shadow-xl">
+            <WalletsList wallets={wallets} />
+          </div>
         </div>
       </section>
     </>
