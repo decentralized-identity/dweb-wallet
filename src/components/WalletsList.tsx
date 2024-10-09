@@ -4,8 +4,9 @@ const WalletsList: React.FC<{ wallets: string[] }> = ({ wallets }) => {
     <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 0 0-2.25-2.25H15a3 3 0 1 1-6 0H5.25A2.25 2.25 0 0 0 3 12m18 0v6a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 9m18 0V6a2.25 2.25 0 0 0-2.25-2.25H5.25A2.25 2.25 0 0 0 3 6v3" />
   </svg>
 
-  return <div className="divide-y-2 divide-dotted divide-slate-300 p-6">
-      <div className="text-xl text-left pl-4 pb-3">
+  return <div className="mt-10 flex flex-wrap justify-center w-full w-9/12 mx-auto text-center">
+    <div className="w-full px-4 divide-y-2 divide-dotted divide-slate-300 mb-10">
+      <div className="text-xl text-left pl-4">
         Available Wallets
       </div>
       <div className="pl-3">
@@ -18,6 +19,7 @@ const WalletsList: React.FC<{ wallets: string[] }> = ({ wallets }) => {
           </li>)}
         </ul>
       </div>
+    </div>
   </div>
 }
 

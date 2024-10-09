@@ -6,8 +6,10 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PageContainer } from '@toolpad/core';
 import { Convert } from '@web5/common';
 import { profileDefinition } from '@/lib/ProfileProtocol';
-import { SocialData } from '@/lib/types';
+import { Identity, SocialData } from '@/lib/types';
 import { truncateDid } from '@/lib/utils';
+import IdentityProfile from '@/components/identity/IdentityProfile';
+import { DwnProtocolDefinition } from '@web5/agent';
 
 const profileProtocolB64 = Convert.string(profileDefinition.protocol).toBase64Url();
 
@@ -17,20 +19,39 @@ const SearchIdentitiesPage: React.FC = () => {
 
   const [ didInput, setDidInput ] = useState('');
   const [ did, setDid ] = useState('');
-  const [ social, setSocial ] = useState<SocialData>();
+  const [ identity, setIdentity ] = useState<Identity>();
+  const [ protocols, setProtocols ] = useState<DwnProtocolDefinition[]>([]);
 
   useEffect(() => {
     const fetchSocial = async (did: string) => {
       const social = await fetch(`https://dweb/${did}/read/protocols/${profileProtocolB64}/social`);
       const socialData = await social.json();
-      setSocial(socialData);
+
+      try {
+        const protocols = await fetch(`https://dweb/${did}/query/protocols`);
+        if (protocols.ok) {
+          const protocolsResponse = await protocols.json() as { descriptor: { definition: DwnProtocolDefinition } }[];
+          setProtocols(protocolsResponse.map(p => p.descriptor.definition));
+        }
+      } catch (error) {
+        console.error('Failed to load identity protocols', error);
+      }
+
+      setIdentity({
+        didUri: did,
+        profile: {
+          avatarUrl: `https://dweb/${did}/read/protocols/${profileProtocolB64}/avatar`,
+          heroUrl: `https://dweb/${did}/read/protocols/${profileProtocolB64}/hero`,
+          social: socialData as SocialData
+        }
+      });
     };
 
-    if (!social && did) {
+    if (!identity && did) {
       fetchSocial(did);
     }
 
-  }, [ did, social ]);
+  }, [ did, identity ]);
 
   useEffect(() => {
     if (didUri) {
@@ -38,6 +59,10 @@ const SearchIdentitiesPage: React.FC = () => {
       setDidInput(didUri);
     }
   }, [ didUri ]);
+
+  const social = useMemo(() => {
+    return identity ? identity.profile.social : undefined;
+  }, [ identity ]);
 
   const title = useMemo(() => {
     return social ? social.displayName : did ? truncateDid(did) : 'Search';
@@ -77,7 +102,15 @@ const SearchIdentitiesPage: React.FC = () => {
       value={didInput}
       onChange={handleInputChange}
     />
-    {did && <PublicIdentityCard did={did} social={social} />}
+    <div className="mt-5">
+      {identity && <IdentityProfile
+        identity={identity}
+        protocols={protocols}
+        contain={true}
+        rounded={true}
+        showInactiveTabs={false}
+      />}
+    </div>
   </PageContainer>)
 }
 

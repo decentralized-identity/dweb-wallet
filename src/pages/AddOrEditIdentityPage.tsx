@@ -58,7 +58,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
       };
 
       setFormData({
-        persona: selectedIdentity.persona,
+        persona: selectedIdentity.persona!,
         displayName: selectedIdentity.profile.social?.displayName || '',
         tagline: selectedIdentity.profile.social?.tagline || '',
         bio: selectedIdentity.profile.social?.bio || '',
