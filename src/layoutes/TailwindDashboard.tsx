@@ -1,7 +1,6 @@
 import React from "react";
 import Sidebar from '@/components/Layout/Sidebar/Sidebar';
 import Content from '@/components/Layout/Content';
-import Footer from '@/components/Layout/Footer';
 import Header from '@/components/Layout/Header';
 import BottomNav from '@/components/Layout/BottomNav';
 import { useNavigate, Outlet } from "react-router-dom";
@@ -97,7 +96,6 @@ const TailwindLayout: React.FC = () => {
           <Content>
             <Outlet />
           </Content>
-          <Footer />
         </div>
         <BottomNav menuItems={bottomNavMenuItems} />
       </div>
