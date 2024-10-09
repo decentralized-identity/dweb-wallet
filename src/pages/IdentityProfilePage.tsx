@@ -5,7 +5,7 @@ import { useIdentities } from '@/contexts/Context';
 
 const IdentityProfilePage: React.FC = () => {
   const { didUri } = useParams();
-  const { selectedIdentity, protocols, permissions, selectIdentity } = useIdentities();
+  const { selectedIdentity, protocols, permissions, wallets, selectIdentity } = useIdentities();
 
   useEffect(() => {
     if (didUri && didUri !== selectedIdentity?.didUri) {
@@ -21,6 +21,7 @@ const IdentityProfilePage: React.FC = () => {
     identity={identity}
     protocols={protocols}
     permissions={permissions}
+    wallets={wallets}
   /> : <div>Loading...</div>;
 }
 
