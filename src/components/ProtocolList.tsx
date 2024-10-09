@@ -27,15 +27,17 @@ export const ProtocolItem: React.FC<{
 
 const ProtocolList: React.FC<{ definitions: DwnProtocolDefinition[] }> = ({ definitions }) => {
 
-  return <div className="divide-y-2 divide-dotted divide-slate-300 p-6">
-      <div className="text-xl text-left pl-4 pb-3">
+  return <div className="mt-10 flex flex-wrap justify-center w-full w-9/12 mx-auto text-center">
+    <div className="w-full px-4 divide-y-2 divide-dotted divide-slate-300 mb-10">
+      <div className="text-xl text-left pl-4">
         Configured Protocols
       </div>
-      <div className="pl-3">
+      <div className="pl-3 text-left">
         <ul className="mt-5">
           {definitions.map((definition) => <ProtocolItem key={definition.protocol} definition={definition} />)}
         </ul>
       </div>
+    </div>
   </div>
 }
 

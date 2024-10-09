@@ -10,9 +10,15 @@ const IdentitySelector: React.FC<{
 }> = ({ value, onChange, ...props }) => {
   const { identities } = useIdentities();
 
+  const personaLabel = (identity: Identity): string => {
+    return identity.persona ? `(${identity.persona})` : '';
+  }
+
   const identityLabel = (identity: Identity): string => {
-    return identity.profile.social?.displayName ? `${identity.profile.social.displayName} (${identity.persona})` :
-      `${truncateDid(identity.didUri)} (${identity.persona})`;
+    const personaLabel = identity.persona ? ` (${identity.persona})` : '';
+
+    return identity.profile.social?.displayName ? `${identity.profile.social.displayName}${personaLabel}` :
+      `${truncateDid(identity.didUri)}${personaLabel}`;
   }
 
   return <Box {...props}>
