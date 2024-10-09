@@ -7,7 +7,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Convert } from '@web5/common';
 import { profileDefinition } from '@/lib/ProfileProtocol';
 import { DwnProtocolDefinition } from '@web5/agent';
-import ProtocolItem from '../ProtocolItem';
+import { ProtocolItem } from '../ProtocolList';
 
 interface Props {
   did: string;

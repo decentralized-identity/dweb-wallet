@@ -6,6 +6,7 @@ import DialogBox from '../Layout/Dialog';
 import { QRCodeCanvas } from 'qrcode.react';
 import ProtocolList from '../ProtocolList';
 import WalletsList from '../WalletsList';
+import PermissionsList from '../PermissionsList';
 
 export function generateGradient(byteString: string, inverse:boolean = false) {
   if (byteString.length < 32) {
@@ -127,7 +128,7 @@ const IdentityProfile: React.FC<{
             <div className="flex flex-col mt-5 mr-3">
               <div
                 onClick={() => navigate(`/identity/edit/${identity.didUri}`)}
-                className="bg-gray-900 active:bg-gray-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
+                className="cursor-pointer bg-gray-900 active:bg-gray-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150"
               >
                 Edit Profile
               </div>
@@ -216,6 +217,12 @@ const IdentityProfile: React.FC<{
           <div className="flex flex-col break-words bg-white w-full lg:w-6/12 shadow-xl">
             <WalletsList wallets={wallets} />
           </div>
+        </div>
+        <div className="flex flex-col break-words bg-white w-full mb-6 shadow-xl">
+          <PermissionsList
+            protocols={protocols}
+            permissions={permissions}
+          />
         </div>
       </section>
     </>
