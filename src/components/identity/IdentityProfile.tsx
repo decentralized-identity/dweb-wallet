@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Identity } from '@/lib/types';
 import { DwnPermissionGrant, DwnProtocolDefinition } from '@web5/agent';
 import { useNavigate } from 'react-router-dom';
+import DialogBox from '../Layout/Dialog';
+import { QRCodeCanvas } from 'qrcode.react';
+import ProtocolList from '../ProtocolList';
 
-export function generateGradient(byteString: string) {
+export function generateGradient(byteString: string, inverse:boolean = false) {
   if (byteString.length < 32) {
     throw new Error("Input must be at least 32 bytes long.");
   }
@@ -21,7 +24,7 @@ export function generateGradient(byteString: string) {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
   }).join(', ');
 
-  let gradientAngle = byteValues[3] % 180; // Initial angle range between 0-179 degrees
+  let gradientAngle = byteValues[3] % (inverse ? 30 : 180); // Initial angle range between 0-179 degrees
 
   // Shift the angle to fit within the left or right side constraints (45-135 and 225-315 degrees)
   gradientAngle = gradientAngle < 45 ? gradientAngle += 315 : gradientAngle > 135 ? gradientAngle += 90 : gradientAngle;
@@ -36,6 +39,7 @@ const IdentityProfile: React.FC<{
   permissions: DwnPermissionGrant[]
 }> = ({ identity, protocols, permissions }) => {
   const navigate = useNavigate();
+  const [ showQR, setShowQR ] = useState(false);
 
   const grantees = useMemo(() => {
     return [...(permissions.reduce((acc, permission) => {
@@ -83,14 +87,24 @@ const IdentityProfile: React.FC<{
     }
   }, [identity.profile.heroUrl, identity.didUri]);
 
+  const avatarStyle = useMemo(() => {
+    if (!identity.profile.avatarUrl) {
+      return {
+        background: generateGradient(identity.didUri.split(':')[2], true),
+      }
+    }
+
+    return {}
+  }, [identity.profile.avatarUrl]);
+
   return (
-    <main className="h-full">
+    <>
       <section className="relative block h-96">
         <div
           className="absolute top-0 w-full h-full bg-center bg-cover"
           style={heroStyle}
         >
-          <span id="blackOverlay" className="w-full h-full absolute opacity-50 bg-black"></span>
+          <span id="blackOverlay" className="w-full h-full absolute opacity-60 bg-gradient-to-t from-gray-900 to-transparent"></span>
         </div>
       </section>
       <section className="relative -mt-28 sm:px-8 md:px-12 max-w-screen-lg mx-auto">
@@ -99,11 +113,14 @@ const IdentityProfile: React.FC<{
             <div className="relative -mt-16 w-36 h-36 flex items-center rounded justify-center shadow-xl overflow-hidden border-8 border-gray-900 border-opacity-40">
               {identity.profile.avatarUrl ? (
                 <img src={identity.profile.avatarUrl} />
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0ZM3 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 019.374 21c-2.331 0-4.512-.645-6.374-1.766Z" />
+              ) : (<div style={{
+                background: generateGradient(identity.didUri.split(':')[2], true),
+              }} className="relative bg-gray-300 w-full h-full flex items-center justify-center text-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                 </svg>
-              )}
+                <div className="w-full h-full absolute opacity-60 bg-gradient-to-t from-gray-900 to-transparent"></div>
+              </div>)}
             </div>
             <div className="flex flex-col mt-5 mr-3">
               <div
@@ -124,12 +141,29 @@ const IdentityProfile: React.FC<{
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" />
                 </svg>
               </div>
-              <div className="text-slate-400 ml-1 cursor-pointer hover:text-slate-600 transition-colors duration-200">
+              <div className="text-slate-400 ml-1 cursor-pointer hover:text-slate-600 transition-colors duration-200" onClick={() => setShowQR(true)}>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z" />
                 </svg>
               </div>
+              <DialogBox open={showQR} setOpen={setShowQR}>
+                <div className="flex flex-col items-center">
+                  <QRCodeCanvas
+                    fgColor='#111827'
+                    className="m-8 rounded"
+                    value={identity.didUri}
+                    size={256}
+                    level="Q"
+                    imageSettings={{
+                      src: identity.profile.avatarUrl || '',
+                      height: 67,
+                      width: 67,
+                      excavate: true,
+                    }}
+                  />
+                </div>
+              </DialogBox>
             </div>
             <div className="mb-2 text-slate-600 px-1">
               {tagline}
@@ -173,8 +207,14 @@ const IdentityProfile: React.FC<{
             </div>
           </div>
         </div>
+        <div className="flex flex-col break-words bg-white w-full mb-6 shadow-xl lg:w-6/12 ">
+          <ProtocolList definitions={protocols} />
+        </div>
+        <div className="flex flex-col break-words bg-white w-full mb-6 shadow-xl lg:w-6/12 ">
+          <ProtocolList definitions={protocols} />
+        </div>
       </section>
-    </main>
+    </>
   );
 }
 
