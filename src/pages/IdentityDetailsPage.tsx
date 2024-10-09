@@ -21,8 +21,6 @@ import {
 import { PageContainer } from "@toolpad/core";
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
-import ProtocolItem from '@/components/ProtocolItem';
-import PermissionsList from '@/components/PermissionsList';
 
 const IdentityDetailsPage: React.FC = () => {
   const { didUri } = useParams();
@@ -215,48 +213,6 @@ const IdentityDetailsPage: React.FC = () => {
           )}
         </Box>
         </Paper>
-      </Box>
-
-      <Box sx={{ maxWidth: 1200, margin: '0 auto' }}>
-        <Grid container spacing={3}>
-          {/* Protocols section */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>Protocols</Typography>
-              <Divider sx={{ mb: 2 }} />
-              <List>
-                {protocols.map((definition) => <ProtocolItem key={definition.protocol} definition={definition} /> )}
-              </List>
-            </Paper>
-          </Grid>
-
-          {/* Wallets section */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
-              <Typography variant="h6" gutterBottom>Wallets</Typography>
-              <Divider sx={{ mb: 2 }} />
-              <List>
-                {wallets.map((wallet, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={wallet} />
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          </Grid>
-
-          {/* Permissions section */}
-          <Grid size={12}>
-            <Paper elevation={1} sx={{ p: 3 }}>
-              <Typography variant="h6" gutterBottom>Permissions</Typography>
-              <Divider sx={{ mb: 2 }} />
-              <PermissionsList
-                permissions={permissions}
-                protocols={protocols}
-              />
-            </Paper>
-          </Grid>
-        </Grid>
       </Box>
 
       {confirmDelete && (

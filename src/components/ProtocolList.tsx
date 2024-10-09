@@ -1,6 +1,6 @@
 import { DwnProtocolDefinition } from "@web5/agent"
 
-const ProtocolItem: React.FC<{
+export const ProtocolItem: React.FC<{
   definition: DwnProtocolDefinition
 }> = ({ definition }) => {
 
@@ -27,11 +27,11 @@ const ProtocolItem: React.FC<{
 
 const ProtocolList: React.FC<{ definitions: DwnProtocolDefinition[] }> = ({ definitions }) => {
 
-  return <div className="divide-y-2 divide-dotted divide-slate-300 p-4">
-      <div className="text-xl text-left pl-4">
+  return <div className="divide-y-2 divide-dotted divide-slate-300 p-6">
+      <div className="text-xl text-left pl-4 pb-3">
         Configured Protocols
       </div>
-      <div>
+      <div className="pl-3">
         <ul className="mt-5">
           {definitions.map((definition) => <ProtocolItem key={definition.protocol} definition={definition} />)}
         </ul>
