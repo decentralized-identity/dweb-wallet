@@ -11,7 +11,10 @@ import ProfileTabs from './ProfileTabs';
 import ProfileDetails from './ProfileDetails';
 import { useIdentities } from '@/contexts/Context';
 import ProfileOptions from './ProfileOptions';
-import { FolderArrowDownIcon } from '@heroicons/react/16/solid';
+import { FolderArrowDownIcon, TrashIcon } from '@heroicons/react/16/solid';
+import { DialogTitle } from '@headlessui/react';
+import Button from '../Button';
+import { CircularProgress } from '@mui/material';
 
 export function generateGradient(byteString: string, inverse:boolean = false) {
   if (byteString.length < 32) {
@@ -50,10 +53,12 @@ const IdentityProfile: React.FC<{
   showInactiveTabs?: boolean;
 }> = ({ identity, contain = false, rounded = false, protocols, permissions, wallets, showInactiveTabs = true }) => {
   const navigate = useNavigate();
-  const { identities } = useIdentities();
+  const { identities, exportIdentity, deleteIdentity } = useIdentities();
   const [ showQR, setShowQR ] = useState(false);
   const [ showBackup, setShowBackup ] = useState(false);
+  const [ backupLoading, setBackupLoading ] = useState(false);
   const [ showDelete, setShowDelete ] = useState(false);
+  const [ deleteLoading, setDeleteLoading ] = useState(false);
 
   const managedIdentity = useMemo(() => {
     return identities.some(i => i.didUri === identity.didUri);
@@ -99,6 +104,33 @@ const IdentityProfile: React.FC<{
 
   const onEditProfile = () => {
     navigate(`/identity/edit/${identity.didUri}`);
+  }
+
+  const handleDownloadIdentity = async (didUri: string) => {
+    setBackupLoading(true);
+    try {
+      const exportedIdenity = await exportIdentity(didUri);
+      const blob = new Blob([JSON.stringify(exportedIdenity)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${didUri}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      setShowBackup(false);
+    } finally {
+      setBackupLoading(false);
+    }
+  }
+
+  const handleDeleteIdentity = async (didUri: string) => {
+    setDeleteLoading(true);
+    try {
+      await deleteIdentity(didUri);
+      setShowDelete(false);
+    } finally {
+      setDeleteLoading(false);
+    }
   }
 
   return (<>
@@ -148,7 +180,7 @@ const IdentityProfile: React.FC<{
               <div className="flex flex-col items-center">
                 <QRCodeCanvas
                   fgColor='#111827'
-                  className="m-8 rounded"
+                  className="m-5 rounded"
                   value={identity.didUri}
                   size={256}
                   level="Q"
@@ -181,24 +213,47 @@ const IdentityProfile: React.FC<{
           }]} />
       </div>
     </section>
+
     <DialogBox open={showBackup} setOpen={setShowBackup}>
-      <div className="w-full md:w-full/20">
-        <div>Backup Identity</div>
-        <div className="flex items-center">
-          <div className="h-20 w-20">
-            <FolderArrowDownIcon />
-          </div>
-          <div className="">This will download a file containing the DID including the <b><i>private key material</i></b> of this identity.</div>
+      <DialogTitle as="h3" className="divide-y-2 divide-dotted divide-slate-900 flex flex-col px-3">
+        <span className="pl-3 font-bold text-gray-900">Backup Identity</span>
+        <span className="mt-1"></span>
+      </DialogTitle>
+      {!backupLoading && <div className="flex items-center mt-4">
+        <div className="h-14 w-14 mx-2 flex">
+          <FolderArrowDownIcon className="text-gray-900" />
         </div>
-        <div>
-          <button>Backup</button>
-          <button>Cancel</button>
-        </div>
+        <div className="p-2 text-gray-900">This will download a file containing the DID including the <b><i>private key material</i></b> of this identity.</div>
+      </div>}
+      {backupLoading && <div className="flex items-center mt-4">
+        <CircularProgress />
+      </div>}
+      <div className="mt-4 flex gap-2 justify-end">
+        <Button disabled={backupLoading} onClick={() => handleDownloadIdentity(identity.didUri)}>Backup</Button>
+        <Button color='secondary' disabled={backupLoading} onClick={() => setShowBackup(false)}>Cancel</Button>
       </div>
     </DialogBox>
+
     <DialogBox open={showDelete} setOpen={setShowDelete}>
-      Delete???
+      <DialogTitle as="h3" className="divide-y-2 divide-dotted divide-slate-900 flex flex-col px-3">
+        <span className="pl-3 font-bold text-gray-900">Delete Identity</span>
+        <span className="mt-1"></span>
+      </DialogTitle>
+      {!deleteLoading && <div className="flex items-center mt-4">
+        <div className="h-14 w-14 mx-2 flex">
+          <TrashIcon className="text-gray-900 text-red-500" />
+        </div>
+        <div className="p-2 text-gray-900">This will <b>PERMANENTLY DELETE</b> this identity including the <b><i>private key material</i></b>, please confirm.</div>
+      </div>}
+      {deleteLoading && <div className="flex items-center mt-4">
+        <CircularProgress />
+      </div>}
+      <div className="mt-4 flex gap-2 justify-end">
+        <Button color='error' disabled={deleteLoading} onClick={() => handleDeleteIdentity(identity.didUri)}>Delete</Button>
+        <Button color='secondary' disabled={deleteLoading} onClick={() => setShowDelete(false)}>Cancel</Button>
+      </div>
     </DialogBox>
+
   </>);
 }
 
