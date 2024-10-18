@@ -113,10 +113,9 @@ const QRScanner: React.FC = () => {
     if (!file) {
       return;
     }
-
     try {
-      const text = await file.text();
-      return handleConnectFlow(text);
+      const results = await Scanner.scanImage(file, { returnDetailedScanResult: true })
+      return handleConnectFlow(results.data);
     } catch (error) {
       notifications.show('Failed to read file', { severity: 'error', autoHideDuration: 1500 });
     }
