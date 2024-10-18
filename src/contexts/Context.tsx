@@ -4,6 +4,7 @@ import { IdentitiesContext } from "./IdentitiesContext";
 import { ProtocolsContext } from "./ProtocolsContext";
 import { BackupSeedContext } from "./BackupSeedContext";
 import { DragOverIdentitiesContext } from "./DragOverIdentities";
+import { AppContext } from "./AppContext";
 
 export const useAgent = () => {
   const context = useContext(AgentContext);
@@ -98,3 +99,14 @@ export const useDragIdentities = () => {
 
   return { processFile, identities, setIdentities };
 };
+
+export const useSnackbar = () => {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error("useSnackbar must be used within a AppProvider");
+  }
+
+  const { addSnackbarItem, snackbarItem } = context;
+
+  return { addSnackbarItem, snackbarItem };
+}

@@ -6,6 +6,7 @@ import BottomNav from '@/components/Layout/BottomNav';
 import { useNavigate, Outlet } from "react-router-dom";
 import { useAgent } from '@/contexts/Context';
 import { MenuItemProps } from "@/components/Layout/Sidebar/SidebarItem";
+import SnackBar from "@/components/Layout/Snackbar";
 
 const TailwindLayout: React.FC = () => {
   const { lock } = useAgent();
@@ -69,9 +70,9 @@ const TailwindLayout: React.FC = () => {
   };
 
   const sidebarMenuItems = [identityMenu, searchMenu, {
-    children: <div className="h-1 w-full border-b border-gray-800 pt-3" />
+    children: <div className="h-1 w-full border-b border-background pt-3" />
   }, appConnectMenu, createIdentityMenu, importIdentityMenu, {
-    children: <div className="h-1 w-full border-b border-gray-800" />,
+    children: <div className="h-1 w-full border-b border-background" />,
     bottom: true
   }, logoutMenu];
 
@@ -84,7 +85,7 @@ const TailwindLayout: React.FC = () => {
   const header = <span className="text-2xl text-white">Dweb Wallet</span>;
 
   return (
-    <div className="w-full flex h-svh max-h-svh bg-gray-200 font-roboto">
+    <div className="w-full flex h-svh max-h-svh font-roboto">
       <Sidebar
         icon={logoIcon}
         header={header}
@@ -99,6 +100,7 @@ const TailwindLayout: React.FC = () => {
         </div>
         <BottomNav menuItems={bottomNavMenuItems} />
       </div>
+      <SnackBar />
     </div>
   );
 }

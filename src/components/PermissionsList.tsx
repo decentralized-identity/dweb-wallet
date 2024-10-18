@@ -96,7 +96,7 @@ const PermissionsList: React.FC<{ protocols: DwnProtocolDefinition[], permission
         {loadedGrantees.length < grantees.length && <div className="flex items-center justify-around">
           <div
                 onClick={() => setLimit(limit + 5)}
-                className="bg-gray-900 active:bg-gray-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150 cursor-pointer"
+                className="bg-background active:bg-gray-600 uppercase text-white font-bold hover:shadow-md shadow text-xs px-4 py-2 rounded outline-none focus:outline-none sm:mr-2 mb-1 ease-linear transition-all duration-150 cursor-pointer"
           > Show More </div>
         </div>}
       </div>

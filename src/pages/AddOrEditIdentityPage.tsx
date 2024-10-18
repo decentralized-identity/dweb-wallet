@@ -13,8 +13,8 @@ import Grid from '@mui/material/Grid2'; // Updated import for Grid2
 import { PlusIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Identity } from '@/lib/types';
-import { PageContainer } from '@toolpad/core';
 import ListInput from '@/components/ListInput';
+import { Field, Fieldset, Input, Label, Legend } from '@headlessui/react';
 
 const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const { didUri } = useParams();
@@ -173,162 +173,204 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
     }
   }
 
-  const title = selectedIdentity ? `Edit ${selectedIdentity.persona} Identity` : 'Add a New Identity';
-  const breadCrumbs = selectedIdentity ?  [] : []
-
-  return (
-    <PageContainer title={title} breadcrumbs={breadCrumbs}>
-      <form onSubmit={handleSubmit}>
-        {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height={400}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Grid container spacing={3}>
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Persona"
+  return (<section className={`relative sm:px-8 md:px-12 max-w-screen-lg mx-auto`}>
+   <div className="mt-10 flex flex-col break-words bg-white w-full mb-6 shadow-xl">
+     <div className="w-full p-4 divide-y-2 divide-dotted divide-slate-300 mb-10">
+        <div className="text-xl text-left pl-4">
+          {isEdit ? 'Edit Identity' : 'Add Identity'}
+        </div>
+        <form onSubmit={handleSubmit} className="pt-5">
+          <Fieldset>
+            <Legend className="font-semibold text-slate-700">{isEdit ? 'Edit' : 'Add'} an Identity</Legend>
+            <Field className="">
+              <Label className="text-sm font-medium leading-6 text-gray-900">Persona</Label>
+              <Input
+                type='text'
                 name="persona"
                 value={formData.persona}
                 onChange={handleInputChange}
-                placeholder="Social, Professional, Gaming, etc."
-                required
+                required={true}
+                className={
+                  'mt-1 mb-2 block w-full rounded-lg border-none py-3 px-4 text-slate-700 outline outline-2 outline-slate-200 ' +
+                  'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-slate-700'
+                }
               />
-            </Grid>
-            <Grid size={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
-                <Avatar
-                  src={avatarPreview || undefined}
-                  sx={{ width: 60, height: 60 }}
-                />
-                <IconButton
-                  component="label"
-                  sx={{
-                    position: 'absolute',
-                    right: 10,
-                    bottom: 10,
-                    opacity: 0.5,
-                    backgroundColor: 'background.paper',
-                    '&:hover': { backgroundColor: 'background.default' },
-                  }}
-                >
-                  <PlusIcon />
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    width={20}
-                    name="avatar"
-                  />
-                </IconButton>
-              </Box>
-              <TextField
-                fullWidth
-                label="Display Name"
+            </Field>
+            <Field>
+              <Label className="text-sm font-medium leading-6 text-gray-900">Display Name</Label>
+              <Input
+                type='text'
                 name="displayName"
                 value={formData.displayName}
                 onChange={handleInputChange}
-                placeholder="Display Name"
-                required
+                required={true}
+                className={
+                  'mt-1 mb-2 block w-full rounded-lg border-none py-3 px-4 text-slate-700 outline outline-2 outline-slate-200 ' +
+                  'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-slate-700'
+                }
               />
-            </Grid>
-            {bannerPreview && (
-              <Grid size={12} >
-                <Box display="flex" flexDirection="column" alignItems="left">
-                  <Typography variant="subtitle2">Banner Preview:</Typography>
-                  <Box
+            </Field>
+            <Field>
+              <Label className="text-sm font-medium leading-6 text-gray-900">Avatar</Label>
+              <Input
+                type="file"
+                hidden
+                accept="image/*"
+                onChange={handleFileChange}
+              />
+            </Field>
+          </Fieldset>
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" height={400}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <Grid container spacing={3}>
+              {/* {!edit && <Grid size={12}>
+                <TextField
+                  fullWidth
+                  label="Persona"
+                  name="persona"
+                  value={formData.persona}
+                  onChange={handleInputChange}
+                  placeholder="Social, Professional, Gaming, etc."
+                  required
+                />
+              </Grid>} */}
+              <Grid size={12} sx={{ display: 'flex', alignItems: 'center' }}>
+                <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
+                  <Avatar
+                    src={avatarPreview || undefined}
+                    sx={{ width: 60, height: 60 }}
+                  />
+                  <IconButton
+                    component="label"
                     sx={{
-                      width: '100%',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      border: '1px solid',
-                      borderColor: 'divider',
+                      position: 'absolute',
+                      right: 10,
+                      bottom: 10,
+                      opacity: 0.5,
+                      backgroundColor: 'background.paper',
+                      '&:hover': { backgroundColor: 'background.default' },
                     }}
                   >
-                    <img 
-                      src={bannerPreview} 
-                      alt="Banner preview" 
-                      style={{ width: '100%', height: 'auto', maxHeight: 200, objectFit: 'cover' }} 
+                    <PlusIcon />
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      width={20}
+                      name="avatar"
                     />
-                  </Box>
+                  </IconButton>
                 </Box>
+                <TextField
+                  fullWidth
+                  label="Display Name"
+                  name="displayName"
+                  value={formData.displayName}
+                  onChange={handleInputChange}
+                  placeholder="Display Name"
+                  required
+                />
               </Grid>
-            )}
-            <Grid size={12}>
-              {<Box display="flex" alignItems="center">
-                <Button
-                  variant="outlined"
-                  component="label"
-                  onClick={handleClearBanner}
-                >
-                  {bannerPreview ? 'Clear Banner' : 'Upload Banner'}
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    name="banner"
-                  />
-                </Button>
-              </Box>}
-            </Grid>
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Tagline"
-                name="tagline"
-                value={formData.tagline}
-                onChange={handleInputChange}
-              />
-            </Grid>
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleInputChange}
-                multiline
-                rows={4}
-              />
-            </Grid>
-            <ListInput
-              label={"DWN Endpoint"}
-              value={formData.dwnEndpoints}
-              defaultValue={'https://dwn.tbddev.org/latest'}
-              placeholder='https://dwn.tbddev.org/latest'
-              onChange={(value) => {
-                setFormData({ ...formData, dwnEndpoints: value });
-              }}
-            />
-            <Box mt={4}>
-              <Button
-                type="submit"
-                disabled={loading || submitDisabled}
-                variant="contained"
-                color="primary"
-                size="large"
-              >
-                {isEdit ? 'Update Identity' : 'Add Identity'}
-              </Button>
-              {isEdit && (
-                <Button
-                  variant="outlined"
-                  size="large"
-                  sx={{ ml: 2 }}
-                  onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
-                >
-                  Cancel
-                </Button>
+              {bannerPreview && (
+                <Grid size={12} >
+                  <Box display="flex" flexDirection="column" alignItems="left">
+                    <Typography variant="subtitle2">Banner Preview:</Typography>
+                    <Box
+                      sx={{
+                        width: '100%',
+                        borderRadius: 2,
+                        overflow: 'hidden',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <img 
+                        src={bannerPreview} 
+                        alt="Banner preview" 
+                        style={{ width: '100%', height: 'auto', maxHeight: 200, objectFit: 'cover' }} 
+                      />
+                    </Box>
+                  </Box>
+                </Grid>
               )}
-            </Box>
-          </Grid>
-        )}
-      </form>
-    </PageContainer>
-  );
+              <Grid size={12}>
+                {<Box display="flex" alignItems="center">
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    onClick={handleClearBanner}
+                  >
+                    {bannerPreview ? 'Clear Banner' : 'Upload Banner'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      name="banner"
+                    />
+                  </Button>
+                </Box>}
+              </Grid>
+              <Grid size={12}>
+                <TextField
+                  fullWidth
+                  label="Tagline"
+                  name="tagline"
+                  value={formData.tagline}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              <Grid size={12}>
+                <TextField
+                  fullWidth
+                  label="Bio"
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  multiline
+                  rows={4}
+                />
+              </Grid>
+              {!isEdit && <ListInput
+                label={"DWN Endpoint"}
+                value={formData.dwnEndpoints}
+                defaultValue={'https://dwn.tbddev.org/latest'}
+                placeholder='https://dwn.tbddev.org/latest'
+                onChange={(value) => {
+                  setFormData({ ...formData, dwnEndpoints: value });
+                }}
+              />}
+              <Box mt={4}>
+                <Button
+                  type="submit"
+                  disabled={loading || submitDisabled}
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                >
+                  {isEdit ? 'Update Identity' : 'Add Identity'}
+                </Button>
+                {isEdit && (
+                  <Button
+                    variant="outlined"
+                    size="large"
+                    sx={{ ml: 2 }}
+                    onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
+                  >
+                    Cancel
+                  </Button>
+                )}
+              </Box>
+            </Grid>
+          )}
+        </form>
+      </div>
+    </div>
+  </section>);
 };
 
 export default AddOrEditIdentityPage;
