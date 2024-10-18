@@ -1,6 +1,6 @@
 import React from 'react';
-import { MenuItemProps } from "./Sidebar/SidebarItem";
 import { useLocation } from 'react-router-dom';
+import { MenuItemProps } from './Sidebar/SidebarItem';
 
 const BottomNav: React.FC<{ menuItems: MenuItemProps[] }> = ({ menuItems }) => {
   const location = useLocation();
@@ -16,7 +16,7 @@ const BottomNav: React.FC<{ menuItems: MenuItemProps[] }> = ({ menuItems }) => {
   }
 
   return (
-    <div className="sticky top-0 block bg-gray-900 md:hidden">
+    <div className="sticky top-0 block bg-primary md:hidden">
       <div className="flex">
         {menuItems.filter(item => item.onClick !== undefined).map((item, index) => (
           <div title={getChildText(item.children)} className="flex-1 group" key={index}>

@@ -12,7 +12,7 @@ const Sidebar: React.FC<{
   const location = useLocation();
 
   return (
-    <div className={`hidden h-full md:block bg-gray-900`}>
+    <div className={`hidden h-full md:block bg-primary`}>
       <nav className="flex flex-col h-full">
         <SidebarHeader icon={icon}>
           {header}

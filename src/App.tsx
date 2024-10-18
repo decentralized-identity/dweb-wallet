@@ -11,7 +11,6 @@ import { Routes, Route } from 'react-router-dom';
 import SearchIdentitiesPage from './pages/SearchIdentitiesPage';
 import AddOrEditIdentityPage from './pages/AddOrEditIdentityPage';
 import ImportIdentityPage from './pages/ImportIdentityPage';
-import IdentityDetailsPage from './pages/IdentityDetailsPage';
 import IdentitiesListPage from './pages/IdentitiesListPage';
 import AppConnect from './pages/AppConnect';
 import DWebConnect from './pages/DwebConnect';

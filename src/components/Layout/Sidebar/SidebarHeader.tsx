@@ -4,7 +4,7 @@ const SidebarHeader: React.FC<{
   onClick?: (e: React.MouseEvent<HTMLElement>) => void;
 }> = ({ icon, children, onClick }) => {
   return (
-    <div className="flex items-center justify-between px-4 py-5 mb-3 mr-6" onClick={onClick}>
+    <div className="flex text-background items-center justify-between px-4 py-5 mb-3 mr-6" onClick={onClick}>
       <div className="flex items-center">
         {icon && <span className="w-10 h-10 flex-shrink-0">{icon}</span>}
         <div className="ml-3">{children}</div>
