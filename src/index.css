@@ -2,28 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
+.tooltip-action {
+  @apply relative;
+}
+
+.tooltip {
+  @apply text-sm invisible absolute opacity-0 transition-opacity duration-300 ease-in-out top-8 left-1/2 transform -translate-x-1/2 rounded shadow-lg px-3 py-1;
+}
+
+.tooltip-active .tooltip {
+  @apply visible z-50 opacity-100;
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 20 14.3% 4.1%;
-    --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
-    --primary: 47.9 95.8% 53.1%;
+    --text: 231, 100%, 9%;/** #00072D */ 
+    --text-inverse: 0, 0%, 96%;/** #F5F5F5 */
+    --background: 9, 33%, 96%;/** #F8F2F1 */
+    --foreground: 231, 100%, 9%;/** #00072D */
+    --card: 20 14.3% 4.1%;
+    --card-foreground: 60 9.1% 97.8%;
+    --popover: 20 14.3% 4.1%;
+    --popover-foreground: 60 9.1% 97.8%;
+    --primary: 243, 39%, 27%;/** #2E2B61 */
     --primary-foreground: 26 83.3% 14.1%;
-    --secondary: 60 4.8% 95.9%;
-    --secondary-foreground: 24 9.8% 10%;
-    --muted: 60 4.8% 95.9%;
-    --muted-foreground: 25 5.3% 44.7%;
-    --accent: 60 4.8% 95.9%;
-    --accent-foreground: 24 9.8% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 12 6.5% 15.1%;
+    --secondary-foreground: 60 9.1% 97.8%;
+    --muted: 12 6.5% 15.1%;
+    --muted-foreground: 24 5.4% 63.9%;
+    --accent: 12 6.5% 15.1%;
+    --accent-foreground: 60 9.1% 97.8%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 60 9.1% 97.8%;
-    --border: 20 5.9% 90%;
-    --input: 20 5.9% 90%;
-    --ring: 20 14.3% 4.1%;
-    --radius: 0.5rem;
+    --border: 12 6.5% 15.1%;
+    --input: 12 6.5% 15.1%;
   }
 
   .dark {
@@ -45,7 +76,6 @@
     --destructive-foreground: 60 9.1% 97.8%;
     --border: 12 6.5% 15.1%;
     --input: 12 6.5% 15.1%;
-    --ring: 35.5 91.7% 32.9%;
   }
 }
 

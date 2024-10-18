@@ -1,28 +1,27 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import IdentityProfile from '@/components/identity/IdentityProfile';
 import { useIdentities } from '@/contexts/Context';
+import { CircularProgress } from '@mui/material';
 
 const IdentityProfilePage: React.FC = () => {
   const { didUri } = useParams();
   const { selectedIdentity, protocols, permissions, wallets, selectIdentity } = useIdentities();
 
   useEffect(() => {
-    if (didUri && didUri !== selectedIdentity?.didUri) {
-      selectIdentity(didUri);
-    }
-  }, [didUri, selectedIdentity]);
+    selectIdentity(didUri);
+  });
 
-  const identity = useMemo(() => {
-    return selectedIdentity;
-  }, [selectedIdentity]);
-
-  return identity ? <IdentityProfile
-    identity={identity}
-    protocols={protocols}
-    permissions={permissions}
-    wallets={wallets}
-  /> : <div>Loading...</div>;
+  return (<>
+   {selectedIdentity && <IdentityProfile
+      identity={selectedIdentity}
+      protocols={protocols}
+      permissions={permissions}
+      wallets={wallets}
+    /> || <div className="absolute w-full h-full flex flex-col items-center justify-center">
+      <CircularProgress />
+    </div>}
+  </>)
 }
 
 export default IdentityProfilePage;

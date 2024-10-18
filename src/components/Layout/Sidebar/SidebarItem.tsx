@@ -9,14 +9,14 @@ export interface MenuItemProps {
 
 const SidebarItem: React.FC<MenuItemProps> = ({ icon, onClick, children, active = false, bottom = false }) => {
   const activeClass = active ?
-    `text-gray-100 bg-gray-700 bg-opacity-25` :
-    `text-gray-500 hover:bg-gray-700 hover:bg-opacity-25 hover:text-gray-100`;
+    `text-background bg-background bg-opacity-10 cursor-default` :
+    `text-background hover:bg-background hover:bg-opacity-20 cursor-pointer`;
   
-  const dynamicClsss = onClick ? `cursor-pointer ${activeClass} pb-2 pt-2`: 'cursor-default';
+  const dynamicClass = onClick ? `${activeClass} pb-2 pt-2`: 'cursor-default';
 
   return (
     <div 
-      className={`relative ${bottom ? 'mt-auto' : ''} flex items-center ${dynamicClsss}`}
+      className={`relative ${bottom ? 'mt-auto' : ''} flex items-center ${dynamicClass}`}
       onClick={onClick}
     >
       {icon && <div className={`

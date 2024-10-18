@@ -15,39 +15,47 @@ module.exports = {
     },
     extend: {
       colors: {
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
+          DEFAULT: "#2e2b61",
+          100: "#d6d4ec",
+          200: "#acaada",
+          300: "#837fc7",
+          400: "#5a55b4",
+          500: "#49449c",
+          600: "#3c3880",
+          700: "#2e2b61",
+          800: "#211f47",
+          900: "#14132b" 
         },
         secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
+          DEFAULT: '#758ECD',
+          100: '#F0F3FA', 
+          200: '#C3CEE9',
+          300: '#A5B5DF',
+          400: '#758ECD',
+          500: '#4C6CBE',
+          600: '#3B59A5',
+          700: '#2B4178',
+          800: '#20315A',
+          900: '#16203C'
         },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
+        foreground: "#14132b",
+        background: {
+          DEFAULT: "#f5f5f5",
+          100: '#ffffff',
+          200: '#f5f5f5',
+          300: '#e0e0e0', 
+          400: '#cccccc',
+          500: '#b8b8b8',
+          600: '#a3a3a3',
+          700: '#8f8f8f',
+          800: '#707070',
+          900: '#474747',
         },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
+        border: "#14132b",
         accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
+          DEFAULT: "#758ECD"
+        }
       },
       borderRadius: {
         lg: "var(--radius)",
