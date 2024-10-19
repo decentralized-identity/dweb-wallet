@@ -1,14 +1,12 @@
-import { Box, CircularProgress, Container, Typography } from "@mui/material"
+import CircleProgress from "./CircleProgress";
 
 const Loader:React.FC<{ message: string }> = ({ message }) => {
-  return <Container maxWidth="sm">
-    <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="100vh">
-      <CircularProgress size={48} color="primary" />
-      <Typography variant="h6" mt={2}>
+
+  return <div className="flex flex-col items-center justify-center min-h-[100vh]">
+      <CircleProgress size={'large'} />
+      <h6 className="mt-6">
         {message}
-      </Typography>
-    </Box>
-  </Container>
-}
+      </h6>
+    </div>}
 
 export default Loader;
