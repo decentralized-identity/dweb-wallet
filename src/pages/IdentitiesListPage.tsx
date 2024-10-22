@@ -16,7 +16,7 @@ const IdentitiesListPage: React.FC = () => {
       alignItems: 'end',
       gap: '1rem'
     }}>
-      <span>No identities found.</span> <Button variant='contained' onClick={() => navigate('/identity/new')}>Create one</Button>
+      <span>No identities found.</span> <Button variant='contained' onClick={() => navigate('/identities/create')}>Create one</Button>
     </Box>}
     {identities.map((identity) => (
       <IdentityCard
