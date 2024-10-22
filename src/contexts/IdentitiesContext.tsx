@@ -41,7 +41,7 @@ export interface CreateIdentityParams {
   hero?: Blob;
 }
 
-export interface UpdateIdentityParams extends Omit<CreateIdentityParams, 'walletHost' | 'persona'> {
+export interface UpdateIdentityParams extends Omit<CreateIdentityParams, 'walletHost'> {
   didUri: string;
 }
 
@@ -219,7 +219,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     return craetedIdentity;
   }
 
-  const updateIdentity = async ({ didUri, displayName, tagline, bio, avatar, hero }: UpdateIdentityParams) => {
+  const updateIdentity = async ({ didUri, persona, displayName, tagline, bio, avatar, hero, dwnEndpoints }: UpdateIdentityParams) => {
     if (!agent) {
       throw new Error("Agent not found");
     }
@@ -227,6 +227,10 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     const identity = identities.find(identity => identity.didUri === didUri);
     if (!identity) {
       throw new Error("Identity not found");
+    }
+
+    if (identity.persona !== persona) {
+      await agent.identity.setMetadataName({ didUri, name: persona });
     }
 
     const profileProtocol = ProfileProtocol(didUri, agent);
@@ -243,8 +247,14 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
       await profileProtocol.setHero(hero || null);
     }
 
+    const existingEndpoints = await getDwnServiceEndpointUrls(didUri, agent.did);
+    if (existingEndpoints.length !== dwnEndpoints.length || !dwnEndpoints.every(endpoint => existingEndpoints.includes(endpoint))) {
+      await agent.identity.setDwnEndpoints({ didUri, endpoints: dwnEndpoints });
+    }
+
     const updatedIdentity = {
       ...identity,
+      persona,
       profile: {
         ...identity.profile,
         displayName,
@@ -264,6 +274,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
 
     setSelectedIdentity(updatedIdentity);
     setIdentities(updatedIdentities);
+    setDwnEndpointsState(dwnEndpoints);
   }
 
   const deleteIdentity = async (didUri: string) => {
@@ -339,7 +350,6 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     const portableIdentity = await identity.export();
     return portableIdentity;
   };
-
 
   const setWallets = async (wallets: string[]) => {
     if (!agent) return;

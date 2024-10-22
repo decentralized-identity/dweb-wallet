@@ -85,11 +85,14 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
 
   const submitDisabled = useMemo(() => {
     if (isEdit) {
-      return formData.displayName === selectedIdentity.profile.social?.displayName &&
+      return formData.persona === selectedIdentity.persona &&
+             formData.displayName === selectedIdentity.profile.social?.displayName &&
              formData.tagline === selectedIdentity.profile.social?.tagline &&
              formData.bio === selectedIdentity.profile.social?.bio &&
              formData.avatar === selectedIdentity.profile.avatar &&
-             formData.banner === selectedIdentity.profile.hero;
+             formData.banner === selectedIdentity.profile.hero &&
+             (formData.dwnEndpoints.length === dwnEndpoints.length &&
+              formData.dwnEndpoints.every(endpoint => dwnEndpoints.includes(endpoint)));
     }
 
     return formData.persona === '' || formData.displayName === '' || formData.dwnEndpoints.length === 0;
@@ -104,6 +107,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
       if (isEdit) {
         await updateIdentity({
           didUri: selectedIdentity.didUri,
+          persona: formData.persona,
           dwnEndpoints: formData.dwnEndpoints,
           displayName: formData.displayName,
           tagline: formData.tagline,
@@ -181,7 +185,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
           </Box>
         ) : (
           <Grid container spacing={3}>
-            {!edit && <Grid size={12}>
+            <Grid size={12}>
               <TextField
                 fullWidth
                 label="Persona"
@@ -191,7 +195,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                 placeholder="Social, Professional, Gaming, etc."
                 required
               />
-            </Grid>}
+            </Grid>
             <Grid size={12} sx={{ display: 'flex', alignItems: 'center' }}>
               <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
                 <Avatar
@@ -290,7 +294,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                 rows={4}
               />
             </Grid>
-            {!isEdit && <ListInput
+            <ListInput
               label={"DWN Endpoint"}
               value={formData.dwnEndpoints}
               defaultValue={'https://dwn.tbddev.org/latest'}
@@ -298,7 +302,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
               onChange={(value) => {
                 setFormData({ ...formData, dwnEndpoints: value });
               }}
-            />}
+            />
             <Box mt={4}>
               <Button
                 type="submit"
