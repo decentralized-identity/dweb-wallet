@@ -5,9 +5,9 @@ import { PortableIdentity } from '@web5/agent';
 import { PageContainer } from '@toolpad/core';
 import { Box, Button, CircularProgress } from '@mui/material';
 
-import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
 import { useAgent, useDragIdentities, useIdentities } from '@/contexts/Context';
 import { CheckCircle, HighlightOff } from '@mui/icons-material';
+import IdentityProfileCard from '@/components/identity/IdentityProfileCard';
 
 type ImportStatus = 'pending' | 'success' | 'error';
 
@@ -104,12 +104,12 @@ const ImportIdentityPage: React.FC = () => {
       />
     </Button>
     {identities.map((identity) => {
-      return <PublicIdentityCard
-        compact={true}
+      return <IdentityProfileCard
         key={identity.metadata.uri}
-        did={identity.metadata.uri}
-        slot={identitySlot(identity.metadata.uri)}
-        sx={{ mb: 2, maxWidth: 650, alignItems: 'center' }}
+        identity={{
+          didUri: identity.metadata.uri,
+          profile: {}
+        }}
       />
    })}
    {canImport && (

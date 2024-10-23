@@ -1,16 +1,13 @@
-import PublicIdentityCard from '@/components/identity/PublicIdentityCard';
-import { TextField } from '@mui/material';
 import { Did } from '@web5/dids';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PageContainer } from '@toolpad/core';
 import { Convert } from '@web5/common';
 import { profileDefinition } from '@/lib/ProfileProtocol';
 import { Identity, SocialData } from '@/lib/types';
-import { truncateDid } from '@/lib/utils';
 import IdentityProfile from '@/components/identity/IdentityProfile';
 import { DwnProtocolDefinition, getDwnServiceEndpointUrls } from '@web5/agent';
 import { useAgent } from '@/contexts/Context';
+import { Field, Fieldset, Input } from '@headlessui/react';
 
 const profileProtocolB64 = Convert.string(profileDefinition.protocol).toBase64Url();
 
@@ -69,20 +66,6 @@ const SearchIdentitiesPage: React.FC = () => {
     }
   }, [ didUri ]);
 
-  const social = useMemo(() => {
-    return identity ? identity.profile.social : undefined;
-  }, [ identity ]);
-
-  const title = useMemo(() => {
-    return social ? social.displayName : did ? truncateDid(did) : 'Search';
-  }, [ social, did ]);
-
-  const path = useMemo(() => {
-    return did ? `/search/${did}` : '/search';
-  }, [ did ]);
-
-  const breadCrumbs = did ? [{ title: 'Find DIDs', path: '/search' }, { title, path }]: [{ title: 'Find DIDs', path: '/search' }, { title, path }];
-
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
 
@@ -102,15 +85,32 @@ const SearchIdentitiesPage: React.FC = () => {
     setDid('');
   }
 
-  return (<PageContainer title={title} breadcrumbs={breadCrumbs}>
-    <TextField
-      fullWidth
-      label="Search for a DID"
-      placeholder="did:web:example.com"
-      name="did"
-      value={didInput}
-      onChange={handleInputChange}
-    />
+  return (<div>
+    <section className={`relative sm:px-8 md:px-12 max-w-screen-lg mx-auto`}>
+      <div className="mt-10 flex flex-col break-words bg-white w-full mb-10 shadow-xl">
+        <div className="w-full p-4 divide-y-2 divide-dotted divide-slate-300 mb-2">
+          <div className="text-xl text-left pl-4">
+          Search for an Identity
+          </div>
+          <Fieldset>
+            <Field className="w-full mt-5">
+              <Input
+                type='text'
+                placeholder="did:web:example.com"
+                name="did"
+                value={didInput}
+                onChange={handleInputChange}
+                required={true}
+                className={
+                  'mt-1 block w-full rounded-lg border-none py-3 px-4 text-slate-700 outline outline-2 outline-slate-200 ' +
+                  'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-slate-700'
+                }
+              />
+            </Field>
+          </Fieldset>
+        </div>
+      </div>
+    </section>
     <div className="mt-5">
       {identity && <IdentityProfile
         identity={identity}
@@ -121,7 +121,7 @@ const SearchIdentitiesPage: React.FC = () => {
         showInactiveTabs={false}
       />}
     </div>
-  </PageContainer>)
+  </div>);
 }
 
 export default SearchIdentitiesPage;
