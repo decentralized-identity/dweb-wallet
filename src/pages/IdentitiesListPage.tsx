@@ -1,32 +1,26 @@
 import React  from 'react';
-import IdentityCard from '@/components/identity/IdentityCard';
 import { useIdentities } from '@/contexts/Context';
-import { PageContainer } from '@toolpad/core';
 import { useNavigate } from 'react-router-dom';
-import { Box, Button } from '@mui/material';
+import IdentityProfileCard from '@/components/identity/IdentityProfileCard';
+import Button from '@/components/Button';
 
 const IdentitiesListPage: React.FC = () => {
   const { identities } = useIdentities();
   const navigate = useNavigate();
 
-  return (<PageContainer>
-    {identities.length === 0 && <Box sx={{
-      mt: '2rem',
-      display: 'flex',
-      alignItems: 'end',
-      gap: '1rem'
-    }}>
+  return (<div className="pt-12">
+    {identities.length === 0 && <div className="flex items-end gap-1 mt-2">
       <span>No identities found.</span> <Button variant='contained' onClick={() => navigate('/identities/create')}>Create one</Button>
-    </Box>}
+    </div>}
     {identities.map((identity) => (
-      <IdentityCard
+      <IdentityProfileCard
         key={identity.didUri}
         identity={identity}
-        onClick={() => navigate(`/identity/${identity.didUri}`)}
-        compact={true}
+        // onClick={() => navigate(`/identity/${identity.didUri}`)}
+        // compact={true}
       />
     ))}
-  </PageContainer>)
+  </div>)
 }
 
 
