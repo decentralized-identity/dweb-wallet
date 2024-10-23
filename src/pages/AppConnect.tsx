@@ -2,13 +2,14 @@ import ConnectRequest from "@/components/ConnectRequest";
 import { useAgent } from "@/contexts/Context";
 import { truncateDid } from "@/lib/utils";
 import { FileOpen, FlashOff, FlashOn, NoPhotography } from "@mui/icons-material";
-import { Box, Button, CircularProgress, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, FormControl, IconButton, InputLabel, MenuItem, Typography } from "@mui/material";
 import { PageContainer, useNotifications } from "@toolpad/core"
 import { Oidc, Web5ConnectAuthRequest } from "@web5/agent";
 import { CryptoUtils } from "@web5/crypto";
 import Scanner from 'qr-scanner';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Select, Field, Label } from '@headlessui/react';
 
 const AppConnect: React.FC = () => {
 
@@ -191,16 +192,24 @@ const QRScanner: React.FC = () => {
     {!connectionRequest && !cameraError &&  <>
       {<Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
         <FormControl fullWidth>
-          <InputLabel id="camera-label">Camera</InputLabel>
-          <Select
-            labelId="camera-label"
-            id="camera-select"
-            value={devices.length === 0 ? '' : selectedCamera}
-            label="Age"
-            onChange={(e) => {selectCamera(e.target.value) }}
-          >
-            {devices.map(device => <MenuItem key={device.id} value={device.id} selected={device.id === selectedCamera}>{device.label}</MenuItem>)}
-          </Select>
+          <Field className="w-full">
+            <Label htmlFor='dwnEndpoints' className="text-sm font-medium leading-6 text-gray-900">
+              Camera
+            </Label>
+            <Select
+              name="cameras-select"
+              id="camera-select"
+              value={devices.length === 0 ? '' : selectedCamera}
+              onChange={(e) => selectCamera(e.target.value)}
+            >
+              {devices.map(device => <option
+                key={device.id} value={device.id}
+                selected={device.id === selectedCamera}
+              >
+              {device.label}
+              </option>)}
+            </Select>
+          </Field>
         </FormControl>
         <video
           ref={videoRef}

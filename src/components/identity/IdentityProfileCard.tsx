@@ -7,31 +7,32 @@ import CircleProgress from '../CircleProgress';
 
 const IdentityProfileCard: React.FC<{
   didUri: string;
+  identity?: Identity;
   onClick?: () => void;
-}> = ({ didUri, onClick }) => {
+}> = ({ didUri, identity, onClick }) => {
   const { agent } = useAgent();
-  const [ identity, setIdentity ] = useState<Identity | null>(null);
+  const [ stateIdentity, setStateIdentity ] = useState<Identity | undefined>(identity);
 
   useEffect(() => {
     const loadIdentity = async (didUri: string) => {
       const profile = await loadProfileFromDidUri(agent!, didUri);
-      setIdentity(profile);
+      setStateIdentity(profile);
     }
 
-    if (agent && (!identity || identity.didUri !== didUri)) {
+    if (agent && (!stateIdentity || stateIdentity.didUri !== didUri)) {
       loadIdentity(didUri);
     }
   }, [ didUri ]);
 
 
-  const displayName = useMemo(() => identity?.profile.social?.displayName, [identity]);
-  const persona = useMemo(() => identity?.persona, [identity]);
+  const displayName = useMemo(() => stateIdentity?.profile.social?.displayName, [identity]);
+  const persona = useMemo(() => stateIdentity?.persona, [identity]);
 
   const heroStyle = useMemo(() => {
-    if (identity?.profile.heroUrl) {
+    if (stateIdentity?.profile.heroUrl) {
       return {
         backgroundPosition: 'center',
-        backgroundImage: `url(${identity.profile.heroUrl})`,
+        backgroundImage: `url(${stateIdentity.profile.heroUrl})`,
         backgroundSize: 'cover',
       };
     } else {
@@ -58,14 +59,14 @@ const IdentityProfileCard: React.FC<{
 
   return (
     <section className={`group ${ hoverStyle ? 'cursor-pointer' : 'cursor-default' } relative sm:px-8 md:px-12 max-w-screen-lg mx-auto`} onClick={clickHandler}>
-      {identity && <div className={`relative flex break-words w-full mb-6 shadow-xl h-44`} style={heroStyle}>
+      {stateIdentity && <div className={`relative flex break-words w-full mb-6 shadow-xl h-44`} style={heroStyle}>
         <span className={`w-full h-full absolute bg-gradient-to-t from-primary-900/90 to-transparent via-primary/90 ${hoverStyle}`}></span>
         <div className="relative self-center ml-4 w-36 h-36 flex items-center rounded justify-center shadow-xl overflow-hidden border-8 border-white border-opacity-40">
-          {identity.profile.avatarUrl ? (
-            <img src={identity.profile.avatarUrl} alt="Avatar" />
+          {stateIdentity.profile.avatarUrl ? (
+            <img src={stateIdentity.profile.avatarUrl} alt="Avatar" />
           ) : (
             <div
-              style={{ background: generateGradient(identity.didUri.split(':')[2], true) }}
+              style={{ background: generateGradient(stateIdentity.didUri.split(':')[2], true) }}
               className="relative bg-gray-300 w-full h-full flex items-center justify-center text-slate-200"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12">
@@ -81,12 +82,12 @@ const IdentityProfileCard: React.FC<{
             {persona && <span className="text-sm italic text-background/40 ml-2">({persona})</span>}
           </h3>
           <div className="flex">
-            <span className="text-background">{truncateDid(identity.didUri)}</span>
+            <span className="text-background">{truncateDid(stateIdentity.didUri)}</span>
             <div
               className="text-background/70 ml-3 cursor-pointer hover:text-background/40 transition-colors duration-200 tooltip-action"
               onClick={async (e) => {
                 const currentTarget = e.currentTarget;
-                await navigator.clipboard.writeText(identity.didUri);
+                await navigator.clipboard.writeText(stateIdentity.didUri);
                 currentTarget.classList.add('tooltip-active');
                 setTimeout(() => currentTarget.classList.remove('tooltip-active'), 1000);
               }}
@@ -99,7 +100,7 @@ const IdentityProfileCard: React.FC<{
           </div>
         </div>
       </div>}
-      {!identity && <div className='relative flex w-full h-44'>
+      {!stateIdentity && <div className='relative flex w-full h-44'>
         <CircleProgress size='medium' />
       </div>}
     </section>

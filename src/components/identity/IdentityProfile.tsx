@@ -14,9 +14,9 @@ import ProfileOptions from './ProfileOptions';
 import { FolderArrowDownIcon, TrashIcon } from '@heroicons/react/16/solid';
 import { DialogTitle } from '@headlessui/react';
 import Button from '../Button';
-import { CircularProgress } from '@mui/material';
 import EndpointsList from '../EndpointsList';
 import { generateGradient } from '@/lib/utils';
+import CircleProgress from '../CircleProgress';
 
 const IdentityProfile: React.FC<{
   identity: Identity,
@@ -215,7 +215,7 @@ const IdentityProfile: React.FC<{
         <div className="p-2 text-gray-900">This will download a file containing the DID including the <b><i>private key material</i></b> of this identity.</div>
       </div>}
       {backupLoading && <div className="flex items-center mt-4">
-        <CircularProgress />
+        <CircleProgress size='large' />
       </div>}
       <div className="mt-4 flex gap-2 justify-end">
         <Button disabled={backupLoading} onClick={() => handleDownloadIdentity(identity.didUri)}>Backup</Button>
@@ -235,7 +235,7 @@ const IdentityProfile: React.FC<{
         <div className="p-2 text-gray-900">This will <b>PERMANENTLY DELETE</b> this identity including the <b><i>private key material</i></b>, please confirm.</div>
       </div>}
       {deleteLoading && <div className="flex items-center mt-4">
-        <CircularProgress />
+        <CircleProgress size='large' />
       </div>}
       <div className="mt-4 flex gap-2 justify-end">
         <Button color='error' disabled={deleteLoading} onClick={() => handleDeleteIdentity(identity.didUri)}>Delete</Button>

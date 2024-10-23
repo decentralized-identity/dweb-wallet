@@ -101,7 +101,9 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoadingIdentities(true);
 
     try {
-      const identities = await agent.identity.list() || [];
+      console.log('loading identities');
+      const identities = await agent.identity.list();
+      console.log('identities', identities);
       const parsedIdentities = await Promise.all(identities.map((identity) => loadProfileFromDidUri(agent, identity.did.uri, identity.metadata.name)));
       setIdentities(parsedIdentities);
     } finally {
