@@ -2,12 +2,9 @@ import React, { useCallback, useMemo, useRef, useState }  from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PortableIdentity } from '@web5/agent';
 
-import { PageContainer } from '@toolpad/core';
-import { Box, Button, CircularProgress } from '@mui/material';
-
 import { useAgent, useDragIdentities, useIdentities } from '@/contexts/Context';
-import { CheckCircle, HighlightOff } from '@mui/icons-material';
 import IdentityProfileCard from '@/components/identity/IdentityProfileCard';
+import Button from '@/components/Button';
 
 type ImportStatus = 'pending' | 'success' | 'error';
 
@@ -30,26 +27,26 @@ const ImportIdentityPage: React.FC = () => {
     }
   }, [ processFile ])
 
-  const removeButton = useCallback((didUri: string) => {
-    return <Button onClick={() => {
-      setIdentities(identities.filter((i) => i.metadata.uri !== didUri));
-    }}>Remove</Button>
-  }, [ identities ]);
+  // const removeButton = useCallback((didUri: string) => {
+  //   return <Button onClick={() => {
+  //     setIdentities(identities.filter((i) => i.metadata.uri !== didUri));
+  //   }}>Remove</Button>
+  // }, [ identities ]);
 
-  const identitySlot = useCallback((didUri: string) => {
-    const didStatus = status.get(didUri);
-    switch (didStatus) {
-      case 'success':
-        return <CheckCircle />;
-      case 'error':
-        return <HighlightOff />;
-      default:
-        if (importing) {
-          return <CircularProgress />;
-        }
-      return removeButton(didUri);
-    }
-  }, [ status, importing ]);
+  // const identitySlot = useCallback((didUri: string) => {
+  //   const didStatus = status.get(didUri);
+  //   switch (didStatus) {
+  //     case 'success':
+  //       return <CheckCircle />;
+  //     case 'error':
+  //       return <HighlightOff />;
+  //     default:
+  //       if (importing) {
+  //         return <CircularProgress />;
+  //       }
+  //     return removeButton(didUri);
+  //   }
+  // }, [ status, importing ]);
 
   const importPortableIdentity = useCallback(async (identity: PortableIdentity) => {
     try {
@@ -89,7 +86,7 @@ const ImportIdentityPage: React.FC = () => {
     return !doneImporting && !importing && identities.length > 0;
   }, [ identities, importing, doneImporting ]);
 
-  return (<PageContainer>
+  return (<div className="">
     <Button
       onClick={() => inputRef.current?.click()}
       sx={{ mb: 2 }}
@@ -106,27 +103,23 @@ const ImportIdentityPage: React.FC = () => {
     {identities.map((identity) => {
       return <IdentityProfileCard
         key={identity.metadata.uri}
-        identity={{
-          didUri: identity.metadata.uri,
-          profile: {}
-        }}
+        didUri={identity.metadata.uri}
       />
    })}
-   {canImport && (
-      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', mt: 2 }}>
-        <Button disabled={importing} sx={{ mr: 2 }} variant="contained" onClick={importIdentities}>Import</Button>
-        <Button disabled={importing} variant="contained" onClick={() => setIdentities([])}>Clear</Button>
-      </Box>
+   {canImport && (<div className="flex flex-row justify-center mt-2 gap-2">
+      <Button disabled={importing} onClick={importIdentities}>Import</Button>
+      <Button disabled={importing} onClick={() => setIdentities([])}>Clear</Button>
+    </div>
     ) || doneImporting && (
-      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', mt: 2 }}>
-        <Button variant="contained" onClick={() => {
+      <div className='flex flex-row justify-center mt-2'>
+        <Button onClick={() => {
           setIdentities([]);
           setStatus(new Map());
           navigate('/');
         }}>Done</Button>
-      </Box>
+      </div>
     )}
-  </PageContainer>);
+  </div>);
 }
 
 

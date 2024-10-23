@@ -1,11 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Box, Button, Typography } from "@mui/material"
 import PermissionRequest from "./PermissionsRequest"
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import { ConnectPermissionRequest } from "@web5/agent";
 import IdentitySelector from './IdentitySelector';
 import IdentityProfileCard from './identity/IdentityProfileCard';
-import { useIdentities } from '@/contexts/Context';
 
 const ConnectRequest: React.FC<{
   did?: string;
@@ -15,12 +14,7 @@ const ConnectRequest: React.FC<{
   handleDeny: () => void;
   [key: string]: any;
 }> = ({ origin, did, permissions, handleApprove, handleDeny, ...props }) => {
-  const { identities } = useIdentities();
   const [ selectedDid, setSelectedDid ] = useState<string>(did || '');
-
-  const identity = useMemo(() => {
-    return identities.find(i => i.didUri === selectedDid);
-  }, [ identities, selectedDid]);
 
   return <Box 
       {...props}
@@ -42,7 +36,7 @@ const ConnectRequest: React.FC<{
       is requesting permissions from
     </Typography>
     <Box sx={{ mb: 4, mt: 2 }}>
-      {identity && <IdentityProfileCard identity={identity} />}
+      {selectedDid && <IdentityProfileCard didUri={selectedDid} />}
       {!selectedDid && <Typography variant="subtitle2" color="text.secondary">Select an identity to approve the request</Typography>}
     </Box>
     {!did && <IdentitySelector value={selectedDid} onChange={setSelectedDid} sx={{ px: 5, width: '100%', mb: 2 }} />}

@@ -15,9 +15,9 @@ const IdentitiesListPage: React.FC = () => {
     {identities.map((identity) => (
       <IdentityProfileCard
         key={identity.didUri}
+        didUri={identity.didUri}
         identity={identity}
         onClick={() => navigate(`/identity/${identity.didUri}`)}
-        // compact={true}
       />
     ))}
   </div>)
