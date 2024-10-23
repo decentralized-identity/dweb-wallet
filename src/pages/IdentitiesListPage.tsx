@@ -16,7 +16,7 @@ const IdentitiesListPage: React.FC = () => {
       <IdentityProfileCard
         key={identity.didUri}
         identity={identity}
-        // onClick={() => navigate(`/identity/${identity.didUri}`)}
+        onClick={() => navigate(`/identity/${identity.didUri}`)}
         // compact={true}
       />
     ))}

@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useEffect, useState } from "react";
-import { BearerIdentity, DwnPermissionGrant, DwnProtocolDefinition, getDwnServiceEndpointUrls, PortableIdentity, Web5Agent } from "@web5/agent";
+import { DwnPermissionGrant, DwnProtocolDefinition, getDwnServiceEndpointUrls, PortableIdentity, Web5Agent } from "@web5/agent";
 
 import Web5Helper from "@/lib/Web5Helper";
 import ProfileProtocol, { profileDefinition } from "@/lib/ProfileProtocol";
@@ -9,17 +9,17 @@ import { Identity } from "@/lib/types";
 import { Convert } from "@web5/common";
 import { PermissionGrant, Record } from "@web5/api";
 
-const loadProfileFromBearerIdentity = (agent: Web5Agent) => async (identity: BearerIdentity): Promise<Identity> => {
-  const profileProtocol = ProfileProtocol(identity.did.uri, agent);
+export const loadProfileFromDidUri = async (agent: Web5Agent, didUri: string, persona?: string): Promise<Identity> => {
+  const profileProtocol = ProfileProtocol(didUri, agent);
   const social = await profileProtocol.getSocial();
   const avatar = await profileProtocol.getAvatar();
-  const avatarUrl = avatar ? `https://dweb/${identity.did.uri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/avatar` : undefined;
+  const avatarUrl = avatar ? `https://dweb/${didUri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/avatar` : undefined;
   const hero = await profileProtocol.getHero();
-  const heroUrl = hero ? `https://dweb/${identity.did.uri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/hero` : undefined;
+  const heroUrl = hero ? `https://dweb/${didUri}/read/protocols/${Convert.string(profileDefinition.protocol).toBase64Url()}/hero` : undefined;
 
   return {
-    persona: identity.metadata.name,
-    didUri: identity.did.uri,
+    persona,
+    didUri,
     profile: {
       social,
       avatar,
@@ -102,7 +102,7 @@ export const IdentitiesProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       const identities = await agent.identity.list() || [];
-      const parsedIdentities = await Promise.all(identities.map(loadProfileFromBearerIdentity(agent)));
+      const parsedIdentities = await Promise.all(identities.map((identity) => loadProfileFromDidUri(agent, identity.did.uri, identity.metadata.name)));
       setIdentities(parsedIdentities);
     } finally {
       setLoadingIdentities(false);

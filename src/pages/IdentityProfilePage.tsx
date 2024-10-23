@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import IdentityProfile from '@/components/identity/IdentityProfile';
 import { useIdentities } from '@/contexts/Context';
-import { CircularProgress } from '@mui/material';
+import CircleProgress from '@/components/CircleProgress';
 
 const IdentityProfilePage: React.FC = () => {
   const { didUri } = useParams();
@@ -20,7 +20,7 @@ const IdentityProfilePage: React.FC = () => {
       endpoints={dwnEndpoints}
       wallets={wallets}
     /> || <div className="absolute w-full h-full flex flex-col items-center justify-center">
-      <CircularProgress />
+      <CircleProgress size='large' />
     </div>}
   </>)
 }
