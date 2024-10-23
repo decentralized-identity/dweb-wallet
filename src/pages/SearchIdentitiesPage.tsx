@@ -9,18 +9,21 @@ import { profileDefinition } from '@/lib/ProfileProtocol';
 import { Identity, SocialData } from '@/lib/types';
 import { truncateDid } from '@/lib/utils';
 import IdentityProfile from '@/components/identity/IdentityProfile';
-import { DwnProtocolDefinition } from '@web5/agent';
+import { DwnProtocolDefinition, getDwnServiceEndpointUrls } from '@web5/agent';
+import { useAgent } from '@/contexts/Context';
 
 const profileProtocolB64 = Convert.string(profileDefinition.protocol).toBase64Url();
 
 const SearchIdentitiesPage: React.FC = () => {
   const { didUri } = useParams<{ didUri: string }>();
+  const { agent } = useAgent();
   const navigate = useNavigate();
 
   const [ didInput, setDidInput ] = useState('');
   const [ did, setDid ] = useState('');
   const [ identity, setIdentity ] = useState<Identity>();
   const [ protocols, setProtocols ] = useState<DwnProtocolDefinition[]>([]);
+  const [ endpoints, setEndpoints ] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchSocial = async (did: string) => {
@@ -47,8 +50,14 @@ const SearchIdentitiesPage: React.FC = () => {
       });
     };
 
+    const fetchEndpoints = async (did: string) => {
+      const endpoints = await getDwnServiceEndpointUrls(did, agent!.did)
+      setEndpoints(endpoints);
+    }
+
     if (!identity && did) {
       fetchSocial(did);
+      fetchEndpoints(did);
     }
 
   }, [ did, identity ]);
@@ -106,6 +115,7 @@ const SearchIdentitiesPage: React.FC = () => {
       {identity && <IdentityProfile
         identity={identity}
         protocols={protocols}
+        endpoints={endpoints}
         contain={true}
         rounded={true}
         showInactiveTabs={false}

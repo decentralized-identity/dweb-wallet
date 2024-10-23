@@ -182,6 +182,9 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
         <div className="text-xl text-left pl-4">
           {isEdit ? 'Edit Identity' : 'Add Identity'}
         </div>
+        {loading ? <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <CircleProgress size='large' />
+        </div> :
         <form onSubmit={handleSubmit} className="pt-5">
           <Fieldset>
             <Field className="w-full">
@@ -243,26 +246,26 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
               </Field>
             </div>
             <Field className={"flex flex-col relative"}>
-                <Label htmlFor='banner' className="text-sm font-medium leading-6 text-gray-900">Banner</Label>
-                <Hero className="w-full h-[200px]" src={bannerPreview} />
-                <div
-                  className={`flex items-center cursor-pointer rounded-full ${ bannerPreview ? 'bg-red-600' : 'bg-gray-600'} py-1 px-4 font-semibold text-background m-auto my-2`}
-                  onClick={handleAddOrClearHero}
-                >
-                  {bannerPreview ? <XMarkIcon className="w-4 h-4 mr-2" /> : <PlusIcon className='w-4 h-4 mr-2' />}
-                  {bannerPreview ? 'Clear Banner' : 'Add Banner'}
-                  <Input
-                    id='banner'
-                    type="file"
-                    name='banner'
-                    ref={bannerImageRef}
-                    hidden
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                </div>
-              </Field>
-              <Field className="w-full">
+              <Label htmlFor='banner' className="text-sm font-medium leading-6 text-gray-900">Banner</Label>
+              <Hero className="w-full h-[200px]" src={bannerPreview} />
+              <div
+                className={`flex items-center cursor-pointer rounded-full ${ bannerPreview ? 'bg-red-600' : 'bg-gray-600'} py-1 px-4 font-semibold text-background m-auto my-2`}
+                onClick={handleAddOrClearHero}
+              >
+                {bannerPreview ? <XMarkIcon className="w-4 h-4 mr-2" /> : <PlusIcon className='w-4 h-4 mr-2' />}
+                {bannerPreview ? 'Clear Banner' : 'Add Banner'}
+                <Input
+                  id='banner'
+                  type="file"
+                  name='banner'
+                  ref={bannerImageRef}
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </div>
+            </Field>
+            <Field className="w-full">
               <Label htmlFor='tagline' className="text-sm font-medium leading-6 text-gray-900">
                 Tagline
               </Label>
@@ -285,9 +288,9 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
               </Label>
               <Textarea
                 id='bio'
-                name="Bio"
+                name="bio"
                 placeholder='Tell us about yourself...'
-                value={formData.tagline}
+                value={formData.bio}
                 onChange={handleInputChange}
                 rows={4}
                 className={
@@ -296,53 +299,45 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
                 }
               />
             </Field>
+            <Field className="w-full">
+              <Label htmlFor='dwnEndpoints' className="text-sm font-medium leading-6 text-gray-900">
+                DWN Endpoints <span className="text-red-500">*</span>
+              </Label>
+              <ListInput
+                className="w-full"
+                required={true}
+                label={"DWN Endpoint"}
+                value={formData.dwnEndpoints}
+                defaultValue={'https://dwn.tbddev.org/latest'}
+                placeholder='https://dwn.tbddev.org/latest'
+                onChange={(value) => {
+                  setFormData({ ...formData, dwnEndpoints: value });
+                }}
+              />
+            </Field>
           </Fieldset>
-          {loading ? (
-            <div className="flex justify-center items-center h-[400px]">
-              <CircleProgress />
-            </div>
-          ) : (
-            <div>
-              {!isEdit && <Field className="w-full">
-                <Label htmlFor='dwnEndpoints' className="text-sm font-medium leading-6 text-gray-900">
-                  DWN Endpoints <span className="text-red-500">*</span>
-                </Label>
-                <ListInput
-                  className="w-full"
-                  required={true}
-                  label={"DWN Endpoint"}
-                  value={formData.dwnEndpoints}
-                  defaultValue={'https://dwn.tbddev.org/latest'}
-                  placeholder='https://dwn.tbddev.org/latest'
-                  onChange={(value) => {
-                    setFormData({ ...formData, dwnEndpoints: value });
-                  }}
-                />
-              </Field>}
-              <div className="mt-4">
-                <Button
-                  type="submit"
-                  disabled={loading || submitDisabled}
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                >
-                  {isEdit ? 'Update Identity' : 'Add Identity'}
-                </Button>
-                {isEdit && (
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    sx={{ ml: 2 }}
-                    onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
-                  >
-                    Cancel
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-        </form>
+          <div className="mt-4 flex gap-2">
+            <Button
+              type="submit"
+              disabled={loading || submitDisabled}
+              variant="contained"
+              color="primary"
+              size="large"
+            >
+              {isEdit ? 'Update Identity' : 'Add Identity'}
+            </Button>
+            {isEdit && (
+              <Button
+                variant="outlined"
+                size="large"
+                sx={{ ml: 2 }}
+                onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
+              >
+                Cancel
+              </Button>
+            )}
+          </div>
+        </form>}
       </div>
     </div>
   </section>);

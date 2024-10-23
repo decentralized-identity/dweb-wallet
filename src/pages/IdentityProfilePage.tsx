@@ -6,7 +6,7 @@ import { CircularProgress } from '@mui/material';
 
 const IdentityProfilePage: React.FC = () => {
   const { didUri } = useParams();
-  const { selectedIdentity, protocols, permissions, wallets, selectIdentity } = useIdentities();
+  const { selectedIdentity, protocols, permissions, wallets, dwnEndpoints, selectIdentity } = useIdentities();
 
   useEffect(() => {
     selectIdentity(didUri);
@@ -17,6 +17,7 @@ const IdentityProfilePage: React.FC = () => {
       identity={selectedIdentity}
       protocols={protocols}
       permissions={permissions}
+      endpoints={dwnEndpoints}
       wallets={wallets}
     /> || <div className="absolute w-full h-full flex flex-col items-center justify-center">
       <CircularProgress />
