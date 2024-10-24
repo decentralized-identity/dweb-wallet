@@ -20,45 +20,35 @@ export default defineConfig({
     react(),
     nodePolyfills(),
     VitePWA({
-      devOptions: {
-        enabled: true,
-        navigateFallback: 'index.html',
-        type: 'module'
-      },
-      registerType: 'prompt',
-      injectRegister: 'auto',
-      includeAssets: ['favicon.ico', 'logo.png', 'index.html'],
-      strategies: 'injectManifest',
-      srcDir: 'src',
+      strategies: "injectManifest",
+      srcDir: "src",
       filename: "sw.ts",
+      registerType: "prompt",
+      injectRegister: "auto",
+
       pwaAssets: {
         disabled: false,
         config: true,
       },
+
       manifest: {
-        name: 'DWebWallet',
-        short_name: 'DWebWallet',
-        description: 'Decentralized identity manager',
-        theme_color: '#E03A3E',
+        name: "DWeb Wallet",
+        short_name: "DWW",
+        description: "A Decentralized Web Wallet Reference",
+        theme_color: "#ffec19",
       },
+
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
-        globIgnores: [
-          'assets/icons/**'
-        ],
-        maximumFileSizeToCacheInBytes: 1024 * 1024 * 5,
+        maximumFileSizeToCacheInBytes: 5000000,
+        globPatterns: ["**/*.{js,css,html,json,svg,png,ico}"],
       },
-      manifestFilename: 'manifest.json',
-      workbox: {
-        navigateFallback: 'index.html',
-        globPatterns: ['**/*.{js,css,html,svg,png,svg,ico}'],
-        cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        runtimeCaching: [{
-          urlPattern: ({ request }) => request.mode === 'navigate',
-          handler: 'NetworkFirst',
-        }]
+
+      devOptions: {
+        enabled: true,
+        navigateFallback: "index.html",
+        suppressWarnings: false,
+        type: "module",
       },
-    })
+    }),
   ]
 });
