@@ -66,8 +66,8 @@ const Dashboard:React.FC = () => {
   return (
     <AppProvider
       branding={{
-        title: 'Dweb Wallet',
-        logo: <Box sx={{ mr: 2 }}><img src="/logo.png" alt="Dweb Wallet" /></Box>
+        title: 'DWeb Wallet',
+        logo: <Box sx={{ mr: 2 }}><img src="/logo.png" alt="DWeb Wallet" /></Box>
       }}
       router={router}
       navigation={navigation}
