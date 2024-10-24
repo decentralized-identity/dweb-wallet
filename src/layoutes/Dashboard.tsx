@@ -8,7 +8,7 @@ import { useAgent } from '@/contexts/Context';
 import { MenuItemProps } from "@/components/Layout/Sidebar/SidebarItem";
 import SnackBar from "@/components/Layout/Snackbar";
 
-const TailwindLayout: React.FC = () => {
+const DashboardLayout: React.FC = () => {
   const { lock } = useAgent();
   const navigate = useNavigate();
 
@@ -106,4 +106,4 @@ const TailwindLayout: React.FC = () => {
 }
 
 
-export default TailwindLayout;
+export default DashboardLayout;

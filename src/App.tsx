@@ -14,7 +14,7 @@ import ImportIdentityPage from './pages/ImportIdentityPage';
 import IdentitiesListPage from './pages/IdentitiesListPage';
 import AppConnect from './pages/AppConnect';
 import DWebConnect from './pages/DwebConnect';
-import TailwindLayout from './layoutes/TailwindDashboard';
+import DashboardLayout from './layoutes/Dashboard';
 import IdentityProfilePage from './pages/IdentityProfilePage';
 
 activatePolyfills();
@@ -56,7 +56,7 @@ function App() {
           <IdentitiesProvider>
             <DragOverIdentitiesProvider>
               <Routes>
-                <Route element={<TailwindLayout />}>
+                <Route element={<DashboardLayout />}>
                   <Route index element={<IdentitiesListPage />} />
                   <Route path="/search" element={<SearchIdentitiesPage />} />
                   <Route path= "/search/:didUri" element={<SearchIdentitiesPage />} />
