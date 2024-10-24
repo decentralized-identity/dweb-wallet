@@ -116,7 +116,7 @@ const IdentityProfile: React.FC<{
   return (<>
     {!contain && <section className="relative block h-96">
       <div
-        className="absolute top-0 w-full h-full"
+        className="absolute top-0 w-full h-full bg-background"
         style={heroStyle}
       >
         <span id="blackOverlay" className="w-full h-full absolute opacity-60 bg-gradient-to-t from-gray-900 to-transparent"></span>
