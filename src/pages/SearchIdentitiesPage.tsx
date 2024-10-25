@@ -24,8 +24,18 @@ const SearchIdentitiesPage: React.FC = () => {
 
   useEffect(() => {
     const fetchSocial = async (did: string) => {
-      const social = await fetch(`https://dweb/${did}/read/protocols/${profileProtocolB64}/social`);
-      const socialData = await social.json();
+      let socialData: SocialData;
+      try {
+        const social = await fetch(`https://dweb/${did}/read/protocols/${profileProtocolB64}/social`);
+        if (!social.ok) {
+          return;
+        }
+        socialData = await social.json();
+      } catch(error) {
+        console.error('Failed to load identity social data', error);
+        return;
+      }
+      
 
       try {
         const protocols = await fetch(`https://dweb/${did}/query/protocols`);

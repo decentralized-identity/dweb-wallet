@@ -164,6 +164,8 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
   };
 
   const handleAddOrClearHero = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+
     if (bannerPreview !== null) {
       setBannerPreview(null);
       setFormData({ ...formData, banner: null });

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback, useMemo, useEffect } from 'react';
+import React, { createContext, useState, useCallback, useMemo } from 'react';
 import { CryptoUtils } from '@web5/crypto';
 import { SnackbarItem } from '@/types/app';
 
