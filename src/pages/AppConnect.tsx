@@ -2,13 +2,14 @@ import ConnectRequest from "@/components/ConnectRequest";
 import { useAgent } from "@/contexts/Context";
 import { truncateDid } from "@/lib/utils";
 import { FileOpen, FlashOff, FlashOn, NoPhotography } from "@mui/icons-material";
-import { Box, Button, CircularProgress, FormControl, IconButton, InputLabel, MenuItem, Select, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, FormControl, IconButton, Typography } from "@mui/material";
 import { PageContainer, useNotifications } from "@toolpad/core"
 import { Oidc, Web5ConnectAuthRequest } from "@web5/agent";
 import { CryptoUtils } from "@web5/crypto";
 import Scanner from 'qr-scanner';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Select, Field, Label, Input } from '@headlessui/react';
 
 const AppConnect: React.FC = () => {
 
@@ -34,6 +35,7 @@ const QRScanner: React.FC = () => {
   const [ devices, setDevices ] = useState<Scanner.Camera[]>([]);
   const [ selectedCamera, setSelectedCamera ] = useState<string>('environment');
   const [ hasFlash, setHasFlash ] = useState<boolean>(false);
+  const [ connectionString, setConnectionString ] = useState<string>('');
   const [ connectionRequest, setConnectionRequest ] = useState<Web5ConnectAuthRequest>();
   const [ authorizing, setAuthorizing ] = useState<boolean>(false);
   const [ pin, setPin ] = useState<string>('');
@@ -84,6 +86,16 @@ const QRScanner: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (connectionString) {
+      try {
+        handleConnectFlow(connectionString);
+      } catch (_e) {
+        // ignore errors here;
+      }
+    }
+  }, [connectionString]);
+
   const flashOn = useMemo(() => {
     return scannerRef.current?.isFlashOn();
   }, [ scannerRef.current ]);
@@ -122,9 +134,18 @@ const QRScanner: React.FC = () => {
   }
 
   const handleConnectFlow = async (uri: string) => {
-    const connectionURI = new URL(uri);
-    const request_uri = connectionURI.searchParams.get('request_uri');
-    const encryption_key = connectionURI.searchParams.get('encryption_key');
+
+    let request_uri: string | null = null;
+    let encryption_key: string | null = null;
+    try {
+      const connectionURI = new URL(uri);
+      request_uri = connectionURI.searchParams.get('request_uri');
+      encryption_key = connectionURI.searchParams.get('encryption_key');
+    } catch (error) {
+      // silently ignore this
+      return;
+    }
+
     if (!request_uri || !encryption_key) {
       notifications.show('Invalid connection URI', { severity: 'error', autoHideDuration: 1500 });
       return;
@@ -188,30 +209,37 @@ const QRScanner: React.FC = () => {
         <p>Make sure you have a camera connected to your device.</p>
       </Box>
     </Box>}
-    {!connectionRequest && !cameraError &&  <>
-      {<Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
-        <FormControl fullWidth>
-          <InputLabel id="camera-label">Camera</InputLabel>
+    {!connectionRequest && !cameraError && <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'space-around' }}>
+      <FormControl fullWidth>
+        <Field className="w-full">
+          <Label htmlFor='dwnEndpoints' className="text-sm font-medium leading-6 text-gray-900">
+            Camera
+          </Label>
           <Select
-            labelId="camera-label"
+            name="cameras-select"
             id="camera-select"
             value={devices.length === 0 ? '' : selectedCamera}
-            label="Age"
-            onChange={(e) => {selectCamera(e.target.value) }}
+            onChange={(e) => selectCamera(e.target.value)}
           >
-            {devices.map(device => <MenuItem key={device.id} value={device.id} selected={device.id === selectedCamera}>{device.label}</MenuItem>)}
+            {devices.map(device => <option
+              key={device.id} value={device.id}
+              selected={device.id === selectedCamera}
+            >
+            {device.label}
+            </option>)}
           </Select>
-        </FormControl>
-        <video
-          ref={videoRef}
-          data-testid="scanner-video"
-          style={{
-            width: '100%',
-            objectFit: 'cover',
-          }}
-        >
-        </video>
-        <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+        </Field>
+      </FormControl>
+      <video
+        ref={videoRef}
+        data-testid="scanner-video"
+        style={{
+          width: '100%',
+          objectFit: 'cover',
+        }}
+      >
+      </video>
+      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', position: 'absolute', bottom: 0, left: 0, right: 0 }}>
         <IconButton
             disabled={!hasFlash}
             onClick={toggleFlash}
@@ -223,9 +251,15 @@ const QRScanner: React.FC = () => {
           >
             <FileOpen />
         </IconButton>
-        </Box>
-      </Box>}
-    </>}
+      </Box>
+    </Box>}
+    {!connectionRequest && <Box sx={{ display: 'flex', flexDirection: 'row',  width: '100%' }}>
+      <Input
+        value={connectionString}
+        type="text" 
+        onChange={(e) => setConnectionString(e.target.value)}
+      />
+    </Box>}
     {!pin && !authorizing && connectionRequest && <ConnectRequest
       origin={truncateDid(connectionRequest.client_id)}
       permissions={connectionRequest.permissionRequests}

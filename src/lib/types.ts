@@ -1,5 +1,5 @@
 export interface Identity {
-  persona: string;
+  persona?: string;
   didUri: string;
   profile: ProfileData;
 }

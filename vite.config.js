@@ -2,7 +2,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { defineConfig } from 'vite';
 import path from 'path';
 import react from '@vitejs/plugin-react';
-import svgr from 'vite-plugin-svgr';
+// @ts-ignore - vite-plugin-node-stdlib-browser does not have types
 import nodePolyfills from 'vite-plugin-node-stdlib-browser';
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,10 +15,10 @@ export default defineConfig({
         global: "globalThis",
     },
     plugins: [
-        svgr(),
-        react(),
         nodePolyfills(),
+        react(),
         VitePWA({
+            manifestFilename: "manifest.json",
             strategies: "injectManifest",
             srcDir: "src",
             filename: "sw.ts",
@@ -33,6 +33,15 @@ export default defineConfig({
                 short_name: "DWW",
                 description: "A Decentralized Web Wallet Reference",
                 theme_color: "#ffec19",
+                launch_handler: {
+                    client_mode: ['focus-existing', 'navigate-existing', 'auto']
+                },
+                protocol_handlers: [
+                    {
+                        protocol: "web5",
+                        url: "/app-connect?type=%s"
+                    }
+                ]
             },
             injectManifest: {
                 maximumFileSizeToCacheInBytes: 5000000,
@@ -43,7 +52,7 @@ export default defineConfig({
                 navigateFallback: "index.html",
                 suppressWarnings: false,
                 type: "module",
-            },
+            }
         }),
-    ]
+    ],
 });

@@ -1,20 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useIdentities } from '@/contexts/Context';
-import {
-  Button,
-  TextField,
-  Box,
-  Avatar,
-  Typography,
-  CircularProgress,
-  IconButton,
-} from '@mui/material';
-import Grid from '@mui/material/Grid2'; // Updated import for Grid2
-import { PlusIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Identity } from '@/lib/types';
-import { PageContainer } from '@toolpad/core';
 import ListInput from '@/components/ListInput';
+import { Field, Fieldset, Input, Label, Textarea } from '@headlessui/react';
+import Avatar from '@/components/Avatar';
+import Hero from '@/components/Hero';
+import { PlusIcon, XMarkIcon } from '@heroicons/react/16/solid';
+import CircleProgress from '@/components/CircleProgress';
+import Button from '@/components/Button';
 
 const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) => {
   const { didUri } = useParams();
@@ -24,6 +18,9 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
   const [loading, setLoading] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+
+  const avatarImageRef = useRef<HTMLInputElement>(null);
+  const bannerImageRef = useRef<HTMLInputElement>(null);
 
   const defaultForm = {
     persona: '',
@@ -58,7 +55,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
       };
 
       setFormData({
-        persona: selectedIdentity.persona,
+        persona: selectedIdentity.persona!,
         displayName: selectedIdentity.profile.social?.displayName || '',
         tagline: selectedIdentity.profile.social?.tagline || '',
         bio: selectedIdentity.profile.social?.bio || '',
@@ -101,6 +98,7 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
 
     try {
       let identity: Identity | undefined;
@@ -165,170 +163,186 @@ const AddOrEditIdentityPage: React.FC<{ edit?: boolean }> = ({ edit = false }) =
     }
   };
 
-  const handleClearBanner = (e: React.MouseEvent) => {
-    if (formData.banner) {
-      e.preventDefault();
+  const handleAddOrClearHero = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+
+    if (bannerPreview !== null) {
       setBannerPreview(null);
       setFormData({ ...formData, banner: null });
+      if (bannerImageRef.current) {
+        bannerImageRef.current.value = '';
+        bannerImageRef.current.files = null;
+      }
+    } else {
+      bannerImageRef.current?.click();
     }
   }
 
-  const title = selectedIdentity ? `Edit ${selectedIdentity.persona} Identity` : 'Add a New Identity';
-  const breadCrumbs = selectedIdentity ?  [] : []
-
-  return (
-    <PageContainer title={title} breadcrumbs={breadCrumbs}>
-      <form onSubmit={handleSubmit}>
-        {loading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height={400}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <Grid container spacing={3}>
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Persona"
+  return (<section className={`relative sm:px-8 md:px-12 max-w-screen-lg mx-auto`}>
+   <div className="mt-10 flex flex-col break-words bg-white w-full mb-6 shadow-xl">
+     <div className="w-full p-4 divide-y-2 divide-dotted divide-slate-300 mb-10">
+        <div className="text-xl text-left pl-4">
+          {isEdit ? 'Edit Identity' : 'Add Identity'}
+        </div>
+        {loading ? <div className="flex flex-col items-center justify-center min-h-[50vh]">
+          <CircleProgress size='large' />
+        </div> :
+        <form onSubmit={handleSubmit} className="pt-5">
+          <Fieldset>
+            <Field className="w-full">
+              <Label htmlFor='persona' className="text-sm font-medium leading-6 text-gray-900">
+                Persona <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                type='text'
+                id='persona'
                 name="persona"
+                placeholder='Social, Professional, Gaming, etc.'
                 value={formData.persona}
                 onChange={handleInputChange}
-                placeholder="Social, Professional, Gaming, etc."
-                required
+                required={true}
+                className={
+                  'mt-1 mb-2 block w-full rounded-lg border-none py-3 px-4 text-slate-700 outline outline-2 outline-slate-200 ' +
+                  'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-slate-700'
+                }
               />
-            </Grid>
-            <Grid size={12} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Box position="relative" mr={2} sx={{ width: 60, height: 60 }}>
-                <Avatar
-                  src={avatarPreview || undefined}
-                  sx={{ width: 60, height: 60 }}
+            </Field>
+            <div className="flex gap-4">
+              <Field className={"w-20 flex flex-col items-center relative"}>
+                <Label htmlFor='avatar' className="text-sm font-medium leading-6 text-gray-900">Avatar</Label>
+                <Avatar className="w-14" src={avatarPreview} />
+                <div
+                  className='cursor-pointer absolute bottom-0 right-0 rounded-full bg-red-600 p-1 font-semibold text-background'
+                  onClick={() => 
+                    avatarImageRef?.current?.click()
+                  }
+                >
+                  <PlusIcon className='w-4 h-4' />
+                  <Input
+                    id='avatar'
+                    type="file"
+                    name='avatar'
+                    ref={avatarImageRef}
+                    hidden
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </div>
+              </Field>
+              <Field className="w-full">
+                <Label htmlFor='displayName' className="text-sm font-medium leading-6 text-gray-900">
+                  Display Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id='displayName'
+                  type='text'
+                  name="displayName"
+                  value={formData.displayName}
+                  onChange={handleInputChange}
+                  required={true}
+                  className={
+                    'mt-1 mb-2 block w-full rounded-lg border-none py-3 px-4 text-slate-700 outline outline-2 outline-slate-200 ' +
+                    'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-slate-700'
+                  }
                 />
-                <IconButton
-                  component="label"
-                  sx={{
-                    position: 'absolute',
-                    right: 10,
-                    bottom: 10,
-                    opacity: 0.5,
-                    backgroundColor: 'background.paper',
-                    '&:hover': { backgroundColor: 'background.default' },
-                  }}
-                >
-                  <PlusIcon />
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    width={20}
-                    name="avatar"
-                  />
-                </IconButton>
-              </Box>
-              <TextField
-                fullWidth
-                label="Display Name"
-                name="displayName"
-                value={formData.displayName}
-                onChange={handleInputChange}
-                placeholder="Display Name"
-                required
-              />
-            </Grid>
-            {bannerPreview && (
-              <Grid size={12} >
-                <Box display="flex" flexDirection="column" alignItems="left">
-                  <Typography variant="subtitle2">Banner Preview:</Typography>
-                  <Box
-                    sx={{
-                      width: '100%',
-                      borderRadius: 2,
-                      overflow: 'hidden',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <img 
-                      src={bannerPreview} 
-                      alt="Banner preview" 
-                      style={{ width: '100%', height: 'auto', maxHeight: 200, objectFit: 'cover' }} 
-                    />
-                  </Box>
-                </Box>
-              </Grid>
-            )}
-            <Grid size={12}>
-              {<Box display="flex" alignItems="center">
-                <Button
-                  variant="outlined"
-                  component="label"
-                  onClick={handleClearBanner}
-                >
-                  {bannerPreview ? 'Clear Banner' : 'Upload Banner'}
-                  <input
-                    type="file"
-                    hidden
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    name="banner"
-                  />
-                </Button>
-              </Box>}
-            </Grid>
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Tagline"
+              </Field>
+            </div>
+            <Field className={"flex flex-col relative"}>
+              <Label htmlFor='banner' className="text-sm font-medium leading-6 text-gray-900">Banner</Label>
+              <Hero className="w-full h-[200px]" src={bannerPreview} />
+              <div
+                className={`flex items-center cursor-pointer rounded-full ${ bannerPreview ? 'bg-red-600' : 'bg-gray-600'} py-1 px-4 font-semibold text-background m-auto my-2`}
+                onClick={handleAddOrClearHero}
+              >
+                {bannerPreview ? <XMarkIcon className="w-4 h-4 mr-2" /> : <PlusIcon className='w-4 h-4 mr-2' />}
+                {bannerPreview ? 'Clear Banner' : 'Add Banner'}
+                <Input
+                  id='banner'
+                  type="file"
+                  name='banner'
+                  ref={bannerImageRef}
+                  hidden
+                  accept="image/*"
+                  onChange={handleFileChange}
+                />
+              </div>
+            </Field>
+            <Field className="w-full">
+              <Label htmlFor='tagline' className="text-sm font-medium leading-6 text-gray-900">
+                Tagline
+              </Label>
+              <Input
+                type='text'
+                id='tagline'
                 name="tagline"
+                placeholder='Something catchy goes here...'
                 value={formData.tagline}
                 onChange={handleInputChange}
+                className={
+                  'mt-1 mb-2 block w-full rounded-lg border-none py-3 px-4 text-slate-700 outline outline-2 outline-slate-200 ' +
+                  'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-slate-700'
+                }
               />
-            </Grid>
-            <Grid size={12}>
-              <TextField
-                fullWidth
-                label="Bio"
+            </Field>
+            <Field className="w-full">
+              <Label htmlFor='bio' className="text-sm font-medium leading-6 text-gray-900">
+                Bio
+              </Label>
+              <Textarea
+                id='bio'
                 name="bio"
+                placeholder='Tell us about yourself...'
                 value={formData.bio}
                 onChange={handleInputChange}
-                multiline
                 rows={4}
+                className={
+                  'mt-1 mb-2 block w-full rounded-lg border-none py-3 px-4 text-slate-700 outline outline-2 outline-slate-200 ' +
+                  'focus:outline-none data-[focus]:outline-2 data-[focus]:-outline-offset-2 data-[focus]:outline-slate-700'
+                }
               />
-            </Grid>
-            <ListInput
-              label={"DWN Endpoint"}
-              value={formData.dwnEndpoints}
-              defaultValue={'https://dwn.tbddev.org/latest'}
-              placeholder='https://dwn.tbddev.org/latest'
-              onChange={(value) => {
-                setFormData({ ...formData, dwnEndpoints: value });
-              }}
-            />
-            <Box mt={4}>
+            </Field>
+            <Field className="w-full">
+              <Label htmlFor='dwnEndpoints' className="text-sm font-medium leading-6 text-gray-900">
+                DWN Endpoints <span className="text-red-500">*</span>
+              </Label>
+              <ListInput
+                className="w-full"
+                required={true}
+                label={"DWN Endpoint"}
+                value={formData.dwnEndpoints}
+                defaultValue={'https://dwn.tbddev.org/latest'}
+                placeholder='https://dwn.tbddev.org/latest'
+                onChange={(value) => {
+                  setFormData({ ...formData, dwnEndpoints: value });
+                }}
+              />
+            </Field>
+          </Fieldset>
+          <div className="mt-4 flex gap-2">
+            <Button
+              type="submit"
+              disabled={loading || submitDisabled}
+              variant="contained"
+              color="primary"
+              size="large"
+            >
+              {isEdit ? 'Update Identity' : 'Add Identity'}
+            </Button>
+            {isEdit && (
               <Button
-                type="submit"
-                disabled={loading || submitDisabled}
-                variant="contained"
-                color="primary"
+                variant="outlined"
                 size="large"
+                sx={{ ml: 2 }}
+                onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
               >
-                {isEdit ? 'Update Identity' : 'Add Identity'}
+                Cancel
               </Button>
-              {isEdit && (
-                <Button
-                  variant="outlined"
-                  size="large"
-                  sx={{ ml: 2 }}
-                  onClick={() => navigate(`/identity/${selectedIdentity.didUri}`)}
-                >
-                  Cancel
-                </Button>
-              )}
-            </Box>
-          </Grid>
-        )}
-      </form>
-    </PageContainer>
-  );
+            )}
+          </div>
+        </form>}
+      </div>
+    </div>
+  </section>);
 };
 
 export default AddOrEditIdentityPage;

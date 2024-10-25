@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Box, Button, Typography } from "@mui/material"
-import PublicIdentityCard from "./identity/PublicIdentityCard"
 import PermissionRequest from "./PermissionsRequest"
 import { Check as CheckIcon, Close as CloseIcon } from '@mui/icons-material';
 import { ConnectPermissionRequest } from "@web5/agent";
 import IdentitySelector from './IdentitySelector';
+import IdentityProfileCard from './identity/IdentityProfileCard';
 
 const ConnectRequest: React.FC<{
   did?: string;
@@ -36,7 +36,7 @@ const ConnectRequest: React.FC<{
       is requesting permissions from
     </Typography>
     <Box sx={{ mb: 4, mt: 2 }}>
-      {selectedDid && <PublicIdentityCard did={selectedDid} compact={true} />}
+      {selectedDid && <IdentityProfileCard didUri={selectedDid} />}
       {!selectedDid && <Typography variant="subtitle2" color="text.secondary">Select an identity to approve the request</Typography>}
     </Box>
     {!did && <IdentitySelector value={selectedDid} onChange={setSelectedDid} sx={{ px: 5, width: '100%', mb: 2 }} />}
